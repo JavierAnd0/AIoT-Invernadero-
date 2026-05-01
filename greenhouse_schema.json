@@ -1,0 +1,190 @@
+{
+  "system": "AIoT Greenhouse Management System",
+  "version": "1.0.0",
+  "description": "Data model for automated greenhouse and hydroponic crop management",
+
+  "entities": {
+
+    "users": {
+      "description": "System users with role-based access control",
+      "fields": {
+        "user_id":    { "type": "integer", "pk": true, "auto_increment": true },
+        "username":   { "type": "varchar(80)", "nullable": false, "unique": true },
+        "email":      { "type": "varchar(120)", "nullable": false, "unique": true },
+        "password_hash": { "type": "varchar(256)", "nullable": false },
+        "full_name":  { "type": "varchar(150)", "nullable": false },
+        "role":       { "type": "enum", "values": ["admin", "operator", "viewer"], "default": "viewer" },
+        "is_active":  { "type": "boolean", "default": true },
+        "created_at": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" },
+        "updated_at": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "devices": "one-to-many (user registers many devices)",
+        "alerts":  "one-to-many (user receives many alerts)"
+      }
+    },
+
+    "zones": {
+      "description": "Physical or logical sections of the greenhouse",
+      "fields": {
+        "zone_id":     { "type": "integer", "pk": true, "auto_increment": true },
+        "name":        { "type": "varchar(100)", "nullable": false, "unique": true },
+        "description": { "type": "text", "nullable": true },
+        "area_m2":     { "type": "decimal(8,2)", "nullable": true, "unit": "square meters" },
+        "is_active":   { "type": "boolean", "default": true },
+        "created_at":  { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "devices": "one-to-many (zone contains many devices)",
+        "crops":   "one-to-many (zone hosts many crops)"
+      }
+    },
+
+    "devices": {
+      "description": "Physical or simulated IoT sensor nodes deployed in zones",
+      "fields": {
+        "device_id":    { "type": "integer", "pk": true, "auto_increment": true },
+        "zone_id":      { "type": "integer", "fk": "zones.zone_id", "nullable": false },
+        "registered_by": { "type": "integer", "fk": "users.user_id", "nullable": false },
+        "name":         { "type": "varchar(100)", "nullable": false },
+        "serial_number": { "type": "varchar(60)", "unique": true, "nullable": true },
+        "device_type":  { "type": "enum", "values": ["sensor_node", "actuator", "gateway", "simulated"], "default": "simulated" },
+        "status":       { "type": "enum", "values": ["online", "offline", "error", "maintenance"], "default": "online" },
+        "firmware_version": { "type": "varchar(20)", "nullable": true },
+        "last_seen_at": { "type": "timestamp", "nullable": true },
+        "created_at":   { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "zone":         "many-to-one",
+        "sensor_readings": "one-to-many"
+      }
+    },
+
+    "sensor_readings": {
+      "description": "Time-series measurements captured by IoT devices",
+      "fields": {
+        "reading_id":   { "type": "bigint", "pk": true, "auto_increment": true },
+        "device_id":    { "type": "integer", "fk": "devices.device_id", "nullable": false },
+        "temperature":  { "type": "decimal(5,2)", "nullable": true, "unit": "Celsius", "range": "-10 to 60" },
+        "humidity":     { "type": "decimal(5,2)", "nullable": true, "unit": "percent", "range": "0 to 100" },
+        "ph":           { "type": "decimal(4,2)", "nullable": true, "unit": "pH", "range": "0 to 14" },
+        "light_lux":    { "type": "decimal(10,2)", "nullable": true, "unit": "lux", "range": "0 to 150000" },
+        "co2_ppm":      { "type": "decimal(8,2)", "nullable": true, "unit": "ppm", "range": "0 to 5000" },
+        "soil_moisture": { "type": "decimal(5,2)", "nullable": true, "unit": "percent", "range": "0 to 100" },
+        "recorded_at":  { "type": "timestamp", "nullable": false, "default": "CURRENT_TIMESTAMP" },
+        "is_simulated": { "type": "boolean", "default": false }
+      },
+      "relationships": {
+        "device": "many-to-one",
+        "alerts": "one-to-many (reading may trigger alerts)"
+      },
+      "indexes": ["device_id", "recorded_at"]
+    },
+
+    "crop_types": {
+      "description": "Catalog of crop species with their optimal growing conditions",
+      "fields": {
+        "crop_type_id":     { "type": "integer", "pk": true, "auto_increment": true },
+        "name":             { "type": "varchar(100)", "nullable": false, "unique": true },
+        "scientific_name":  { "type": "varchar(150)", "nullable": true },
+        "description":      { "type": "text", "nullable": true },
+        "temp_min":         { "type": "decimal(5,2)", "unit": "Celsius" },
+        "temp_max":         { "type": "decimal(5,2)", "unit": "Celsius" },
+        "temp_optimal":     { "type": "decimal(5,2)", "unit": "Celsius" },
+        "humidity_min":     { "type": "decimal(5,2)", "unit": "percent" },
+        "humidity_max":     { "type": "decimal(5,2)", "unit": "percent" },
+        "ph_min":           { "type": "decimal(4,2)", "unit": "pH" },
+        "ph_max":           { "type": "decimal(4,2)", "unit": "pH" },
+        "light_min_lux":    { "type": "decimal(10,2)", "unit": "lux" },
+        "light_max_lux":    { "type": "decimal(10,2)", "unit": "lux" },
+        "growth_days":      { "type": "integer", "nullable": true, "unit": "days from sowing to harvest" },
+        "created_at":       { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "sample_data": [
+        { "name": "Lettuce",   "temp_min": 15, "temp_max": 24, "temp_optimal": 20, "humidity_min": 50, "humidity_max": 80, "ph_min": 6.0, "ph_max": 7.0, "growth_days": 45 },
+        { "name": "Tomato",    "temp_min": 18, "temp_max": 30, "temp_optimal": 24, "humidity_min": 60, "humidity_max": 80, "ph_min": 5.5, "ph_max": 7.0, "growth_days": 90 },
+        { "name": "Basil",     "temp_min": 20, "temp_max": 35, "temp_optimal": 28, "humidity_min": 40, "humidity_max": 70, "ph_min": 5.5, "ph_max": 7.5, "growth_days": 30 },
+        { "name": "Spinach",   "temp_min": 10, "temp_max": 22, "temp_optimal": 16, "humidity_min": 50, "humidity_max": 75, "ph_min": 6.0, "ph_max": 7.5, "growth_days": 40 },
+        { "name": "Strawberry","temp_min": 15, "temp_max": 26, "temp_optimal": 21, "humidity_min": 65, "humidity_max": 85, "ph_min": 5.5, "ph_max": 6.5, "growth_days": 120 }
+      ]
+    },
+
+    "crops": {
+      "description": "Active crop batches planted in specific zones",
+      "fields": {
+        "crop_id":       { "type": "integer", "pk": true, "auto_increment": true },
+        "zone_id":       { "type": "integer", "fk": "zones.zone_id", "nullable": false },
+        "crop_type_id":  { "type": "integer", "fk": "crop_types.crop_type_id", "nullable": false },
+        "created_by":    { "type": "integer", "fk": "users.user_id", "nullable": false },
+        "batch_code":    { "type": "varchar(50)", "unique": true },
+        "quantity":      { "type": "integer", "nullable": false, "unit": "number of plants" },
+        "planted_at":    { "type": "date", "nullable": false },
+        "expected_harvest_at": { "type": "date", "nullable": true },
+        "actual_harvest_at":   { "type": "date", "nullable": true },
+        "status":        { "type": "enum", "values": ["germinating", "growing", "flowering", "harvested", "failed"], "default": "germinating" },
+        "notes":         { "type": "text", "nullable": true },
+        "created_at":    { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "zone":      "many-to-one",
+        "crop_type": "many-to-one",
+        "user":      "many-to-one (creator)"
+      }
+    },
+
+    "alerts": {
+      "description": "Automated alerts generated when sensor readings fall outside optimal ranges",
+      "fields": {
+        "alert_id":     { "type": "integer", "pk": true, "auto_increment": true },
+        "device_id":    { "type": "integer", "fk": "devices.device_id", "nullable": false },
+        "reading_id":   { "type": "bigint", "fk": "sensor_readings.reading_id", "nullable": true },
+        "assigned_to":  { "type": "integer", "fk": "users.user_id", "nullable": true },
+        "alert_type":   { "type": "enum", "values": ["temperature", "humidity", "ph", "light", "co2", "soil_moisture", "device_offline", "prediction"] },
+        "severity":     { "type": "enum", "values": ["low", "medium", "high", "critical"], "default": "medium" },
+        "message":      { "type": "varchar(500)", "nullable": false },
+        "measured_value": { "type": "decimal(10,2)", "nullable": true },
+        "threshold_value": { "type": "decimal(10,2)", "nullable": true },
+        "status":       { "type": "enum", "values": ["open", "acknowledged", "resolved", "dismissed"], "default": "open" },
+        "resolved_at":  { "type": "timestamp", "nullable": true },
+        "created_at":   { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "device":  "many-to-one",
+        "reading": "many-to-one (optional, null for prediction-based alerts)",
+        "user":    "many-to-one (assigned operator)"
+      }
+    },
+
+    "predictions": {
+      "description": "AI model inference results stored for traceability and analysis",
+      "fields": {
+        "prediction_id":   { "type": "integer", "pk": true, "auto_increment": true },
+        "device_id":       { "type": "integer", "fk": "devices.device_id", "nullable": false },
+        "reading_id":      { "type": "bigint", "fk": "sensor_readings.reading_id", "nullable": false },
+        "model_name":      { "type": "varchar(100)", "nullable": false, "example": "RandomForestClassifier_v1" },
+        "model_version":   { "type": "varchar(20)", "nullable": false },
+        "predicted_class": { "type": "enum", "values": ["optimal", "warning", "critical"] },
+        "confidence":      { "type": "decimal(5,4)", "unit": "0.0000 to 1.0000" },
+        "raw_probabilities": { "type": "jsonb", "example": "{\"optimal\": 0.82, \"warning\": 0.15, \"critical\": 0.03}" },
+        "input_features":  { "type": "jsonb", "description": "Snapshot of sensor values used as input" },
+        "created_at":      { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relationships": {
+        "device":  "many-to-one",
+        "reading": "many-to-one"
+      }
+    }
+  },
+
+  "api_endpoints_summary": {
+    "users":           ["GET /users", "POST /users", "GET /users/{id}", "PUT /users/{id}", "DELETE /users/{id}"],
+    "zones":           ["GET /zones", "POST /zones", "GET /zones/{id}", "PUT /zones/{id}"],
+    "devices":         ["GET /devices", "POST /devices", "GET /devices/{id}", "PUT /devices/{id}/status"],
+    "sensor_readings": ["GET /readings", "POST /readings", "GET /readings/device/{device_id}", "GET /readings/latest"],
+    "crop_types":      ["GET /crop-types", "POST /crop-types", "GET /crop-types/{id}"],
+    "crops":           ["GET /crops", "POST /crops", "GET /crops/{id}", "PUT /crops/{id}", "GET /crops/zone/{zone_id}"],
+    "alerts":          ["GET /alerts", "GET /alerts/open", "PUT /alerts/{id}/acknowledge", "PUT /alerts/{id}/resolve"],
+    "predictions":     ["POST /predict", "GET /predictions", "GET /predictions/device/{device_id}"],
+    "iot_simulator":   ["POST /simulator/start", "POST /simulator/stop", "GET /simulator/status"]
+  }
+}

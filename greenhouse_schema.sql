@@ -1,0 +1,262 @@
+-- ============================================================
+-- AIoT Greenhouse Management System
+-- PostgreSQL Database Schema
+-- Version: 1.0.0
+-- ============================================================
+
+-- Drop tables if they exist (for clean re-creation)
+DROP TABLE IF EXISTS predictions CASCADE;
+DROP TABLE IF EXISTS alerts CASCADE;
+DROP TABLE IF EXISTS crops CASCADE;
+DROP TABLE IF EXISTS crop_types CASCADE;
+DROP TABLE IF EXISTS sensor_readings CASCADE;
+DROP TABLE IF EXISTS devices CASCADE;
+DROP TABLE IF EXISTS zones CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- ============================================================
+-- TABLE: users
+-- ============================================================
+CREATE TABLE users (
+    user_id       SERIAL PRIMARY KEY,
+    username      VARCHAR(80)  NOT NULL UNIQUE,
+    email         VARCHAR(120) NOT NULL UNIQUE,
+    password_hash VARCHAR(256) NOT NULL,
+    full_name     VARCHAR(150) NOT NULL,
+    role          VARCHAR(20)  NOT NULL DEFAULT 'viewer'
+                  CHECK (role IN ('admin', 'operator', 'viewer')),
+    is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  users              IS 'System users with role-based access control';
+COMMENT ON COLUMN users.role         IS 'admin: full access | operator: manage devices/crops | viewer: read-only';
+COMMENT ON COLUMN users.password_hash IS 'bcrypt hash of the user password';
+
+-- ============================================================
+-- TABLE: zones
+-- ============================================================
+CREATE TABLE zones (
+    zone_id     SERIAL PRIMARY KEY,
+    name        VARCHAR(100)   NOT NULL UNIQUE,
+    description TEXT,
+    area_m2     DECIMAL(8,2)   CHECK (area_m2 > 0),
+    is_active   BOOLEAN        NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  zones         IS 'Physical or logical sections of the greenhouse';
+COMMENT ON COLUMN zones.area_m2 IS 'Zone area in square meters';
+
+-- ============================================================
+-- TABLE: devices
+-- ============================================================
+CREATE TABLE devices (
+    device_id        SERIAL PRIMARY KEY,
+    zone_id          INTEGER      NOT NULL REFERENCES zones(zone_id) ON DELETE RESTRICT,
+    registered_by    INTEGER      NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+    name             VARCHAR(100) NOT NULL,
+    serial_number    VARCHAR(60)  UNIQUE,
+    device_type      VARCHAR(20)  NOT NULL DEFAULT 'simulated'
+                     CHECK (device_type IN ('sensor_node', 'actuator', 'gateway', 'simulated')),
+    status           VARCHAR(20)  NOT NULL DEFAULT 'online'
+                     CHECK (status IN ('online', 'offline', 'error', 'maintenance')),
+    firmware_version VARCHAR(20),
+    last_seen_at     TIMESTAMP,
+    created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  devices             IS 'Physical or simulated IoT sensor nodes deployed in zones';
+COMMENT ON COLUMN devices.device_type IS 'simulated: software-generated data for testing';
+COMMENT ON COLUMN devices.status      IS 'Real-time connectivity status of the device';
+
+CREATE INDEX idx_devices_zone   ON devices(zone_id);
+CREATE INDEX idx_devices_status ON devices(status);
+
+-- ============================================================
+-- TABLE: sensor_readings
+-- ============================================================
+CREATE TABLE sensor_readings (
+    reading_id    BIGSERIAL    PRIMARY KEY,
+    device_id     INTEGER      NOT NULL REFERENCES devices(device_id) ON DELETE CASCADE,
+    temperature   DECIMAL(5,2) CHECK (temperature BETWEEN -10 AND 60),
+    humidity      DECIMAL(5,2) CHECK (humidity BETWEEN 0 AND 100),
+    ph            DECIMAL(4,2) CHECK (ph BETWEEN 0 AND 14),
+    light_lux     DECIMAL(10,2) CHECK (light_lux >= 0),
+    co2_ppm       DECIMAL(8,2) CHECK (co2_ppm >= 0),
+    soil_moisture DECIMAL(5,2) CHECK (soil_moisture BETWEEN 0 AND 100),
+    recorded_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_simulated  BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+COMMENT ON TABLE  sensor_readings              IS 'Time-series measurements captured by IoT devices';
+COMMENT ON COLUMN sensor_readings.temperature  IS 'Air temperature in Celsius';
+COMMENT ON COLUMN sensor_readings.humidity     IS 'Relative humidity in percent';
+COMMENT ON COLUMN sensor_readings.ph           IS 'Solution pH (hydroponic nutrient solution)';
+COMMENT ON COLUMN sensor_readings.light_lux    IS 'Light intensity in lux';
+COMMENT ON COLUMN sensor_readings.co2_ppm      IS 'CO2 concentration in parts per million';
+COMMENT ON COLUMN sensor_readings.soil_moisture IS 'Substrate moisture in percent';
+COMMENT ON COLUMN sensor_readings.is_simulated  IS 'TRUE when generated by the IoT simulator';
+
+CREATE INDEX idx_readings_device      ON sensor_readings(device_id);
+CREATE INDEX idx_readings_recorded_at ON sensor_readings(recorded_at DESC);
+CREATE INDEX idx_readings_device_time ON sensor_readings(device_id, recorded_at DESC);
+
+-- ============================================================
+-- TABLE: crop_types
+-- ============================================================
+CREATE TABLE crop_types (
+    crop_type_id    SERIAL PRIMARY KEY,
+    name            VARCHAR(100)  NOT NULL UNIQUE,
+    scientific_name VARCHAR(150),
+    description     TEXT,
+    temp_min        DECIMAL(5,2)  NOT NULL,
+    temp_max        DECIMAL(5,2)  NOT NULL,
+    temp_optimal    DECIMAL(5,2)  NOT NULL,
+    humidity_min    DECIMAL(5,2)  NOT NULL CHECK (humidity_min >= 0),
+    humidity_max    DECIMAL(5,2)  NOT NULL CHECK (humidity_max <= 100),
+    ph_min          DECIMAL(4,2)  NOT NULL CHECK (ph_min >= 0),
+    ph_max          DECIMAL(4,2)  NOT NULL CHECK (ph_max <= 14),
+    light_min_lux   DECIMAL(10,2) CHECK (light_min_lux >= 0),
+    light_max_lux   DECIMAL(10,2),
+    growth_days     INTEGER       CHECK (growth_days > 0),
+    created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_temp_range    CHECK (temp_min < temp_max AND temp_optimal BETWEEN temp_min AND temp_max),
+    CONSTRAINT chk_humidity_range CHECK (humidity_min < humidity_max),
+    CONSTRAINT chk_ph_range      CHECK (ph_min < ph_max)
+);
+
+COMMENT ON TABLE  crop_types            IS 'Catalog of crop species with their optimal growing parameters';
+COMMENT ON COLUMN crop_types.temp_optimal IS 'Ideal temperature for maximum growth rate';
+COMMENT ON COLUMN crop_types.growth_days  IS 'Approximate days from sowing to harvest';
+
+-- ============================================================
+-- TABLE: crops
+-- ============================================================
+CREATE TABLE crops (
+    crop_id              SERIAL PRIMARY KEY,
+    zone_id              INTEGER     NOT NULL REFERENCES zones(zone_id) ON DELETE RESTRICT,
+    crop_type_id         INTEGER     NOT NULL REFERENCES crop_types(crop_type_id) ON DELETE RESTRICT,
+    created_by           INTEGER     NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+    batch_code           VARCHAR(50) UNIQUE,
+    quantity             INTEGER     NOT NULL CHECK (quantity > 0),
+    planted_at           DATE        NOT NULL,
+    expected_harvest_at  DATE,
+    actual_harvest_at    DATE,
+    status               VARCHAR(20) NOT NULL DEFAULT 'germinating'
+                         CHECK (status IN ('germinating', 'growing', 'flowering', 'harvested', 'failed')),
+    notes                TEXT,
+    created_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_harvest_date CHECK (expected_harvest_at IS NULL OR expected_harvest_at > planted_at)
+);
+
+COMMENT ON TABLE  crops            IS 'Active crop batches planted in specific zones';
+COMMENT ON COLUMN crops.batch_code IS 'Unique identifier for traceability (e.g. LETT-Z1-20260501)';
+COMMENT ON COLUMN crops.quantity   IS 'Number of individual plants in this batch';
+
+CREATE INDEX idx_crops_zone       ON crops(zone_id);
+CREATE INDEX idx_crops_status     ON crops(status);
+CREATE INDEX idx_crops_planted_at ON crops(planted_at);
+
+-- ============================================================
+-- TABLE: alerts
+-- ============================================================
+CREATE TABLE alerts (
+    alert_id        SERIAL PRIMARY KEY,
+    device_id       INTEGER       NOT NULL REFERENCES devices(device_id) ON DELETE CASCADE,
+    reading_id      BIGINT        REFERENCES sensor_readings(reading_id) ON DELETE SET NULL,
+    assigned_to     INTEGER       REFERENCES users(user_id) ON DELETE SET NULL,
+    alert_type      VARCHAR(30)   NOT NULL
+                    CHECK (alert_type IN ('temperature','humidity','ph','light','co2','soil_moisture','device_offline','prediction')),
+    severity        VARCHAR(10)   NOT NULL DEFAULT 'medium'
+                    CHECK (severity IN ('low','medium','high','critical')),
+    message         VARCHAR(500)  NOT NULL,
+    measured_value  DECIMAL(10,2),
+    threshold_value DECIMAL(10,2),
+    status          VARCHAR(20)   NOT NULL DEFAULT 'open'
+                    CHECK (status IN ('open','acknowledged','resolved','dismissed')),
+    resolved_at     TIMESTAMP,
+    created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  alerts                 IS 'Automated alerts when sensor readings exceed thresholds';
+COMMENT ON COLUMN alerts.alert_type      IS 'Sensor parameter or condition that triggered the alert';
+COMMENT ON COLUMN alerts.severity        IS 'critical: immediate action required | high: urgent | medium: monitor | low: informational';
+COMMENT ON COLUMN alerts.reading_id      IS 'NULL for prediction-based alerts not tied to a single reading';
+COMMENT ON COLUMN alerts.measured_value  IS 'Actual sensor value that triggered the alert';
+COMMENT ON COLUMN alerts.threshold_value IS 'Limit that was exceeded';
+
+CREATE INDEX idx_alerts_device   ON alerts(device_id);
+CREATE INDEX idx_alerts_status   ON alerts(status);
+CREATE INDEX idx_alerts_severity ON alerts(severity);
+CREATE INDEX idx_alerts_created  ON alerts(created_at DESC);
+
+-- ============================================================
+-- TABLE: predictions
+-- ============================================================
+CREATE TABLE predictions (
+    prediction_id      SERIAL PRIMARY KEY,
+    device_id          INTEGER       NOT NULL REFERENCES devices(device_id) ON DELETE CASCADE,
+    reading_id         BIGINT        NOT NULL REFERENCES sensor_readings(reading_id) ON DELETE CASCADE,
+    model_name         VARCHAR(100)  NOT NULL,
+    model_version      VARCHAR(20)   NOT NULL,
+    predicted_class    VARCHAR(20)   NOT NULL
+                       CHECK (predicted_class IN ('optimal', 'warning', 'critical')),
+    confidence         DECIMAL(5,4)  NOT NULL CHECK (confidence BETWEEN 0 AND 1),
+    raw_probabilities  JSONB,
+    input_features     JSONB,
+    created_at         TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  predictions                  IS 'AI model inference results for traceability and analysis';
+COMMENT ON COLUMN predictions.predicted_class  IS 'optimal: all conditions good | warning: monitor closely | critical: intervention required';
+COMMENT ON COLUMN predictions.confidence       IS 'Model confidence score between 0.0 and 1.0';
+COMMENT ON COLUMN predictions.raw_probabilities IS 'Full probability distribution across all classes as JSON';
+COMMENT ON COLUMN predictions.input_features   IS 'Sensor values snapshot used as model input';
+
+CREATE INDEX idx_predictions_device  ON predictions(device_id);
+CREATE INDEX idx_predictions_class   ON predictions(predicted_class);
+CREATE INDEX idx_predictions_created ON predictions(created_at DESC);
+
+-- ============================================================
+-- SEED DATA
+-- ============================================================
+
+-- Default admin user (password: Admin1234! → bcrypt hash placeholder)
+INSERT INTO users (username, email, password_hash, full_name, role) VALUES
+('admin',    'admin@greenhouse.io',    '$2b$12$placeholder_hash_admin',    'System Administrator', 'admin'),
+('operator1','op1@greenhouse.io',      '$2b$12$placeholder_hash_op1',      'Carlos Mendez',        'operator'),
+('viewer1',  'viewer1@greenhouse.io',  '$2b$12$placeholder_hash_viewer1',  'Ana Gomez',            'viewer');
+
+-- Greenhouse zones
+INSERT INTO zones (name, description, area_m2) VALUES
+('Zone A - Leafy Greens',  'North section optimized for lettuce and spinach',    48.00),
+('Zone B - Tomatoes',      'Central section with trellis support for tomatoes',  60.00),
+('Zone C - Herbs',         'South section with high-density herb production',    24.00),
+('Zone D - Seedlings',     'Controlled environment nursery for germination',     15.00);
+
+-- IoT devices (simulated)
+INSERT INTO devices (zone_id, registered_by, name, serial_number, device_type, status) VALUES
+(1, 1, 'Sensor Node ZA-01', 'SIM-ZA-001', 'simulated', 'online'),
+(1, 1, 'Sensor Node ZA-02', 'SIM-ZA-002', 'simulated', 'online'),
+(2, 1, 'Sensor Node ZB-01', 'SIM-ZB-001', 'simulated', 'online'),
+(3, 1, 'Sensor Node ZC-01', 'SIM-ZC-001', 'simulated', 'online'),
+(4, 1, 'Sensor Node ZD-01', 'SIM-ZD-001', 'simulated', 'online');
+
+-- Crop types catalog
+INSERT INTO crop_types (name, scientific_name, temp_min, temp_max, temp_optimal, humidity_min, humidity_max, ph_min, ph_max, light_min_lux, light_max_lux, growth_days) VALUES
+('Lettuce',    'Lactuca sativa',           15.0, 24.0, 20.0, 50.0, 80.0, 6.0, 7.0, 10000,  40000,  45),
+('Tomato',     'Solanum lycopersicum',     18.0, 30.0, 24.0, 60.0, 80.0, 5.5, 7.0, 25000,  80000,  90),
+('Basil',      'Ocimum basilicum',         20.0, 35.0, 28.0, 40.0, 70.0, 5.5, 7.5, 20000,  60000,  30),
+('Spinach',    'Spinacia oleracea',        10.0, 22.0, 16.0, 50.0, 75.0, 6.0, 7.5, 8000,   30000,  40),
+('Strawberry', 'Fragaria x ananassa',      15.0, 26.0, 21.0, 65.0, 85.0, 5.5, 6.5, 15000,  50000, 120),
+('Mint',       'Mentha spicata',           15.0, 30.0, 22.0, 55.0, 80.0, 6.0, 7.0, 12000,  40000,  60),
+('Bell Pepper','Capsicum annuum',          20.0, 32.0, 26.0, 60.0, 85.0, 6.0, 7.0, 25000,  70000, 100);
+
+-- Sample active crops
+INSERT INTO crops (zone_id, crop_type_id, created_by, batch_code, quantity, planted_at, expected_harvest_at, status) VALUES
+(1, 1, 2, 'LETT-ZA-2026-01', 200, '2026-03-15', '2026-04-29', 'growing'),
+(2, 2, 2, 'TOMA-ZB-2026-01', 80,  '2026-02-01', '2026-05-02', 'flowering'),
+(3, 3, 2, 'BASI-ZC-2026-01', 150, '2026-04-01', '2026-05-01', 'growing'),
+(4, 4, 2, 'SPIN-ZD-2026-01', 180, '2026-04-10', '2026-05-20', 'germinating');
