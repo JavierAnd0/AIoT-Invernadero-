@@ -1,0 +1,27 @@
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.venv/
+**/venv/
+**/.env
+
+# Node
+**/node_modules/
+**/dist/
+
+# Dataset grande
+greenhouse_aiot/ai/data/
+
+# Git
+.git/
+.gitattributes
+
+# IDE
+.idea/
+.vscode/
+
+# Tests y docs
+**/tests/
+**/*.md
+LICENSE
