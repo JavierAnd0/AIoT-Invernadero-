@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY greenhouse_aiot/backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -30,7 +30,7 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages \
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copiar código del backend
-COPY . .
+COPY greenhouse_aiot/backend/ .
 
 # Copiar modelos IA (el contexto de build es la raíz del repo)
 COPY greenhouse_aiot/ai/models ./ai/models
