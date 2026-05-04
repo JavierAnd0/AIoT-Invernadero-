@@ -32,13 +32,7 @@ ENV/
 !*.env.example
 
 # ── AI / ML artifacts ────────────────────────────────────────────────────────
-greenhouse_aiot/ai/models/*.pkl
-greenhouse_aiot/ai/models/*.joblib
-greenhouse_aiot/ai/models/*.h5
-greenhouse_aiot/ai/models/*.pt
-greenhouse_aiot/ai/models/*.onnx
-greenhouse_aiot/ai/data/*.csv
-greenhouse_aiot/ai/data/*.parquet
+
 
 # ── Flask ─────────────────────────────────────────────────────────────────────
 instance/
