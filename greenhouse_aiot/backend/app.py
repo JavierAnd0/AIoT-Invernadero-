@@ -40,7 +40,11 @@ def create_app(config_name: str | None = None) -> Flask:
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
-    CORS(app, origins=app.config["CORS_ORIGINS"])
+
+    cors_origins = app.config["CORS_ORIGINS"]
+    # Always allow Vercel preview and production deployments
+    cors_origins = list(cors_origins) + [r"https://.*\.vercel\.app"]
+    CORS(app, origins=cors_origins, supports_credentials=True)
 
     # ── OAuth2 (Authlib) ──────────────────────────────────────────────────────
     oauth = OAuth()
