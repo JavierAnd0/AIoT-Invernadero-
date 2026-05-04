@@ -29,7 +29,8 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copiar código del backend
 COPY greenhouse_aiot/backend/ .
 
-# Copiar modelos IA
+# Copiar módulo de inferencia y modelos IA
+COPY greenhouse_aiot/ai/predict.py ./ai/predict.py
 COPY greenhouse_aiot/ai/models/ ./ai/models/
 
 ENV FLASK_ENV=production \
@@ -44,4 +45,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "flask db upgrade && gunicorn app:app --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
+CMD ["sh", "-c", "flask --app 'app:create_app(\"production\")' db upgrade && gunicorn 'app:create_app(\"production\")' --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 --access-logfile - --error-logfile -"]

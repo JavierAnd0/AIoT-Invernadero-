@@ -10,6 +10,7 @@ export default function UserManagement() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ username:'', full_name:'', email:'', password:'', role:'viewer' });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const users = usersData?.users || (Array.isArray(usersData) ? usersData : []);
 
@@ -17,12 +18,15 @@ export default function UserManagement() {
 
   async function handleCreate(e) {
     e.preventDefault();
+    setSaveError('');
     setSaving(true);
     try {
       await createUser(form);
       refetch();
       setShowForm(false);
       setForm({ username:'', full_name:'', email:'', password:'', role:'viewer' });
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not create user');
     } finally {
       setSaving(false);
     }
@@ -30,8 +34,13 @@ export default function UserManagement() {
 
   async function handleDeactivate(id) {
     if (!confirm('Deactivate this user?')) return;
-    await deleteUser(id);
-    refetch();
+    setSaveError('');
+    try {
+      await deleteUser(id);
+      refetch();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not deactivate user');
+    }
   }
 
   if (loading) return <LoadingSpinner />;
@@ -51,6 +60,7 @@ export default function UserManagement() {
       {showForm && (
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14 }}>New User</div>
+          <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Input label="Username" value={form.username} onChange={e => upd('username', e.target.value)} />
             <Input label="Full Name" value={form.full_name} onChange={e => upd('full_name', e.target.value)} />
@@ -71,6 +81,7 @@ export default function UserManagement() {
       )}
 
       <Card>
+        <ErrorBanner message={saveError} />
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#f9fafb' }}>

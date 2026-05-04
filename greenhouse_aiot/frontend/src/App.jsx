@@ -1,7 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth }    from './hooks/useAuth';
-import { usePolling } from './hooks/useApi';
-import { getOpenAlerts } from './api';
 import { Shell } from './layout';
 
 import LoginScreen       from './screens/LoginScreen';
@@ -18,23 +16,44 @@ import CropTypeCatalog   from './screens/CropTypeCatalog';
 import SimulatorScreen   from './screens/SimulatorScreen';
 import PredictionHistory from './screens/PredictionHistory';
 
+const SCREEN_ROLES = {
+  dashboard: ['admin', 'operator', 'viewer'],
+  sensors: ['admin', 'operator', 'viewer'],
+  crops: ['admin', 'operator', 'viewer'],
+  alerts: ['admin', 'operator', 'viewer'],
+  predict: ['admin', 'operator'],
+  predictions: ['admin', 'operator'],
+  devices: ['admin', 'operator'],
+  zones: ['admin', 'operator'],
+  users: ['admin'],
+  croptypes: ['admin'],
+  simulator: ['admin'],
+};
+
+function defaultScreenForRole(role) {
+  return role === 'admin' || role === 'operator' ? 'dashboard' : 'dashboard';
+}
+
 export default function App() {
   const { isAuthenticated, role, doLogout } = useAuth();
   const [screen, setScreen] = useState('dashboard');
-  const [zone,   setZone]   = useState('za');
-
-  const { data: openAlertsArr } = usePolling(getOpenAlerts, 30000);
-  const openAlerts = Array.isArray(openAlertsArr) ? openAlertsArr.length : 0;
+  const [zone,   setZone]   = useState(null);
 
   function handleLogin(r) {
-    setScreen(r === 'admin' ? 'devices' : 'dashboard');
+    setScreen(defaultScreenForRole(r));
   }
+
+  useEffect(() => {
+    if (!SCREEN_ROLES[screen]?.includes(role)) {
+      setScreen(defaultScreenForRole(role));
+    }
+  }, [role, screen]);
 
   // OAuth2 callback — Google redirects here with ?token=
   if (window.location.pathname === '/auth/callback') {
     return <AuthCallback onLogin={(_role) => {
-      // Full reload so useAuth picks up the token from localStorage
-      window.location.replace('/');
+      setScreen(defaultScreenForRole(_role));
+      window.history.replaceState({}, '', '/');
     }} />;
   }
 
@@ -63,7 +82,7 @@ export default function App() {
     <Shell
       screen={screen} setScreen={setScreen}
       zone={zone}     setZone={setZone}
-      role={role}     openAlerts={openAlerts}
+      role={role}
       onLogout={doLogout}
     >
       {renderScreen()}

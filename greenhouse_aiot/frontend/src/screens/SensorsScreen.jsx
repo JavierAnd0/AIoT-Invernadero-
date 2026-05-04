@@ -3,13 +3,20 @@ import { useApi } from '../hooks/useApi';
 import { getDevices, getDeviceReadings } from '../api';
 import { Card, Select, LineChart, LoadingSpinner, ErrorBanner } from '../ui';
 
-export default function SensorsScreen() {
-  const { data: devices, loading: dLoading } = useApi(getDevices, []);
+export default function SensorsScreen({ zone }) {
+  const { data: devices, loading: dLoading } = useApi(() => getDevices(zone ? { zone_id: zone } : {}), [zone]);
   const [deviceId, setDeviceId] = useState(null);
+  const deviceList = Array.isArray(devices) ? devices : [];
 
   useEffect(() => {
-    if (devices?.length && !deviceId) setDeviceId(devices[0].device_id);
-  }, [devices]);
+    if (!deviceList.length) {
+      setDeviceId(null);
+      return;
+    }
+    if (!deviceList.some(d => d.device_id === deviceId)) {
+      setDeviceId(deviceList[0].device_id);
+    }
+  }, [deviceId, deviceList]);
 
   const { data: readings, loading: rLoading, error: rError } = useApi(
     () => getDeviceReadings(deviceId, { limit: 100 }),
@@ -33,14 +40,17 @@ export default function SensorsScreen() {
           label=""
           value={deviceId || ''}
           onChange={e => setDeviceId(Number(e.target.value))}
-          options={(devices || []).map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
+          options={deviceList.map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
         />
       </div>
 
       <ErrorBanner message={rError} />
       {rLoading && <LoadingSpinner text="Loading readings…" />}
+      {!dLoading && deviceList.length === 0 && (
+        <ErrorBanner message="No devices available for the selected zone." />
+      )}
 
-      {!rLoading && (
+      {!rLoading && deviceList.length > 0 && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <Card>

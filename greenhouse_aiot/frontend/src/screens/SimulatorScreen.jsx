@@ -17,17 +17,22 @@ export default function SimulatorScreen() {
   const { data: status, loading, error, refetch: refetchStatus } = usePolling(getSimulatorStatus, 5000);
   const [interval, setInterval_] = useState(30);
   const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   const running = status?.running || false;
 
   async function handleStart() {
+    setActionError('');
     setActing(true);
     try { await startSimulator(interval); refetchStatus(); }
+    catch (err) { setActionError(err.response?.data?.error || 'Could not start simulator'); }
     finally { setActing(false); }
   }
   async function handleStop() {
+    setActionError('');
     setActing(true);
     try { await stopSimulator(); refetchStatus(); }
+    catch (err) { setActionError(err.response?.data?.error || 'Could not stop simulator'); }
     finally { setActing(false); }
   }
 
@@ -41,6 +46,7 @@ export default function SimulatorScreen() {
       </div>
 
       <ErrorBanner message={error} />
+      <ErrorBanner message={actionError} />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <Card>

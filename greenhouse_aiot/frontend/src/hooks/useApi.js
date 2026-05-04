@@ -1,15 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useApi(fetchFn, deps = [], options = {}) {
   const { autoFetch = true, initialData = null } = options;
   const [data,    setData]    = useState(initialData);
   const [loading, setLoading] = useState(autoFetch);
   const [error,   setError]   = useState(null);
+  const fetchRef = useRef(fetchFn);
+
+  useEffect(() => {
+    fetchRef.current = fetchFn;
+  }, [fetchFn]);
 
   const execute = useCallback(async (...args) => {
     setLoading(true); setError(null);
     try {
-      const result = await fetchFn(...args);
+      const result = await fetchRef.current(...args);
       setData(result);
       return result;
     } catch (err) {
@@ -20,7 +25,7 @@ export function useApi(fetchFn, deps = [], options = {}) {
     }
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { if (autoFetch) execute(); }, [execute]);
+  useEffect(() => { if (autoFetch) execute(); }, [autoFetch, execute]);
 
   return { data, loading, error, refetch: execute };
 }

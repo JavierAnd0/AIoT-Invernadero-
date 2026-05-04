@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # ── D4 AI module import ───────────────────────────────────────────────────────
 
 _AI_MODULE_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "ai")
+    os.path.join(os.path.dirname(__file__), "..", "ai")
 )
 
 # Loaded lazily on first call so tests can patch _predict before import.

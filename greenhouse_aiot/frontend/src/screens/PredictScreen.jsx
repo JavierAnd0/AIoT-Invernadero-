@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks/useAuth';
 import { getDevices, getDeviceReadings, predict } from '../api';
 import { Card, Select, Btn, Input, SemiGauge, ErrorBanner, LoadingSpinner } from '../ui';
 
@@ -15,6 +16,8 @@ const FIELDS = [
 ];
 
 export default function PredictScreen() {
+  const { role } = useAuth();
+  const canPredict = role === 'admin' || role === 'operator';
   const { data: devices } = useApi(getDevices, []);
   const [deviceId,    setDeviceId]    = useState(null);
   const [form,        setForm]        = useState({ temp:'', hum:'', ph:'', light:'', co2:'' });
@@ -45,11 +48,11 @@ export default function PredictScreen() {
     try {
       const data = await predict({
         device_id: deviceId,
-        temp:  parseFloat(form.temp),
-        hum:   parseFloat(form.hum),
-        ph:    parseFloat(form.ph),
-        light: parseFloat(form.light),
-        co2:   parseFloat(form.co2),
+        temperature: parseFloat(form.temp),
+        humidity: parseFloat(form.hum),
+        ph: parseFloat(form.ph),
+        light_lux: parseFloat(form.light),
+        co2_ppm: parseFloat(form.co2),
       });
       setResult({
         cls:   data.predicted_class,
@@ -91,6 +94,7 @@ export default function PredictScreen() {
               value={deviceId || ''}
               onChange={e => setDeviceId(Number(e.target.value))}
               options={(devices || []).map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
+              disabled={!canPredict}
             />
 
             {FIELDS.map(f => (
@@ -101,16 +105,20 @@ export default function PredictScreen() {
                 value={form[f.key]}
                 onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                 placeholder={`${f.min}–${f.max}`}
+                disabled={!canPredict}
               />
             ))}
 
             <ErrorBanner message={predError} />
+            {!canPredict && (
+              <ErrorBanner message="Only admin or operator can run AI predictions." />
+            )}
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <Btn variant="ghost" onClick={autofill} style={{ flex: 1 }}>
+              <Btn variant="ghost" onClick={autofill} disabled={!canPredict} style={{ flex: 1 }}>
                 ↺ Autofill from device
               </Btn>
-              <Btn type="submit" disabled={predLoading} style={{ flex: 1 }}>
+              <Btn type="submit" disabled={predLoading || !canPredict} style={{ flex: 1 }}>
                 {predLoading ? 'Running…' : '▶ Run Prediction'}
               </Btn>
             </div>

@@ -65,7 +65,7 @@ export function Card({ children, style = {} }) {
   );
 }
 
-export function Btn({ children, onClick, variant = 'primary', disabled = false, style = {} }) {
+export function Btn({ children, onClick, variant = 'primary', disabled = false, type = 'button', style = {} }) {
   const base = {
     padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
     cursor: disabled ? 'not-allowed' : 'pointer', border: 'none',
@@ -79,13 +79,13 @@ export function Btn({ children, onClick, variant = 'primary', disabled = false, 
     ghost:     { background: 'transparent', color: '#6b7280', border: '1px solid #e5e7eb' },
   };
   return (
-    <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
+    <button type={type} onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
       {children}
     </button>
   );
 }
 
-export function Input({ label, value, onChange, type = 'text', placeholder = '', style = {} }) {
+export function Input({ label, value, onChange, type = 'text', placeholder = '', disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
       {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
@@ -94,27 +94,33 @@ export function Input({ label, value, onChange, type = 'text', placeholder = '',
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        disabled={disabled}
         style={{
           padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: '#fafafa', color: '#111827',
+          background: disabled ? '#f3f4f6' : '#fafafa',
+          color: '#111827',
+          cursor: disabled ? 'not-allowed' : 'text',
         }}
       />
     </div>
   );
 }
 
-export function Select({ label, value, onChange, options = [], style = {} }) {
+export function Select({ label, value, onChange, options = [], disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
       {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
       <select
         value={value}
         onChange={onChange}
+        disabled={disabled}
         style={{
           padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: '#fafafa', color: '#111827', cursor: 'pointer',
+          background: disabled ? '#f3f4f6' : '#fafafa',
+          color: '#111827',
+          cursor: disabled ? 'not-allowed' : 'pointer',
         }}
       >
         {options.map(o => (

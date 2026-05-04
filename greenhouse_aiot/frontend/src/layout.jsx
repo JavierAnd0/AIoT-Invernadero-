@@ -1,30 +1,28 @@
+import { useEffect } from 'react';
+import { getOpenAlerts, getZones } from './api';
+import { useApi, usePolling } from './hooks/useApi';
+
 const NAV = [
   { key: 'dashboard',   label: 'Dashboard',    icon: '◈', roles: ['admin','operator','viewer'] },
   { key: 'sensors',     label: 'Sensors',       icon: '⊡', roles: ['admin','operator','viewer'] },
   { key: 'crops',       label: 'Crops',         icon: '✿', roles: ['admin','operator','viewer'] },
   { key: 'alerts',      label: 'Alerts',        icon: '⚠', roles: ['admin','operator','viewer'] },
-  { key: 'predict',     label: 'AI Predict',    icon: '◉', roles: ['admin','operator','viewer'] },
+  { key: 'predict',     label: 'AI Predict',    icon: '◉', roles: ['admin','operator'] },
   { key: 'predictions', label: 'Pred. History', icon: '⊙', roles: ['admin','operator'] },
-  { key: 'devices',     label: 'Devices',       icon: '⊞', roles: ['admin'] },
-  { key: 'zones',       label: 'Zones',         icon: '⊟', roles: ['admin'] },
+  { key: 'devices',     label: 'Devices',       icon: '⊞', roles: ['admin','operator'] },
+  { key: 'zones',       label: 'Zones',         icon: '⊟', roles: ['admin','operator'] },
   { key: 'users',       label: 'Users',         icon: '⊕', roles: ['admin'] },
   { key: 'croptypes',   label: 'Crop Types',    icon: '⊗', roles: ['admin'] },
   { key: 'simulator',   label: 'Simulator',     icon: '▷', roles: ['admin'] },
 ];
 
-const ZONES_NAV = [
-  { key: 'za', label: 'Zone A' },
-  { key: 'zb', label: 'Zone B' },
-  { key: 'zc', label: 'Zone C' },
-];
-
-export function Shell({ children, screen, setScreen, zone, setZone, role, openAlerts, onLogout }) {
+export function Shell({ children, screen, setScreen, zone, setZone, role, onLogout }) {
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <Sidebar
         screen={screen} setScreen={setScreen}
         zone={zone} setZone={setZone}
-        role={role} openAlerts={openAlerts}
+        role={role}
         onLogout={onLogout}
       />
       <main style={{ flex: 1, overflow: 'auto', background: '#f0f4f1', padding: 28 }}>
@@ -34,9 +32,20 @@ export function Shell({ children, screen, setScreen, zone, setZone, role, openAl
   );
 }
 
-function Sidebar({ screen, setScreen, zone, setZone, role, openAlerts, onLogout }) {
+function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
+  const { data: openAlertsArr } = usePolling(getOpenAlerts, 30000);
+  const { data: zones } = useApi(getZones, []);
+  const openAlerts = Array.isArray(openAlertsArr) ? openAlertsArr.length : 0;
   const showZone = ['dashboard', 'sensors', 'crops'].includes(screen);
   const visible = NAV.filter(n => n.roles.includes(role));
+  const zoneOptions = Array.isArray(zones) ? zones : [];
+
+  useEffect(() => {
+    if (!zoneOptions.length) return;
+    if (!zoneOptions.some(z => z.zone_id === zone)) {
+      setZone(zoneOptions[0].zone_id);
+    }
+  }, [setZone, zone, zoneOptions]);
 
   return (
     <nav style={{
@@ -84,20 +93,25 @@ function Sidebar({ screen, setScreen, zone, setZone, role, openAlerts, onLogout 
           <div style={{ color: '#4b7a56', fontSize: 10, letterSpacing: 0.8, marginBottom: 6, paddingLeft: 6 }}>
             ZONE
           </div>
-          {ZONES_NAV.map(z => (
-            <button key={z.key}
-              onClick={() => setZone(z.key)}
+          {zoneOptions.map(z => (
+            <button key={z.zone_id}
+              onClick={() => setZone(z.zone_id)}
               style={{
                 display: 'block', width: '100%', textAlign: 'left',
                 padding: '6px 10px', borderRadius: 6, border: 'none',
-                background: zone === z.key ? '#22c55e22' : 'transparent',
-                color: zone === z.key ? '#22c55e' : '#6b9b70',
+                background: zone === z.zone_id ? '#22c55e22' : 'transparent',
+                color: zone === z.zone_id ? '#22c55e' : '#6b9b70',
                 fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
-              {z.label}
+              {z.description || z.name}
             </button>
           ))}
+          {zoneOptions.length === 0 && (
+            <div style={{ color: '#4b7a56', fontSize: 11, padding: '6px 10px' }}>
+              No active zones
+            </div>
+          )}
         </div>
       )}
 

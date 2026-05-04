@@ -34,35 +34,35 @@ export const loginWithGoogle = () => {
 };
 
 // ZONES
-export const getZones   = ()      => api.get('/zones').then(r => r.data);
-export const createZone = (data)  => api.post('/zones', data).then(r => r.data);
+export const getZones   = ()      => api.get('/zones/').then(r => r.data);
+export const createZone = (data)  => api.post('/zones/', data).then(r => r.data);
 export const updateZone = (id, d) => api.put(`/zones/${id}`, d).then(r => r.data);
 
 // DEVICES
-export const getDevices         = (params)    => api.get('/devices', { params }).then(r => r.data);
-export const createDevice       = (data)       => api.post('/devices', data).then(r => r.data);
+export const getDevices         = (params)    => api.get('/devices/', { params }).then(r => r.data);
+export const createDevice       = (data)       => api.post('/devices/', data).then(r => r.data);
 export const updateDeviceStatus = (id, status) =>
   api.put(`/devices/${id}/status`, { status }).then(r => r.data);
 
 // SENSOR READINGS
-export const getReadings       = (params) => api.get('/readings', { params }).then(r => r.data);
+export const getReadings       = (params) => api.get('/readings/', { params }).then(r => r.data);
 export const getLatestReadings = ()       => api.get('/readings/latest').then(r => r.data);
 export const getDeviceReadings = (id, p)  =>
   api.get(`/readings/device/${id}`, { params: p }).then(r => r.data);
-export const postReading = (data) => api.post('/readings', data).then(r => r.data);
+export const postReading = (data) => api.post('/readings/', data).then(r => r.data);
 
 // CROP TYPES
-export const getCropTypes   = ()     => api.get('/crop-types').then(r => r.data);
-export const createCropType = (data) => api.post('/crop-types', data).then(r => r.data);
+export const getCropTypes   = ()     => api.get('/crop-types/').then(r => r.data);
+export const createCropType = (data) => api.post('/crop-types/', data).then(r => r.data);
 
 // CROPS
-export const getCrops       = (params) => api.get('/crops', { params }).then(r => r.data);
-export const createCrop     = (data)   => api.post('/crops', data).then(r => r.data);
+export const getCrops       = (params) => api.get('/crops/', { params }).then(r => r.data);
+export const createCrop     = (data)   => api.post('/crops/', data).then(r => r.data);
 export const updateCrop     = (id, d)  => api.put(`/crops/${id}`, d).then(r => r.data);
 export const getCropsByZone = (zoneId) => api.get(`/crops/zone/${zoneId}`).then(r => r.data);
 
 // ALERTS
-export const getAlerts        = (params) => api.get('/alerts', { params }).then(r => r.data);
+export const getAlerts        = (params) => api.get('/alerts/', { params }).then(r => r.data);
 export const getOpenAlerts    = ()       => api.get('/alerts/open').then(r => r.data);
 export const acknowledgeAlert = (id)     => api.put(`/alerts/${id}/acknowledge`).then(r => r.data);
 export const resolveAlert     = (id)     => api.put(`/alerts/${id}/resolve`).then(r => r.data);
@@ -73,8 +73,8 @@ export const getPredictions       = (params) => api.get('/predictions', { params
 export const getDevicePredictions = (id)     => api.get(`/predictions/device/${id}`).then(r => r.data);
 
 // USERS
-export const getUsers   = (params) => api.get('/users', { params }).then(r => r.data);
-export const createUser = (data)   => api.post('/users', data).then(r => r.data);
+export const getUsers   = (params) => api.get('/users/', { params }).then(r => r.data);
+export const createUser = (data)   => api.post('/users/', data).then(r => r.data);
 export const updateUser = (id, d)  => api.put(`/users/${id}`, d).then(r => r.data);
 export const deleteUser = (id)     => api.delete(`/users/${id}`).then(r => r.data);
 

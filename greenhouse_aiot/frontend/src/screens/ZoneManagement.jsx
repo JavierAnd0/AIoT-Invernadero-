@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks/useAuth';
 import { getZones, createZone, updateZone } from '../api';
 import { Card, Badge, Btn, Input, LoadingSpinner, ErrorBanner } from '../ui';
 
 export default function ZoneManagement() {
+  const { role } = useAuth();
+  const canCreate = role === 'admin' || role === 'operator';
+  const canEdit = role === 'admin';
   const { data: zones, loading, error, refetch } = useApi(getZones);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name:'', description:'', area_m2:'' });
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [saveError, setSaveError] = useState('');
 
   const zoneList = Array.isArray(zones) ? zones : [];
 
@@ -16,6 +21,7 @@ export default function ZoneManagement() {
 
   async function handleCreate(e) {
     e.preventDefault();
+    setSaveError('');
     setSaving(true);
     try {
       if (editing) {
@@ -27,6 +33,8 @@ export default function ZoneManagement() {
       refetch();
       setShowForm(false);
       setForm({ name:'', description:'', area_m2:'' });
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not save zone');
     } finally {
       setSaving(false);
     }
@@ -47,18 +55,20 @@ export default function ZoneManagement() {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Zone Management</h1>
           <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{zoneList.length} zones</div>
         </div>
-        <Btn onClick={() => { setShowForm(f => !f); setEditing(null); setForm({ name:'', description:'', area_m2:'' }); }}>
+        {canCreate && <Btn onClick={() => { setShowForm(f => !f); setEditing(null); setForm({ name:'', description:'', area_m2:'' }); }}>
           + Add Zone
-        </Btn>
+        </Btn>}
       </div>
 
       <ErrorBanner message={error} />
+      {!canCreate && <ErrorBanner message="Only admin or operator can create zones. Only admin can edit existing zones." />}
 
       {showForm && (
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14 }}>
             {editing ? 'Edit Zone' : 'New Zone'}
           </div>
+          <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Input label="Name" value={form.name} onChange={e => upd('name', e.target.value)} />
             <Input label="Area (m²)" type="number" value={form.area_m2} onChange={e => upd('area_m2', e.target.value)} />
@@ -84,9 +94,11 @@ export default function ZoneManagement() {
               {z.area_m2 != null && <span>{z.area_m2} m²</span>}
               {z.name && <span style={{ marginLeft: 8 }}>· {z.name}</span>}
             </div>
-            <Btn variant="ghost" onClick={() => startEdit(z)} style={{ width: '100%', fontSize: 11 }}>
-              Edit
-            </Btn>
+            {canEdit && (
+              <Btn variant="ghost" onClick={() => startEdit(z)} style={{ width: '100%', fontSize: 11 }}>
+                Edit
+              </Btn>
+            )}
           </Card>
         ))}
       </div>

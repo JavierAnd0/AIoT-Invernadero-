@@ -27,12 +27,17 @@ export default function DashboardScreen({ zone }) {
   const { data: latestReadings } = usePolling(getLatestReadings, 30000);
   const { data: openAlerts }     = usePolling(getOpenAlerts, 30000);
   const { data: devices }        = useApi(getDevices, []);
-  const { data: crops }          = useApi(() => getCrops({ zone_id: currentZoneId }), [zone]);
 
-  const currentZone = zones?.find(z => z.name === zone || z.zone_id === zone);
+  const currentZone = zones?.find(z => z.zone_id === zone) || zones?.[0];
   const currentZoneId = currentZone?.zone_id;
   const deviceForZone = devices?.find(d => d.zone_id === currentZoneId);
   const deviceIdForZone = deviceForZone?.device_id;
+
+  const { data: crops } = useApi(
+    () => getCrops({ zone_id: currentZoneId }),
+    [currentZoneId],
+    { autoFetch: !!currentZoneId, initialData: [] }
+  );
 
   const { data: srData } = useApi(
     () => getDeviceReadings(deviceIdForZone, { limit: 24 }),
@@ -52,6 +57,9 @@ export default function DashboardScreen({ zone }) {
 
   const alertList = Array.isArray(openAlerts) ? openAlerts : [];
   const cropList  = Array.isArray(crops) ? crops : [];
+  const zoneLabel = currentZone?.description
+    || currentZone?.name
+    || (currentZoneId != null ? `Zone ${currentZoneId}` : 'Selected zone');
 
   const chartLabels = sr.map(r => new Date(r.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const chartDatasets = [
@@ -65,7 +73,7 @@ export default function DashboardScreen({ zone }) {
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Dashboard</h1>
           <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
-            {currentZone?.description || zone?.toUpperCase()} · Live data
+            {zoneLabel} · Live data
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>

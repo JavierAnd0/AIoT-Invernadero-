@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks/useAuth';
 import { getCrops, createCrop, getCropTypes, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, STATUS_COLOR } from '../ui';
 
-export default function CropsScreen() {
-  const { data: cropsData, loading, error, refetch } = useApi(getCrops);
+export default function CropsScreen({ zone }) {
+  const { role } = useAuth();
+  const canManage = role === 'admin' || role === 'operator';
+  const { data: cropsData, loading, error, refetch } = useApi(
+    () => getCrops(zone ? { zone_id: zone } : {}),
+    [zone]
+  );
   const { data: cropTypes } = useApi(getCropTypes);
   const { data: zones }     = useApi(getZones);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ batch_code:'', crop_type_id:'', zone_id:'', quantity:'' });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const crops = Array.isArray(cropsData) ? cropsData : [];
 
@@ -17,6 +24,7 @@ export default function CropsScreen() {
 
   async function handleCreate(e) {
     e.preventDefault();
+    setSaveError('');
     setSaving(true);
     try {
       await createCrop({
@@ -24,11 +32,13 @@ export default function CropsScreen() {
         crop_type_id: Number(form.crop_type_id),
         zone_id:      Number(form.zone_id),
         quantity:     Number(form.quantity),
-        planted_at:   new Date().toISOString(),
+        planted_at:   new Date().toISOString().slice(0, 10),
       });
       refetch();
       setShowForm(false);
       setForm({ batch_code:'', crop_type_id:'', zone_id:'', quantity:'' });
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not create crop batch');
     } finally {
       setSaving(false);
     }
@@ -43,14 +53,20 @@ export default function CropsScreen() {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Crops</h1>
           <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{crops.length} batches</div>
         </div>
-        <Btn onClick={() => setShowForm(f => !f)}>+ New Batch</Btn>
+        {canManage && (
+          <Btn onClick={() => setShowForm(f => !f)}>+ New Batch</Btn>
+        )}
       </div>
 
       <ErrorBanner message={error} />
+      {!canManage && (
+        <ErrorBanner message="Your account can view crops, but only admin or operator can create new batches." />
+      )}
 
       {showForm && (
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 14 }}>New Crop Batch</div>
+          <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Input label="Batch Code" value={form.batch_code} onChange={e => upd('batch_code', e.target.value)} />
             <Input label="Quantity" type="number" value={form.quantity} onChange={e => upd('quantity', e.target.value)} />

@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks/useAuth';
 import { getDevices, createDevice, updateDeviceStatus, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
 
 const STATUS_OPTS = [
-  { value: 'active',   label: 'Active'   },
-  { value: 'inactive', label: 'Inactive' },
-  { value: 'error',    label: 'Error'    },
+  { value: 'online',      label: 'Online'      },
+  { value: 'offline',     label: 'Offline'     },
+  { value: 'error',       label: 'Error'       },
+  { value: 'maintenance', label: 'Maintenance' },
 ];
-const STATUS_COLOR = { active: '#22c55e', inactive: '#6b7280', error: '#ef4444' };
+const DEVICE_TYPE_OPTS = [
+  { value: 'sensor_node', label: 'Sensor Node' },
+  { value: 'actuator', label: 'Actuator' },
+  { value: 'gateway', label: 'Gateway' },
+  { value: 'simulated', label: 'Simulated' },
+];
+const STATUS_COLOR = { online: '#22c55e', offline: '#6b7280', error: '#ef4444', maintenance: '#f59e0b' };
 
 function timeAgo(isoStr) {
   if (!isoStr) return '—';
@@ -21,29 +29,42 @@ function timeAgo(isoStr) {
 }
 
 export default function DeviceManagement() {
+  const { role } = useAuth();
+  const canCreate = role === 'admin';
+  const canUpdateStatus = role === 'admin' || role === 'operator';
   const { data: devices, loading, error, refetch: refetchDevices } = useApi(getDevices);
   const { data: zones }  = useApi(getZones);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name:'', serial_number:'', device_type:'sensor', zone_id:'', firmware_version:'' });
+  const [form, setForm] = useState({ name:'', serial_number:'', device_type:'sensor_node', zone_id:'', firmware_version:'' });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const deviceList = Array.isArray(devices) ? devices : [];
 
   function upd(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
   async function handleStatusChange(id, status) {
-    await updateDeviceStatus(id, status);
-    refetchDevices();
+    if (!canUpdateStatus) return;
+    setSaveError('');
+    try {
+      await updateDeviceStatus(id, status);
+      refetchDevices();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not update device status');
+    }
   }
 
   async function handleCreate(e) {
     e.preventDefault();
+    setSaveError('');
     setSaving(true);
     try {
       await createDevice({ ...form, zone_id: Number(form.zone_id) });
       refetchDevices();
       setShowForm(false);
-      setForm({ name:'', serial_number:'', device_type:'sensor', zone_id:'', firmware_version:'' });
+      setForm({ name:'', serial_number:'', device_type:'sensor_node', zone_id:'', firmware_version:'' });
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not create device');
     } finally {
       setSaving(false);
     }
@@ -58,14 +79,19 @@ export default function DeviceManagement() {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Device Management</h1>
           <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{deviceList.length} devices</div>
         </div>
-        <Btn onClick={() => setShowForm(f => !f)}>+ Add Device</Btn>
+        {canCreate && <Btn onClick={() => setShowForm(f => !f)}>+ Add Device</Btn>}
       </div>
 
       <ErrorBanner message={error} />
+      <ErrorBanner message={saveError} />
+      {!canCreate && (
+        <ErrorBanner message="Only admin users can register new devices. Operators can update device status." />
+      )}
 
       {showForm && (
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14 }}>New Device</div>
+          <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Input label="Name" value={form.name} onChange={e => upd('name', e.target.value)} />
             <Input label="Serial Number" value={form.serial_number} onChange={e => upd('serial_number', e.target.value)} />
@@ -73,7 +99,7 @@ export default function DeviceManagement() {
               label="Type"
               value={form.device_type}
               onChange={e => upd('device_type', e.target.value)}
-              options={['sensor','actuator','gateway'].map(v => ({ value: v, label: v }))}
+              options={DEVICE_TYPE_OPTS}
             />
             <Select
               label="Zone"
@@ -116,6 +142,7 @@ export default function DeviceManagement() {
                     value={d.status}
                     onChange={e => handleStatusChange(d.device_id, e.target.value)}
                     options={STATUS_OPTS}
+                    disabled={!canUpdateStatus}
                     style={{ minWidth: 110 }}
                   />
                 </td>
