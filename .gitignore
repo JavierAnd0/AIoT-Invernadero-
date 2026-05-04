@@ -32,7 +32,7 @@ ENV/
 !*.env.example
 
 # ── AI / ML artifacts ────────────────────────────────────────────────────────
-
+greenhouse_aiot/ai/data/*.png
 
 # ── Flask ─────────────────────────────────────────────────────────────────────
 instance/
@@ -71,6 +71,11 @@ ehthumbs.db
 # ── Claude Code (local settings, no son del proyecto) ────────────────────────
 .claude/settings.local.json
 .claude
+.agents/
+skills-lock.json
+
+# ── Local runtime / toolchain files ──────────────────────────────────────────
+.python-version
 
 # ── Coverage / testing ───────────────────────────────────────────────────────
 .coverage
