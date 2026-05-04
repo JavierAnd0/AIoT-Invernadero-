@@ -35,7 +35,7 @@ COPY greenhouse_aiot/ai/models/ ./ai/models/
 
 ENV FLASK_ENV=production \
     PYTHONUNBUFFERED=1 \
-    PORT=5000 \
+    PORT=5001 \
     AI_MODELS_PATH=ai/models \
     DEFAULT_MODEL=random_forest \
     SIMULATOR_INTERVAL=15
@@ -43,6 +43,6 @@ ENV FLASK_ENV=production \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
-EXPOSE 5000
+EXPOSE 5001
 
 CMD ["sh", "-c", "flask --app 'app:create_app(\"production\")' db upgrade && gunicorn 'app:create_app(\"production\")' --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
