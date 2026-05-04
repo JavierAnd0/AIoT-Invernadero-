@@ -31,7 +31,7 @@ class Config:
     GOOGLE_CLIENT_ID:     str = os.environ.get("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", "")
     FRONTEND_URL:         str = os.environ.get("FRONTEND_URL", "http://localhost:5173")
-    PREFERRED_URL_SCHEME: str = os.environ.get("PREFERRED_URL_SCHEME", "https")
+    PREFERRED_URL_SCHEME: str = os.environ.get("PREFERRED_URL_SCHEME", "http")
 
 
 class DevelopmentConfig(Config):
@@ -50,6 +50,7 @@ class ProductionConfig(Config):
 
     DEBUG: bool = False
     SQLALCHEMY_DATABASE_URI: str = os.environ.get("DATABASE_URL", "")
+    PREFERRED_URL_SCHEME: str = os.environ.get("PREFERRED_URL_SCHEME", "https")
 
 
 class TestingConfig(Config):

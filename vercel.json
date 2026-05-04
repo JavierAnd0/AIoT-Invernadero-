@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd greenhouse_aiot/frontend && npm install && npm run build",
+  "outputDirectory": "greenhouse_aiot/frontend/dist",
+  "installCommand": "echo 'skip root install'"
+}
