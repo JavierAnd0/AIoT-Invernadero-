@@ -15,6 +15,7 @@ from flask_cors import CORS
 
 load_dotenv()
 
+from authlib.integrations.flask_client import OAuth
 from config import config_map
 from models import db, jwt, migrate
 
@@ -40,6 +41,18 @@ def create_app(config_name: str | None = None) -> Flask:
     jwt.init_app(app)
     migrate.init_app(app, db)
     CORS(app, origins=app.config["CORS_ORIGINS"])
+
+    # ── OAuth2 (Authlib) ──────────────────────────────────────────────────────
+    oauth = OAuth()
+    oauth.init_app(app)
+    oauth.register(
+        name="google",
+        client_id=app.config["GOOGLE_CLIENT_ID"],
+        client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
+    app.extensions["oauth"] = oauth
 
     # ── Swagger / Flasgger ────────────────────────────────────────────────────
     app.config["SWAGGER"] = {

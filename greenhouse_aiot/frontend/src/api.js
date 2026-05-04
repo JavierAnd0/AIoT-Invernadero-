@@ -26,6 +26,12 @@ api.interceptors.response.use(
 export const login = (username, password) =>
   api.post('/auth/login', { username, password }).then(r => r.data);
 export const getMe = () => api.get('/auth/me').then(r => r.data);
+export const register = (data) =>
+  api.post('/auth/register', data).then(r => r.data);
+export const loginWithGoogle = () => {
+  const apiBase = import.meta.env.VITE_API_URL || '/api/v1';
+  window.location.href = `${apiBase}/auth/google`;
+};
 
 // ZONES
 export const getZones   = ()      => api.get('/zones').then(r => r.data);

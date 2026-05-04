@@ -21,18 +21,25 @@ CREATE TABLE users (
     user_id       SERIAL PRIMARY KEY,
     username      VARCHAR(80)  NOT NULL UNIQUE,
     email         VARCHAR(120) NOT NULL UNIQUE,
-    password_hash VARCHAR(256) NOT NULL,
+    password_hash VARCHAR(256),
     full_name     VARCHAR(150) NOT NULL,
     role          VARCHAR(20)  NOT NULL DEFAULT 'viewer'
                   CHECK (role IN ('admin', 'operator', 'viewer')),
     is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    auth_provider VARCHAR(20)  NOT NULL DEFAULT 'local'
+                  CHECK (auth_provider IN ('local', 'google')),
+    google_id     VARCHAR(100) UNIQUE,
+    avatar_url    VARCHAR(500)
 );
 
-COMMENT ON TABLE  users              IS 'System users with role-based access control';
-COMMENT ON COLUMN users.role         IS 'admin: full access | operator: manage devices/crops | viewer: read-only';
-COMMENT ON COLUMN users.password_hash IS 'bcrypt hash of the user password';
+COMMENT ON TABLE  users               IS 'System users with role-based access control';
+COMMENT ON COLUMN users.role          IS 'admin: full access | operator: manage devices/crops | viewer: read-only';
+COMMENT ON COLUMN users.password_hash IS 'bcrypt hash — NULL for OAuth-only accounts';
+COMMENT ON COLUMN users.auth_provider IS 'Values: local | google';
+COMMENT ON COLUMN users.google_id     IS 'Google sub claim — unique per Google account';
+COMMENT ON COLUMN users.avatar_url    IS 'Profile picture URL from Google';
 
 -- ============================================================
 -- TABLE: zones

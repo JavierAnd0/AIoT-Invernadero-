@@ -5,6 +5,7 @@ import { getOpenAlerts } from './api';
 import { Shell } from './layout';
 
 import LoginScreen       from './screens/LoginScreen';
+import AuthCallback      from './screens/AuthCallback';
 import DashboardScreen   from './screens/DashboardScreen';
 import SensorsScreen     from './screens/SensorsScreen';
 import AlertsScreen      from './screens/AlertsScreen';
@@ -27,6 +28,14 @@ export default function App() {
 
   function handleLogin(r) {
     setScreen(r === 'admin' ? 'devices' : 'dashboard');
+  }
+
+  // OAuth2 callback — Google redirects here with ?token=
+  if (window.location.pathname === '/auth/callback') {
+    return <AuthCallback onLogin={(_role) => {
+      // Full reload so useAuth picks up the token from localStorage
+      window.location.replace('/');
+    }} />;
   }
 
   if (!isAuthenticated) {

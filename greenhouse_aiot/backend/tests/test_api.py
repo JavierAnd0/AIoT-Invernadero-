@@ -195,6 +195,50 @@ def test_viewer_cannot_post_reading(client, viewer_token):
     assert resp.status_code == 403
 
 
+# ── Register ──────────────────────────────────────────────────────────────────
+
+def test_register_new_user(client):
+    """POST /auth/register creates new viewer account."""
+    res = client.post("/api/v1/auth/register", json={
+        "username":  "newoperator",
+        "email":     "new@greenhouse.io",
+        "password":  "SecurePass123",
+        "full_name": "New User",
+    })
+    data = res.get_json()
+    assert res.status_code == 201, data
+    assert "token" in data
+    assert data["user"]["role"] == "viewer"
+
+
+def test_register_duplicate_email(client):
+    """POST /auth/register with existing email returns 409."""
+    res = client.post("/api/v1/auth/register", json={
+        "username":  "dup",
+        "email":     "admin@greenhouse.io",
+        "password":  "SecurePass123",
+        "full_name": "Dup User",
+    })
+    assert res.status_code == 409
+
+
+def test_register_short_password(client):
+    """POST /auth/register with password < 8 chars returns 400."""
+    res = client.post("/api/v1/auth/register", json={
+        "username":  "testuser",
+        "email":     "test@test.com",
+        "password":  "123",
+        "full_name": "Test",
+    })
+    assert res.status_code == 400
+
+
+def test_google_login_redirects(client):
+    """GET /auth/google returns redirect (302/307) — no Google creds needed."""
+    res = client.get("/api/v1/auth/google")
+    assert res.status_code in (302, 307)
+
+
 # ── Simulator ─────────────────────────────────────────────────────────────────
 
 def test_simulator_start_stop(client, admin_token):

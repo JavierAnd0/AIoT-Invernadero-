@@ -15,14 +15,18 @@ class User(db.Model):
     user_id       = db.Column(db.Integer,     primary_key=True)
     username      = db.Column(db.String(80),  nullable=False, unique=True)
     email         = db.Column(db.String(120), nullable=False, unique=True)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=True)
     full_name     = db.Column(db.String(150), nullable=False)
     role          = db.Column(db.String(20),  nullable=False, default="viewer")
     is_active     = db.Column(db.Boolean,     nullable=False, default=True)
     created_at    = db.Column(db.DateTime,    default=datetime.utcnow)
     updated_at    = db.Column(db.DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
+    auth_provider = db.Column(db.String(20),  nullable=False, default="local")
+    google_id     = db.Column(db.String(100), unique=True,    nullable=True)
+    avatar_url    = db.Column(db.String(500),                 nullable=True)
 
     VALID_ROLES: frozenset[str] = frozenset({"admin", "operator", "viewer"})
+    VALID_PROVIDERS: frozenset[str] = frozenset({"local", "google"})
 
     # ── Relationships ─────────────────────────────────────────────────────────
     registered_devices = db.relationship(
@@ -48,22 +52,26 @@ class User(db.Model):
 
     def check_password(self, password: str) -> bool:
         """Return True if *password* matches the stored bcrypt hash."""
+        if not self.password_hash:
+            return False
         return bcrypt.checkpw(
             password.encode("utf-8"),
             self.password_hash.encode("utf-8"),
         )
 
     def to_dict(self) -> dict:
-        """Serialise to a JSON-safe dict. Never includes password_hash."""
+        """Serialise to a JSON-safe dict. Never includes password_hash or google_id."""
         return {
-            "user_id":    self.user_id,
-            "username":   self.username,
-            "email":      self.email,
-            "full_name":  self.full_name,
-            "role":       self.role,
-            "is_active":  self.is_active,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "user_id":       self.user_id,
+            "username":      self.username,
+            "email":         self.email,
+            "full_name":     self.full_name,
+            "role":          self.role,
+            "is_active":     self.is_active,
+            "auth_provider": self.auth_provider,
+            "avatar_url":    self.avatar_url,
+            "created_at":    self.created_at.isoformat() if self.created_at else None,
+            "updated_at":    self.updated_at.isoformat() if self.updated_at else None,
         }
 
     def __repr__(self) -> str:

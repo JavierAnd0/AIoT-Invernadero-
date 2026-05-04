@@ -27,6 +27,12 @@ class Config:
     # IoT simulator
     SIMULATOR_INTERVAL: int = int(os.environ.get("SIMULATOR_INTERVAL", "15"))
 
+    # OAuth2 Google
+    GOOGLE_CLIENT_ID:     str = os.environ.get("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    FRONTEND_URL:         str = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    PREFERRED_URL_SCHEME: str = os.environ.get("PREFERRED_URL_SCHEME", "https")
+
 
 class DevelopmentConfig(Config):
     """Development configuration with SQLite fallback."""
