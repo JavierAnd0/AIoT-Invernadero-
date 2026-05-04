@@ -98,6 +98,11 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(predictions_bp, url_prefix="/api/v1")       # /predict + /predictions
     app.register_blueprint(simulator_bp,   url_prefix="/api/v1/simulator")
 
+    # ── Health check ──────────────────────────────────────────────────────────
+    @app.get("/health")
+    def health():
+        return jsonify({"status": "ok"}), 200
+
     # ── Global error handlers ─────────────────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):
