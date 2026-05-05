@@ -5,13 +5,23 @@ const AuthContext = createContext(null);
 
 // ── storage helpers ────────────────────────────────────────────────────────────
 
+function safeJson(raw, fallback) {
+  try {
+    const parsed = JSON.parse(raw);
+    // reject the literal string "undefined" that old code may have stored
+    return parsed !== undefined ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function loadFromStorage() {
   return {
-    user:            JSON.parse(localStorage.getItem('user')    || 'null'),
-    token:           localStorage.getItem('token')              || null,
-    tenants:         JSON.parse(localStorage.getItem('tenants') || '[]'),
-    currentTenantId: Number(localStorage.getItem('tenantId'))   || null,
-    currentRole:     localStorage.getItem('role')               || 'viewer',
+    user:            safeJson(localStorage.getItem('user'),    null),
+    token:           localStorage.getItem('token')             || null,
+    tenants:         safeJson(localStorage.getItem('tenants'), []),
+    currentTenantId: Number(localStorage.getItem('tenantId')) || null,
+    currentRole:     localStorage.getItem('role')              || 'viewer',
   };
 }
 
