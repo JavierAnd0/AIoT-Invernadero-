@@ -1,5 +1,6 @@
 """Sensor reading routes — ingest and query time-series IoT data (tenant-scoped)."""
 
+import logging
 from datetime import datetime
 
 from flask import Blueprint, g, jsonify, request
@@ -12,9 +13,38 @@ from models.sensor_reading import SensorReading
 from routes import tenant_required
 from services import alert_service, prediction_service
 
+logger = logging.getLogger(__name__)
 readings_bp = Blueprint("readings", __name__)
 
 _SENSOR_FIELDS = ["temperature", "humidity", "ph", "light_lux", "co2_ppm", "soil_moisture"]
+
+# Accepted ISO-8601 date formats
+_DATE_FORMATS = (
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dT%H:%M",
+    "%Y-%m-%d",
+)
+
+
+def _parse_date_param(name: str, value: str | None) -> datetime | None:
+    """Parse an ISO-8601 date/datetime string from a query parameter.
+
+    Returns None if *value* is falsy.
+    Aborts with a 400 JSON response on invalid format.
+    """
+    if not value:
+        return None
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            continue
+    from flask import abort
+    abort(400, description=(
+        f"Invalid '{name}' format: '{value}'. "
+        "Use ISO-8601 — e.g. 2024-06-15 or 2024-06-15T08:30:00"
+    ))
 
 
 @readings_bp.get("/")
@@ -28,20 +58,25 @@ def list_readings():
     page         = request.args.get("page",     1,  type=int)
     per_page     = request.args.get("per_page", 50, type=int)
     device_id    = request.args.get("device_id",    type=int)
-    from_date    = request.args.get("from_date")
-    to_date      = request.args.get("to_date")
     is_simulated = request.args.get("is_simulated")
 
-    q = SensorReading.query.filter_by(tenant_id=g.tenant_id).order_by(SensorReading.recorded_at.desc())
+    try:
+        from_dt = _parse_date_param("from_date", request.args.get("from_date"))
+        to_dt   = _parse_date_param("to_date",   request.args.get("to_date"))
+    except Exception:
+        return jsonify({"error": "Invalid date parameter"}), 400
 
+    q = SensorReading.query.filter_by(tenant_id=g.tenant_id).order_by(
+        SensorReading.recorded_at.desc()
+    )
     if device_id:
         q = q.filter_by(device_id=device_id)
     if is_simulated is not None:
         q = q.filter_by(is_simulated=is_simulated.lower() == "true")
-    if from_date:
-        q = q.filter(SensorReading.recorded_at >= from_date)
-    if to_date:
-        q = q.filter(SensorReading.recorded_at <= to_date)
+    if from_dt:
+        q = q.filter(SensorReading.recorded_at >= from_dt)
+    if to_dt:
+        q = q.filter(SensorReading.recorded_at <= to_dt)
 
     paginated = q.paginate(page=page, per_page=per_page, error_out=False)
     return jsonify({
@@ -64,7 +99,9 @@ def create_reading():
     if not data.get("device_id"):
         return jsonify({"error": "device_id is required"}), 400
 
-    device = Device.query.filter_by(device_id=data["device_id"], tenant_id=g.tenant_id).first()
+    device = Device.query.filter_by(
+        device_id=data["device_id"], tenant_id=g.tenant_id
+    ).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 
@@ -84,14 +121,22 @@ def create_reading():
 
     device.last_seen_at = datetime.utcnow()
 
+    # ── Alert evaluation ───────────────────────────────────────────────────────
     alerts_created_count = 0
+    alerts_error: str | None = None
     try:
         alerts = alert_service.check_and_create_alerts(reading, g.tenant_id)
         alerts_created_count = len(alerts)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.exception(
+            "Alert check failed for device %d (reading %d)",
+            reading.device_id, reading.reading_id,
+        )
+        alerts_error = str(exc)
 
-    pred_dict = None
+    # ── AI prediction ──────────────────────────────────────────────────────────
+    pred_dict: dict | None = None
+    prediction_error: str | None = None
     try:
         features = {
             f: float(getattr(reading, f))
@@ -124,15 +169,28 @@ def create_reading():
 
         db.session.flush()
         pred_dict = pred_obj.to_dict()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.exception(
+            "Prediction failed for device %d (reading %d)",
+            reading.device_id, reading.reading_id,
+        )
+        prediction_error = str(exc)
 
     db.session.commit()
-    return jsonify({
+
+    response: dict = {
         "reading":        reading.to_dict(),
         "alerts_created": alerts_created_count,
         "prediction":     pred_dict,
-    }), 201
+    }
+    # Surface non-fatal subsystem errors so the caller knows what happened.
+    # The reading itself was persisted successfully (HTTP 201 still applies).
+    if alerts_error:
+        response["alerts_error"] = alerts_error
+    if prediction_error:
+        response["prediction_error"] = prediction_error
+
+    return jsonify(response), 201
 
 
 @readings_bp.get("/latest")
@@ -183,22 +241,28 @@ def readings_by_device(device_id: int):
     tags: [Readings]
     security: [{BearerAuth: []}]
     """
-    device = Device.query.filter_by(device_id=device_id, tenant_id=g.tenant_id).first()
+    device = Device.query.filter_by(
+        device_id=device_id, tenant_id=g.tenant_id
+    ).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 
-    limit     = request.args.get("limit",     100, type=int)
-    from_date = request.args.get("from_date")
-    to_date   = request.args.get("to_date")
+    limit = request.args.get("limit", 100, type=int)
+
+    try:
+        from_dt = _parse_date_param("from_date", request.args.get("from_date"))
+        to_dt   = _parse_date_param("to_date",   request.args.get("to_date"))
+    except Exception:
+        return jsonify({"error": "Invalid date parameter"}), 400
 
     q = (
         SensorReading.query
         .filter_by(device_id=device_id, tenant_id=g.tenant_id)
         .order_by(SensorReading.recorded_at.desc())
     )
-    if from_date:
-        q = q.filter(SensorReading.recorded_at >= from_date)
-    if to_date:
-        q = q.filter(SensorReading.recorded_at <= to_date)
+    if from_dt:
+        q = q.filter(SensorReading.recorded_at >= from_dt)
+    if to_dt:
+        q = q.filter(SensorReading.recorded_at <= to_dt)
 
     return jsonify([r.to_dict() for r in q.limit(limit).all()]), 200

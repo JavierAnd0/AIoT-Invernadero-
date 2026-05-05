@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useAuth }    from './hooks/useAuth';
 import { Shell } from './layout';
 
-import LoginScreen       from './screens/LoginScreen';
-import AuthCallback      from './screens/AuthCallback';
+import LoginScreen         from './screens/LoginScreen';
+import AuthCallback        from './screens/AuthCallback';
+import TenantSelectScreen  from './screens/TenantSelectScreen';
 import DashboardScreen   from './screens/DashboardScreen';
 import SensorsScreen     from './screens/SensorsScreen';
 import AlertsScreen      from './screens/AlertsScreen';
@@ -35,7 +36,7 @@ function defaultScreenForRole(role) {
 }
 
 export default function App() {
-  const { isAuthenticated, currentRole, doLogout } = useAuth();
+  const { isAuthenticated, requiresTenantSelection, currentRole, doLogout } = useAuth();
   const [screen, setScreen] = useState('dashboard');
   const [zone,   setZone]   = useState(null);
 
@@ -55,6 +56,11 @@ export default function App() {
       window.history.replaceState({}, '', '/');
       setScreen('dashboard');
     }} />;
+  }
+
+  // User authenticated but hasn't selected a tenant yet (multi-tenant case)
+  if (requiresTenantSelection && !isAuthenticated) {
+    return <TenantSelectScreen />;
   }
 
   if (!isAuthenticated) {
