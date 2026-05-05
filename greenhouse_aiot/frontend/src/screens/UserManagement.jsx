@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import { getUsers, createUser, deleteUser } from '../api';
+import { getUsers, createUser, deleteUser, updateUser } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
 
 const ROLE_COLOR = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
@@ -29,6 +29,15 @@ export default function UserManagement() {
       setSaveError(err.response?.data?.error || 'Could not create user');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRoleChange(id, role) {
+    try {
+      await updateUser(id, { role });
+      refetch();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not update role');
     }
   }
 
@@ -97,7 +106,13 @@ export default function UserManagement() {
                 <td style={{ padding: '10px 12px' }}>{u.full_name || '—'}</td>
                 <td style={{ padding: '10px 12px', color: '#6b7280', fontSize: 12 }}>{u.email || '—'}</td>
                 <td style={{ padding: '10px 12px' }}>
-                  <Badge label={u.role} color={ROLE_COLOR[u.role] || '#6b7280'} />
+                  <select
+                    value={u.role}
+                    onChange={e => handleRoleChange(u.user_id, e.target.value)}
+                    style={{ fontSize: 12, padding: '3px 6px', borderRadius: 6, border: '1px solid #d1d5db', color: ROLE_COLOR[u.role] || '#6b7280', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    {['admin', 'operator', 'viewer'].map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
                 </td>
                 <td style={{ padding: '10px 12px' }}>
                   <Badge label={u.is_active ? 'Active' : 'Inactive'} color={u.is_active ? '#22c55e' : '#6b7280'} />
