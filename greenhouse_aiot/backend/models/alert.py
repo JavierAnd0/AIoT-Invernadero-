@@ -11,6 +11,7 @@ class Alert(db.Model):
     __tablename__ = "alerts"
 
     alert_id        = db.Column(db.Integer,     primary_key=True)
+    tenant_id       = db.Column(db.Integer,     db.ForeignKey("tenants.tenant_id"),          nullable=False, index=True)
     device_id       = db.Column(db.Integer,     db.ForeignKey("devices.device_id"),          nullable=False)
     reading_id      = db.Column(db.BigInteger,  db.ForeignKey("sensor_readings.reading_id"))
     assigned_to     = db.Column(db.Integer,     db.ForeignKey("users.user_id"))
@@ -40,6 +41,7 @@ class Alert(db.Model):
         """
         return {
             "alert_id":       self.alert_id,
+            "tenant_id":      self.tenant_id,
             "device_id":      self.device_id,
             "reading_id":     self.reading_id,
             "assigned_to":    self.assigned_to,

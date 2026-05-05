@@ -81,6 +81,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from routes.auth        import auth_bp
+    from routes.tenants     import tenants_bp
     from routes.users       import users_bp
     from routes.zones       import zones_bp
     from routes.devices     import devices_bp
@@ -92,6 +93,7 @@ def create_app(config_name: str | None = None) -> Flask:
     from routes.simulator   import simulator_bp
 
     app.register_blueprint(auth_bp,        url_prefix="/api/v1/auth")
+    app.register_blueprint(tenants_bp,     url_prefix="/api/v1/tenants")
     app.register_blueprint(users_bp,       url_prefix="/api/v1/users")
     app.register_blueprint(zones_bp,       url_prefix="/api/v1/zones")
     app.register_blueprint(devices_bp,     url_prefix="/api/v1/devices")

@@ -11,6 +11,7 @@ class Device(db.Model):
     __tablename__ = "devices"
 
     device_id        = db.Column(db.Integer,     primary_key=True)
+    tenant_id        = db.Column(db.Integer,     db.ForeignKey("tenants.tenant_id"), nullable=False)
     zone_id          = db.Column(db.Integer,     db.ForeignKey("zones.zone_id"), nullable=False)
     registered_by    = db.Column(db.Integer,     db.ForeignKey("users.user_id"), nullable=False)
     name             = db.Column(db.String(100), nullable=False)
@@ -40,6 +41,7 @@ class Device(db.Model):
         """
         data: dict = {
             "device_id":    self.device_id,
+            "tenant_id":    self.tenant_id,
             "zone_id":      self.zone_id,
             "registered_by": self.registered_by,
             "name":         self.name,

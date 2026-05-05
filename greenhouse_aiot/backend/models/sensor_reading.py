@@ -11,6 +11,7 @@ class SensorReading(db.Model):
     __tablename__ = "sensor_readings"
 
     reading_id    = db.Column(db.BigInteger,    primary_key=True)
+    tenant_id     = db.Column(db.Integer,       db.ForeignKey("tenants.tenant_id"), nullable=False, index=True)
     device_id     = db.Column(db.Integer,       db.ForeignKey("devices.device_id"), nullable=False)
     temperature   = db.Column(db.Numeric(5,  2))
     humidity      = db.Column(db.Numeric(5,  2))
@@ -58,6 +59,7 @@ class SensorReading(db.Model):
         """Serialise to a JSON-safe dict."""
         return {
             "reading_id":    self.reading_id,
+            "tenant_id":     self.tenant_id,
             "device_id":     self.device_id,
             "temperature":   float(self.temperature)   if self.temperature   is not None else None,
             "humidity":      float(self.humidity)      if self.humidity      is not None else None,

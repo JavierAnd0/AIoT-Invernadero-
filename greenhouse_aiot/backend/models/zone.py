@@ -6,12 +6,17 @@ from models import db
 
 
 class Zone(db.Model):
-    """Physical or logical greenhouse section."""
+    """Physical or logical greenhouse section, scoped to a single tenant."""
 
     __tablename__ = "zones"
+    __table_args__ = (
+        # Zone names only need to be unique within the same tenant.
+        db.UniqueConstraint("tenant_id", "name", name="uq_zones_tenant_name"),
+    )
 
     zone_id     = db.Column(db.Integer,       primary_key=True)
-    name        = db.Column(db.String(100),   nullable=False, unique=True)
+    tenant_id   = db.Column(db.Integer,       db.ForeignKey("tenants.tenant_id"), nullable=False)
+    name        = db.Column(db.String(100),   nullable=False)
     description = db.Column(db.Text)
     area_m2     = db.Column(db.Numeric(8, 2))
     is_active   = db.Column(db.Boolean,       nullable=False, default=True)
@@ -25,6 +30,7 @@ class Zone(db.Model):
         """Serialise to a JSON-safe dict."""
         data: dict = {
             "zone_id":     self.zone_id,
+            "tenant_id":   self.tenant_id,
             "name":        self.name,
             "description": self.description,
             "area_m2":     float(self.area_m2) if self.area_m2 is not None else None,

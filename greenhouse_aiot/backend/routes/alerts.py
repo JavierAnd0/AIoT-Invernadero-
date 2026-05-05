@@ -1,14 +1,13 @@
-"""Alert routes — view and manage automated threshold alerts."""
+"""Alert routes — view and manage automated threshold alerts (tenant-scoped)."""
 
 from datetime import datetime
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask import Blueprint, g, jsonify, request
 from sqlalchemy import case
 
 from models import db
 from models.alert import Alert
-from routes import role_required
+from routes import tenant_required
 
 alerts_bp = Blueprint("alerts", __name__)
 
@@ -23,9 +22,9 @@ _SEVERITY_RANK = case(
 
 
 @alerts_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_alerts():
-    """List alerts with optional filters and pagination.
+    """List alerts for the current tenant with optional filters and pagination.
     ---
     tags: [Alerts]
     security: [{BearerAuth: []}]
@@ -38,7 +37,7 @@ def list_alerts():
     zone_id    = request.args.get("zone_id",    type=int)
     alert_type = request.args.get("alert_type")
 
-    q = Alert.query.order_by(Alert.created_at.desc())
+    q = Alert.query.filter_by(tenant_id=g.tenant_id).order_by(Alert.created_at.desc())
 
     if status:
         q = q.filter_by(status=status)
@@ -50,7 +49,10 @@ def list_alerts():
         q = q.filter_by(alert_type=alert_type)
     if zone_id:
         from models.device import Device
-        device_ids = [d.device_id for d in Device.query.filter_by(zone_id=zone_id).all()]
+        device_ids = [
+            d.device_id
+            for d in Device.query.filter_by(zone_id=zone_id, tenant_id=g.tenant_id).all()
+        ]
         q = q.filter(Alert.device_id.in_(device_ids))
 
     paginated = q.paginate(page=page, per_page=per_page, error_out=False)
@@ -62,16 +64,16 @@ def list_alerts():
 
 
 @alerts_bp.get("/open")
-@jwt_required()
+@tenant_required()
 def open_alerts():
-    """Return all open alerts sorted by severity then creation time.
+    """Return all open alerts for the current tenant sorted by severity then creation time.
     ---
     tags: [Alerts]
     security: [{BearerAuth: []}]
     """
     alerts = (
         Alert.query
-        .filter_by(status="open")
+        .filter_by(tenant_id=g.tenant_id, status="open")
         .order_by(_SEVERITY_RANK, Alert.created_at.desc())
         .all()
     )
@@ -79,34 +81,34 @@ def open_alerts():
 
 
 @alerts_bp.put("/<int:alert_id>/acknowledge")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def acknowledge_alert(alert_id: int):
     """Acknowledge an open alert and assign it to the current user.
     ---
     tags: [Alerts]
     security: [{BearerAuth: []}]
     """
-    alert = Alert.query.get(alert_id)
+    alert = Alert.query.filter_by(alert_id=alert_id, tenant_id=g.tenant_id).first()
     if alert is None:
         return jsonify({"error": "Alert not found"}), 404
     if alert.status != "open":
         return jsonify({"error": f"Alert is already {alert.status}"}), 409
 
     alert.status      = "acknowledged"
-    alert.assigned_to = int(get_jwt_identity())
+    alert.assigned_to = g.user_id
     db.session.commit()
     return jsonify(alert.to_dict()), 200
 
 
 @alerts_bp.put("/<int:alert_id>/resolve")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def resolve_alert(alert_id: int):
     """Resolve an open or acknowledged alert.
     ---
     tags: [Alerts]
     security: [{BearerAuth: []}]
     """
-    alert = Alert.query.get(alert_id)
+    alert = Alert.query.filter_by(alert_id=alert_id, tenant_id=g.tenant_id).first()
     if alert is None:
         return jsonify({"error": "Alert not found"}), 404
     if alert.status not in {"open", "acknowledged"}:

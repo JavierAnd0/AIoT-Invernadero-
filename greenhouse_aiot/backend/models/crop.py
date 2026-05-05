@@ -6,15 +6,20 @@ from models import db
 
 
 class Crop(db.Model):
-    """Active crop batch planted in a specific zone."""
+    """Active crop batch planted in a specific zone, scoped to a tenant."""
 
     __tablename__ = "crops"
+    __table_args__ = (
+        # batch_code only needs to be unique per tenant, not globally.
+        db.UniqueConstraint("tenant_id", "batch_code", name="uq_crops_tenant_batch_code"),
+    )
 
     crop_id             = db.Column(db.Integer,     primary_key=True)
+    tenant_id           = db.Column(db.Integer,     db.ForeignKey("tenants.tenant_id"),       nullable=False)
     zone_id             = db.Column(db.Integer,     db.ForeignKey("zones.zone_id"),           nullable=False)
     crop_type_id        = db.Column(db.Integer,     db.ForeignKey("crop_types.crop_type_id"), nullable=False)
     created_by          = db.Column(db.Integer,     db.ForeignKey("users.user_id"),           nullable=False)
-    batch_code          = db.Column(db.String(50),  unique=True)
+    batch_code          = db.Column(db.String(50))
     quantity            = db.Column(db.Integer,     nullable=False)
     planted_at          = db.Column(db.Date,        nullable=False)
     expected_harvest_at = db.Column(db.Date)
@@ -31,6 +36,7 @@ class Crop(db.Model):
         """Serialise to a JSON-safe dict."""
         data: dict = {
             "crop_id":             self.crop_id,
+            "tenant_id":           self.tenant_id,
             "zone_id":             self.zone_id,
             "crop_type_id":        self.crop_type_id,
             "created_by":          self.created_by,

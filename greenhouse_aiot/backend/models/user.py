@@ -8,7 +8,7 @@ from models import db
 
 
 class User(db.Model):
-    """System user with role-based access control (admin / operator / viewer)."""
+    """System user. Roles are now per-tenant (see TenantMembership)."""
 
     __tablename__ = "users"
 
@@ -17,7 +17,7 @@ class User(db.Model):
     email         = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(256), nullable=True)
     full_name     = db.Column(db.String(150), nullable=False)
-    role          = db.Column(db.String(20),  nullable=False, default="viewer")
+    # NOTE: `role` column removed — roles are now stored in tenant_memberships.
     is_active     = db.Column(db.Boolean,     nullable=False, default=True)
     created_at    = db.Column(db.DateTime,    default=datetime.utcnow)
     updated_at    = db.Column(db.DateTime,    default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -25,10 +25,13 @@ class User(db.Model):
     google_id     = db.Column(db.String(100), unique=True,    nullable=True)
     avatar_url    = db.Column(db.String(500),                 nullable=True)
 
-    VALID_ROLES: frozenset[str] = frozenset({"admin", "operator", "viewer"})
     VALID_PROVIDERS: frozenset[str] = frozenset({"local", "google"})
 
     # ── Relationships ─────────────────────────────────────────────────────────
+    memberships = db.relationship(
+        "TenantMembership", backref="user",
+        lazy=True, foreign_keys="TenantMembership.user_id",
+    )
     registered_devices = db.relationship(
         "Device", backref="registrar",
         lazy=True, foreign_keys="Device.registered_by",
@@ -66,7 +69,6 @@ class User(db.Model):
             "username":      self.username,
             "email":         self.email,
             "full_name":     self.full_name,
-            "role":          self.role,
             "is_active":     self.is_active,
             "auth_provider": self.auth_provider,
             "avatar_url":    self.avatar_url,
@@ -75,4 +77,4 @@ class User(db.Model):
         }
 
     def __repr__(self) -> str:
-        return f"<User {self.username} ({self.role})>"
+        return f"<User {self.username}>"

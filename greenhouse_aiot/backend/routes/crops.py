@@ -1,28 +1,27 @@
-"""Crop routes — active batch management."""
+"""Crop routes — active batch management (tenant-scoped)."""
 
 from datetime import date, datetime
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask import Blueprint, g, jsonify, request
 
 from models import db
 from models.crop import Crop
 from models.crop_type import CropType
 from models.zone import Zone
-from routes import role_required
+from routes import tenant_required
 
 crops_bp = Blueprint("crops", __name__)
 
 
 @crops_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_crops():
-    """List crops with optional filters.
+    """List crops for the current tenant with optional filters.
     ---
     tags: [Crops]
     security: [{BearerAuth: []}]
     """
-    q = Crop.query
+    q = Crop.query.filter_by(tenant_id=g.tenant_id)
     if zone_id := request.args.get("zone_id", type=int):
         q = q.filter_by(zone_id=zone_id)
     if status := request.args.get("status"):
@@ -33,9 +32,9 @@ def list_crops():
 
 
 @crops_bp.post("/")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def create_crop():
-    """Register a new crop batch.
+    """Register a new crop batch for the current tenant.
     ---
     tags: [Crops]
     security: [{BearerAuth: []}]
@@ -47,7 +46,8 @@ def create_crop():
     if missing:
         return jsonify({"error": f"Missing required fields: {missing}"}), 400
 
-    zone = Zone.query.get(data["zone_id"])
+    # Zone must belong to this tenant
+    zone = Zone.query.filter_by(zone_id=data["zone_id"], tenant_id=g.tenant_id).first()
     if zone is None or not zone.is_active:
         return jsonify({"error": "Zone not found or not active"}), 404
 
@@ -73,13 +73,17 @@ def create_crop():
         if expected_harvest_at <= planted_at:
             return jsonify({"error": "expected_harvest_at must be after planted_at"}), 400
 
-    if data.get("batch_code") and Crop.query.filter_by(batch_code=data["batch_code"]).first():
-        return jsonify({"error": "batch_code already exists"}), 409
+    # batch_code uniqueness is now per-tenant
+    if data.get("batch_code") and Crop.query.filter_by(
+        tenant_id=g.tenant_id, batch_code=data["batch_code"]
+    ).first():
+        return jsonify({"error": "batch_code already exists in this tenant"}), 409
 
     crop = Crop(
+        tenant_id=g.tenant_id,
         zone_id=data["zone_id"],
         crop_type_id=data["crop_type_id"],
-        created_by=int(get_jwt_identity()),
+        created_by=g.user_id,
         batch_code=data.get("batch_code"),
         quantity=quantity,
         planted_at=planted_at,
@@ -92,28 +96,28 @@ def create_crop():
 
 
 @crops_bp.get("/<int:crop_id>")
-@jwt_required()
+@tenant_required()
 def get_crop(crop_id: int):
     """Get a crop batch by ID with embedded zone and crop type.
     ---
     tags: [Crops]
     security: [{BearerAuth: []}]
     """
-    crop = Crop.query.get(crop_id)
+    crop = Crop.query.filter_by(crop_id=crop_id, tenant_id=g.tenant_id).first()
     if crop is None:
         return jsonify({"error": "Crop not found"}), 404
     return jsonify(crop.to_dict(include_zone=True, include_crop_type=True)), 200
 
 
 @crops_bp.put("/<int:crop_id>")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def update_crop(crop_id: int):
     """Update a crop's status, notes, or actual harvest date.
     ---
     tags: [Crops]
     security: [{BearerAuth: []}]
     """
-    crop = Crop.query.get(crop_id)
+    crop = Crop.query.filter_by(crop_id=crop_id, tenant_id=g.tenant_id).first()
     if crop is None:
         return jsonify({"error": "Crop not found"}), 404
 
@@ -140,18 +144,19 @@ def update_crop(crop_id: int):
 
 
 @crops_bp.get("/zone/<int:zone_id>")
-@jwt_required()
+@tenant_required()
 def crops_by_zone(zone_id: int):
-    """List crops in a specific zone (active statuses by default).
+    """List crops in a specific zone for the current tenant.
     ---
     tags: [Crops]
     security: [{BearerAuth: []}]
     """
-    if Zone.query.get(zone_id) is None:
+    # Verify zone belongs to this tenant
+    if Zone.query.filter_by(zone_id=zone_id, tenant_id=g.tenant_id).first() is None:
         return jsonify({"error": "Zone not found"}), 404
 
     status = request.args.get("status")
-    q = Crop.query.filter_by(zone_id=zone_id)
+    q = Crop.query.filter_by(zone_id=zone_id, tenant_id=g.tenant_id)
     if status:
         q = q.filter_by(status=status)
     else:
@@ -159,7 +164,7 @@ def crops_by_zone(zone_id: int):
     return jsonify([c.to_dict() for c in q.all()]), 200
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── helpers ────────────────────────────────────────────────────────────────────
 
 def _parse_date(value: str) -> date | None:
     """Parse an ISO date string, returning None on failure."""

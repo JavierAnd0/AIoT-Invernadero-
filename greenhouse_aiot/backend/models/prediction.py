@@ -11,6 +11,7 @@ class Prediction(db.Model):
     __tablename__ = "predictions"
 
     prediction_id     = db.Column(db.Integer,    primary_key=True)
+    tenant_id         = db.Column(db.Integer,    db.ForeignKey("tenants.tenant_id"),          nullable=False, index=True)
     device_id         = db.Column(db.Integer,    db.ForeignKey("devices.device_id"),          nullable=False)
     reading_id        = db.Column(db.BigInteger, db.ForeignKey("sensor_readings.reading_id"), nullable=False)
     model_name        = db.Column(db.String(100), nullable=False)
@@ -27,6 +28,7 @@ class Prediction(db.Model):
         """Serialise to a JSON-safe dict."""
         return {
             "prediction_id":     self.prediction_id,
+            "tenant_id":         self.tenant_id,
             "device_id":         self.device_id,
             "reading_id":        self.reading_id,
             "model_name":        self.model_name,

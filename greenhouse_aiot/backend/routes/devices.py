@@ -1,27 +1,26 @@
-"""Device routes — IoT sensor node management."""
+"""Device routes — IoT sensor node management (tenant-scoped)."""
 
 from datetime import datetime
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask import Blueprint, g, jsonify, request
 
 from models import db
 from models.device import Device
 from models.zone import Zone
-from routes import role_required
+from routes import tenant_required
 
 devices_bp = Blueprint("devices", __name__)
 
 
 @devices_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_devices():
-    """List devices with optional filters.
+    """List devices for the current tenant with optional filters.
     ---
     tags: [Devices]
     security: [{BearerAuth: []}]
     """
-    q = Device.query
+    q = Device.query.filter_by(tenant_id=g.tenant_id)
     if zone_id := request.args.get("zone_id", type=int):
         q = q.filter_by(zone_id=zone_id)
     if status := request.args.get("status"):
@@ -32,9 +31,9 @@ def list_devices():
 
 
 @devices_bp.post("/")
-@role_required("admin")
+@tenant_required("admin")
 def create_device():
-    """Register a new IoT device.
+    """Register a new IoT device for the current tenant.
     ---
     tags: [Devices]
     security: [{BearerAuth: []}]
@@ -44,7 +43,8 @@ def create_device():
     if not data.get("zone_id") or not data.get("name"):
         return jsonify({"error": "zone_id and name are required"}), 400
 
-    zone = Zone.query.get(data["zone_id"])
+    # Zone must belong to the same tenant
+    zone = Zone.query.filter_by(zone_id=data["zone_id"], tenant_id=g.tenant_id).first()
     if zone is None or not zone.is_active:
         return jsonify({"error": "Zone not found or not active"}), 404
 
@@ -52,10 +52,10 @@ def create_device():
     if device_type not in Device.VALID_TYPES:
         return jsonify({"error": f"Invalid device_type. Choose from {sorted(Device.VALID_TYPES)}"}), 400
 
-    registered_by = int(get_jwt_identity())
     device = Device(
+        tenant_id=g.tenant_id,
         zone_id=data["zone_id"],
-        registered_by=registered_by,
+        registered_by=g.user_id,
         name=data["name"],
         serial_number=data.get("serial_number"),
         device_type=device_type,
@@ -67,28 +67,28 @@ def create_device():
 
 
 @devices_bp.get("/<int:device_id>")
-@jwt_required()
+@tenant_required()
 def get_device(device_id: int):
     """Get device by ID, including the latest sensor reading.
     ---
     tags: [Devices]
     security: [{BearerAuth: []}]
     """
-    device = Device.query.get(device_id)
+    device = Device.query.filter_by(device_id=device_id, tenant_id=g.tenant_id).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
     return jsonify(device.to_dict(include_last_reading=True)), 200
 
 
 @devices_bp.put("/<int:device_id>/status")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def update_device_status(device_id: int):
     """Update device connectivity status.
     ---
     tags: [Devices]
     security: [{BearerAuth: []}]
     """
-    device = Device.query.get(device_id)
+    device = Device.query.filter_by(device_id=device_id, tenant_id=g.tenant_id).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 

@@ -1,33 +1,32 @@
-"""Zone routes — greenhouse section management."""
+"""Zone routes — greenhouse section management (tenant-scoped)."""
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, g, jsonify, request
 
 from models import db
 from models.zone import Zone
-from routes import role_required
+from routes import tenant_required
 
 zones_bp = Blueprint("zones", __name__)
 
 
 @zones_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_zones():
-    """List zones, optionally filtering by is_active.
+    """List zones for the current tenant, optionally filtering by is_active.
     ---
     tags: [Zones]
     security: [{BearerAuth: []}]
     """
     is_active_param = request.args.get("is_active", "true")
-    is_active = is_active_param.lower() != "false"
-    zones = Zone.query.filter_by(is_active=is_active).all()
+    is_active       = is_active_param.lower() != "false"
+    zones = Zone.query.filter_by(tenant_id=g.tenant_id, is_active=is_active).all()
     return jsonify([z.to_dict() for z in zones]), 200
 
 
 @zones_bp.post("/")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def create_zone():
-    """Create a new greenhouse zone.
+    """Create a new greenhouse zone for the current tenant.
     ---
     tags: [Zones]
     security: [{BearerAuth: []}]
@@ -46,10 +45,12 @@ def create_zone():
     else:
         area = None
 
-    if Zone.query.filter_by(name=data["name"]).first():
-        return jsonify({"error": "Zone name already exists"}), 409
+    # Uniqueness is now per-tenant
+    if Zone.query.filter_by(tenant_id=g.tenant_id, name=data["name"]).first():
+        return jsonify({"error": "Zone name already exists in this tenant"}), 409
 
     zone = Zone(
+        tenant_id=g.tenant_id,
         name=data["name"],
         description=data.get("description"),
         area_m2=area,
@@ -60,37 +61,37 @@ def create_zone():
 
 
 @zones_bp.get("/<int:zone_id>")
-@jwt_required()
+@tenant_required()
 def get_zone(zone_id: int):
     """Get a zone by ID including embedded devices and active crops.
     ---
     tags: [Zones]
     security: [{BearerAuth: []}]
     """
-    zone = Zone.query.get(zone_id)
+    zone = Zone.query.filter_by(zone_id=zone_id, tenant_id=g.tenant_id).first()
     if zone is None:
         return jsonify({"error": "Zone not found"}), 404
     return jsonify(zone.to_dict(include_devices=True, include_crops=True)), 200
 
 
 @zones_bp.put("/<int:zone_id>")
-@role_required("admin")
+@tenant_required("admin")
 def update_zone(zone_id: int):
     """Update zone fields.
     ---
     tags: [Zones]
     security: [{BearerAuth: []}]
     """
-    zone = Zone.query.get(zone_id)
+    zone = Zone.query.filter_by(zone_id=zone_id, tenant_id=g.tenant_id).first()
     if zone is None:
         return jsonify({"error": "Zone not found"}), 404
 
     data = request.get_json(silent=True) or {}
 
     if "name" in data:
-        existing = Zone.query.filter_by(name=data["name"]).first()
+        existing = Zone.query.filter_by(tenant_id=g.tenant_id, name=data["name"]).first()
         if existing and existing.zone_id != zone_id:
-            return jsonify({"error": "Zone name already exists"}), 409
+            return jsonify({"error": "Zone name already exists in this tenant"}), 409
         zone.name = data["name"]
     if "description" in data:
         zone.description = data["description"]

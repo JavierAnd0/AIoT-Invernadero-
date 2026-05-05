@@ -26,12 +26,24 @@ api.interceptors.response.use(
 export const login = (username, password) =>
   api.post('/auth/login', { username, password }).then(r => r.data);
 export const getMe = () => api.get('/auth/me').then(r => r.data);
-export const register = (data) =>
-  api.post('/auth/register', data).then(r => r.data);
+export const bootstrap = (data) =>
+  api.post('/auth/bootstrap', data).then(r => r.data);
+export const selectTenant = (tenantId) =>
+  api.post('/auth/select-tenant', { tenant_id: tenantId }).then(r => r.data);
 export const loginWithGoogle = () => {
   const apiBase = import.meta.env.VITE_API_URL || '/api/v1';
   window.location.href = `${apiBase}/auth/google`;
 };
+
+// TENANTS (admin)
+export const getTenantMembers  = (tenantId) =>
+  api.get(`/tenants/${tenantId}/members`).then(r => r.data);
+export const inviteMember = (tenantId, data) =>
+  api.post(`/tenants/${tenantId}/members`, data).then(r => r.data);
+export const updateMember = (tenantId, userId, data) =>
+  api.put(`/tenants/${tenantId}/members/${userId}`, data).then(r => r.data);
+export const removeMember = (tenantId, userId) =>
+  api.delete(`/tenants/${tenantId}/members/${userId}`).then(r => r.data);
 
 // ZONES
 export const getZones   = ()      => api.get('/zones/').then(r => r.data);
