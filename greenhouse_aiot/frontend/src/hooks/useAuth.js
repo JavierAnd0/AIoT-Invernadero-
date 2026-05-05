@@ -1,5 +1,5 @@
-import { createContext, createElement, useCallback, useContext, useMemo, useState } from 'react';
-import { login as apiLogin, selectTenant as apiSelectTenant } from '../api';
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { login as apiLogin, selectTenant as apiSelectTenant, getMe } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -138,6 +138,46 @@ export function AuthProvider({ children }) {
       setToken(token);
     }
   }, []);
+
+  /**
+   * On mount: if we have a token + tenant context, call /auth/me to refresh
+   * user profile, tenant list, and — critically — the current role.
+   *
+   * This fixes the "role shows as viewer" bug when:
+   *   - the user had a token from before multi-tenant changes (no 'role' in localStorage)
+   *   - the user logged in via Google OAuth (restoreFromOAuth saves role:'')
+   *   - the role was changed by an admin and the JWT is still alive
+   */
+  useEffect(() => {
+    if (!token || !currentTenantId) return;
+
+    getMe()
+      .then(data => {
+        const tenantList = data.tenants || [];
+        const membership = tenantList.find(t => t.tenant_id === currentTenantId);
+        if (!membership) return; // tenant no longer active — let next request return 403
+
+        const freshRole = membership.role;
+        setUser(data.user);
+        setTenants(tenantList);
+        setCurrentRole(freshRole);
+        localStorage.setItem('user',    JSON.stringify(data.user));
+        localStorage.setItem('tenants', JSON.stringify(tenantList));
+        localStorage.setItem('role',    freshRole);
+      })
+      .catch(() => {
+        // Token is expired or invalid — clear everything so the login screen appears
+        clearSession();
+        setToken(null);
+        setUser(null);
+        setTenants([]);
+        setCurrentTenantId(null);
+        setCurrentRole('viewer');
+        setRequiresTenantSelection(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ intentionally runs once on mount only; token + currentTenantId are read
+  //   from the closure because they're set synchronously from localStorage above.
 
   const doLogout = useCallback(() => {
     clearSession();

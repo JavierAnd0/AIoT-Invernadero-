@@ -22,7 +22,7 @@ const EMPTY_FORM = {
 };
 
 export default function UserManagement() {
-  const { currentTenantId } = useAuth();
+  const { currentTenantId, user: currentUser } = useAuth();
   const { data: usersData, loading, error, refetch } = useApi(getUsers);
   const [showForm,   setShowForm]   = useState(false);
   const [form,       setForm]       = useState(EMPTY_FORM);
@@ -67,7 +67,7 @@ export default function UserManagement() {
   }
 
   async function handleDeactivate(userId) {
-    if (!confirm('Deactivate this user?')) return;
+    if (!confirm('Deactivate this user from this tenant?')) return;
     setSaveError('');
     try {
       // DELETE /users/<id> sets membership.is_active = false
@@ -75,6 +75,21 @@ export default function UserManagement() {
       refetch();
     } catch (err) {
       setSaveError(err.response?.data?.error || 'Could not deactivate user');
+    }
+  }
+
+  async function handleReactivate(user) {
+    if (!currentTenantId) return;
+    setSaveError('');
+    try {
+      // POST /tenants/<id>/members with an existing email re-activates the membership
+      await inviteMember(currentTenantId, {
+        email: user.email,
+        role:  user.role,
+      });
+      refetch();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Could not reactivate user');
     }
   }
 
@@ -100,7 +115,7 @@ export default function UserManagement() {
             <Input label="Username *"  value={form.username}  onChange={e => upd('username',  e.target.value)} required />
             <Input label="Full Name *" value={form.full_name} onChange={e => upd('full_name', e.target.value)} required />
             <Input label="Email *"     type="email" value={form.email} onChange={e => upd('email', e.target.value)} required />
-            <Input label="Password *"  type="password" value={form.password} onChange={e => upd('password', e.target.value)} required />
+            <Input label="Password * (min 8 chars)"  type="password" value={form.password} onChange={e => upd('password', e.target.value)} required minLength={8} />
             <Select
               label="Role"
               value={form.role}
@@ -128,29 +143,40 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody>
-            {users.map(u => (
+            {users.map(u => {
+              const isSelf = u.user_id === currentUser?.user_id;
+              return (
               <tr key={u.user_id} style={{ borderTop: '1px solid #f0f4f1' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600, fontFamily: "'DM Mono', monospace", fontSize: 12 }}>
                   {u.username}
+                  {isSelf && (
+                    <span style={{ marginLeft: 6, fontSize: 10, color: '#22c55e', fontWeight: 700 }}>YOU</span>
+                  )}
                 </td>
                 <td style={{ padding: '10px 12px' }}>{u.full_name || '—'}</td>
                 <td style={{ padding: '10px 12px', color: '#6b7280', fontSize: 12 }}>{u.email || '—'}</td>
                 <td style={{ padding: '10px 12px' }}>
                   {/* role comes from tenant_memberships, not global users.role */}
-                  <select
-                    value={u.role}
-                    onChange={e => handleRoleChange(u.user_id, e.target.value)}
-                    style={{
-                      fontSize: 12, padding: '3px 6px', borderRadius: 6,
-                      border: '1px solid #d1d5db',
-                      color: ROLE_COLOR[u.role] || '#6b7280',
-                      fontWeight: 600, cursor: 'pointer',
-                    }}
-                  >
-                    {['admin', 'operator', 'viewer'].map(r => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
+                  {isSelf ? (
+                    <span style={{ fontSize: 12, fontWeight: 600, color: ROLE_COLOR[u.role] || '#6b7280' }}>
+                      {u.role}
+                    </span>
+                  ) : (
+                    <select
+                      value={u.role}
+                      onChange={e => handleRoleChange(u.user_id, e.target.value)}
+                      style={{
+                        fontSize: 12, padding: '3px 6px', borderRadius: 6,
+                        border: '1px solid #d1d5db',
+                        color: ROLE_COLOR[u.role] || '#6b7280',
+                        fontWeight: 600, cursor: 'pointer',
+                      }}
+                    >
+                      {['admin', 'operator', 'viewer'].map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  )}
                 </td>
                 <td style={{ padding: '10px 12px' }}>
                   {/* member_active = tenant_memberships.is_active (not global users.is_active) */}
@@ -160,7 +186,9 @@ export default function UserManagement() {
                   />
                 </td>
                 <td style={{ padding: '10px 12px' }}>
-                  {u.member_active && (
+                  {isSelf ? (
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>—</span>
+                  ) : u.member_active ? (
                     <Btn
                       variant="danger"
                       onClick={() => handleDeactivate(u.user_id)}
@@ -168,10 +196,19 @@ export default function UserManagement() {
                     >
                       Deactivate
                     </Btn>
+                  ) : (
+                    <Btn
+                      variant="ghost"
+                      onClick={() => handleReactivate(u)}
+                      style={{ fontSize: 11, padding: '4px 10px' }}
+                    >
+                      Reactivate
+                    </Btn>
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af' }}>

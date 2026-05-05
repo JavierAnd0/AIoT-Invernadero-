@@ -16,7 +16,7 @@ const FIELDS = [
 ];
 
 export default function PredictScreen() {
-  const { role } = useAuth();
+  const { currentRole: role } = useAuth();
   const canPredict = role === 'admin' || role === 'operator';
   const { data: devices } = useApi(getDevices, []);
   const [deviceId,    setDeviceId]    = useState(null);

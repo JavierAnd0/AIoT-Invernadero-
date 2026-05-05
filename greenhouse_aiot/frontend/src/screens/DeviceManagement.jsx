@@ -29,7 +29,7 @@ function timeAgo(isoStr) {
 }
 
 export default function DeviceManagement() {
-  const { role } = useAuth();
+  const { currentRole: role } = useAuth();
   const canCreate = role === 'admin';
   const canUpdateStatus = role === 'admin' || role === 'operator';
   const { data: devices, loading, error, refetch: refetchDevices } = useApi(getDevices);

@@ -5,7 +5,7 @@ import { getCrops, createCrop, getCropTypes, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, STATUS_COLOR } from '../ui';
 
 export default function CropsScreen({ zone }) {
-  const { role } = useAuth();
+  const { currentRole: role } = useAuth();
   const canManage = role === 'admin' || role === 'operator';
   const { data: cropsData, loading, error, refetch } = useApi(
     () => getCrops(zone ? { zone_id: zone } : {}),

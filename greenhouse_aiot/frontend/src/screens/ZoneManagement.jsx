@@ -5,7 +5,7 @@ import { getZones, createZone, updateZone } from '../api';
 import { Card, Badge, Btn, Input, LoadingSpinner, ErrorBanner } from '../ui';
 
 export default function ZoneManagement() {
-  const { role } = useAuth();
+  const { currentRole: role } = useAuth();
   const canCreate = role === 'admin' || role === 'operator';
   const canEdit = role === 'admin';
   const { data: zones, loading, error, refetch } = useApi(getZones);
