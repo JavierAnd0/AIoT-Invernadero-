@@ -53,9 +53,18 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     cors_origins = list(app.config["CORS_ORIGINS"])
-    # Wildcard Vercel preview domains — only when explicitly opted in via env
-    if app.config.get("ALLOW_VERCEL_PREVIEWS"):
+
+    # Always allow FRONTEND_URL — if CORS_ORIGINS is stale (e.g. old Vercel
+    # domain still set in Dokploy env) the OAuth redirect target still works.
+    frontend_url = app.config.get("FRONTEND_URL", "").rstrip("/")
+    if frontend_url and frontend_url not in cors_origins:
+        cors_origins.append(frontend_url)
+
+    # If FRONTEND_URL points to Vercel, also allow all *.vercel.app so that
+    # preview deployments work without adding each URL manually.
+    if "vercel.app" in frontend_url or app.config.get("ALLOW_VERCEL_PREVIEWS"):
         cors_origins.append(r"https://.*\.vercel\.app")
+
     CORS(app, origins=cors_origins, supports_credentials=True)
 
     # ── OAuth2 (Authlib) ──────────────────────────────────────────────────────
