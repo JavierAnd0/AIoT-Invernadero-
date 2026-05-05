@@ -1,16 +1,15 @@
-"""Sensor reading routes — ingest and query time-series IoT data."""
+"""Sensor reading routes — ingest and query time-series IoT data (tenant-scoped)."""
 
 from datetime import datetime
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, g, jsonify, request
 from sqlalchemy import func
 
 from models import db
 from models.device import Device
 from models.prediction import Prediction
 from models.sensor_reading import SensorReading
-from routes import role_required
+from routes import tenant_required
 from services import alert_service, prediction_service
 
 readings_bp = Blueprint("readings", __name__)
@@ -19,9 +18,9 @@ _SENSOR_FIELDS = ["temperature", "humidity", "ph", "light_lux", "co2_ppm", "soil
 
 
 @readings_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_readings():
-    """List readings with optional filters and pagination.
+    """List readings for the current tenant with optional filters and pagination.
     ---
     tags: [Readings]
     security: [{BearerAuth: []}]
@@ -33,7 +32,7 @@ def list_readings():
     to_date      = request.args.get("to_date")
     is_simulated = request.args.get("is_simulated")
 
-    q = SensorReading.query.order_by(SensorReading.recorded_at.desc())
+    q = SensorReading.query.filter_by(tenant_id=g.tenant_id).order_by(SensorReading.recorded_at.desc())
 
     if device_id:
         q = q.filter_by(device_id=device_id)
@@ -53,7 +52,7 @@ def list_readings():
 
 
 @readings_bp.post("/")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def create_reading():
     """Ingest a sensor reading, trigger alerts and AI prediction.
     ---
@@ -65,38 +64,34 @@ def create_reading():
     if not data.get("device_id"):
         return jsonify({"error": "device_id is required"}), 400
 
-    device = Device.query.get(data["device_id"])
+    device = Device.query.filter_by(device_id=data["device_id"], tenant_id=g.tenant_id).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 
-    # Validate sensor field ranges (D1 CHECK constraints)
     errors = SensorReading.validate_fields(data)
     if errors:
         return jsonify({"error": "Validation failed", "details": errors}), 400
 
     reading = SensorReading(
+        tenant_id=g.tenant_id,
         device_id=data["device_id"],
         is_simulated=bool(data.get("is_simulated", False)),
         recorded_at=datetime.utcnow(),
         **{f: data[f] for f in _SENSOR_FIELDS if f in data and data[f] is not None},
     )
     db.session.add(reading)
-    db.session.flush()  # get reading_id
+    db.session.flush()
 
-    # Update device last_seen_at
     device.last_seen_at = datetime.utcnow()
 
-    # ── 1. Alert evaluation ───────────────────────────────────────────────────
     alerts_created_count = 0
     try:
-        alerts = alert_service.check_and_create_alerts(reading)
+        alerts = alert_service.check_and_create_alerts(reading, g.tenant_id)
         alerts_created_count = len(alerts)
     except Exception:
-        pass  # non-fatal: commit reading even if alert check fails
+        pass
 
-    # ── 2. AI prediction ──────────────────────────────────────────────────────
     pred_dict = None
-    pred_obj  = None
     try:
         features = {
             f: float(getattr(reading, f))
@@ -106,6 +101,7 @@ def create_reading():
         result = prediction_service.run_prediction(features)
 
         pred_obj = Prediction(
+            tenant_id=g.tenant_id,
             device_id=reading.device_id,
             reading_id=reading.reading_id,
             model_name=result["model_name"],
@@ -122,13 +118,14 @@ def create_reading():
                 reading.device_id,
                 result["predicted_class"],
                 result["confidence"],
+                g.tenant_id,
             )
             alerts_created_count += 1
 
         db.session.flush()
         pred_dict = pred_obj.to_dict()
     except Exception:
-        pass  # non-fatal: persist reading even when AI is unavailable
+        pass
 
     db.session.commit()
     return jsonify({
@@ -139,19 +136,19 @@ def create_reading():
 
 
 @readings_bp.get("/latest")
-@jwt_required()
+@tenant_required()
 def latest_readings():
-    """Return the most recent reading for every active device.
+    """Return the most recent reading for every active device in this tenant.
     ---
     tags: [Readings]
     security: [{BearerAuth: []}]
     """
-    # Subquery: max recorded_at per device
     subq = (
         db.session.query(
             SensorReading.device_id,
             func.max(SensorReading.recorded_at).label("max_time"),
         )
+        .filter(SensorReading.tenant_id == g.tenant_id)
         .group_by(SensorReading.device_id)
         .subquery()
     )
@@ -160,14 +157,14 @@ def latest_readings():
         db.session.query(SensorReading)
         .join(
             subq,
-            (SensorReading.device_id    == subq.c.device_id) &
-            (SensorReading.recorded_at  == subq.c.max_time),
+            (SensorReading.device_id   == subq.c.device_id) &
+            (SensorReading.recorded_at == subq.c.max_time),
         )
         .all()
     )
 
     latest_map = {r.device_id: r for r in latest}
-    devices    = Device.query.filter_by(status="online").all()
+    devices    = Device.query.filter_by(tenant_id=g.tenant_id, status="online").all()
 
     return jsonify([
         {
@@ -179,14 +176,14 @@ def latest_readings():
 
 
 @readings_bp.get("/device/<int:device_id>")
-@jwt_required()
+@tenant_required()
 def readings_by_device(device_id: int):
-    """Return readings for a specific device, newest first.
+    """Return readings for a specific device in this tenant, newest first.
     ---
     tags: [Readings]
     security: [{BearerAuth: []}]
     """
-    device = Device.query.get(device_id)
+    device = Device.query.filter_by(device_id=device_id, tenant_id=g.tenant_id).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 
@@ -196,7 +193,7 @@ def readings_by_device(device_id: int):
 
     q = (
         SensorReading.query
-        .filter_by(device_id=device_id)
+        .filter_by(device_id=device_id, tenant_id=g.tenant_id)
         .order_by(SensorReading.recorded_at.desc())
     )
     if from_date:

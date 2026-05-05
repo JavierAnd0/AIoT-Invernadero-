@@ -84,7 +84,7 @@ def _severity_and_direction(
     return None, "ok"
 
 
-def check_and_create_alerts(reading: SensorReading) -> list[Alert]:
+def check_and_create_alerts(reading: SensorReading, tenant_id: int) -> list[Alert]:
     """Evaluate *reading* against crop thresholds and persist any triggered alerts.
 
     Returns the list of Alert objects created.
@@ -126,6 +126,7 @@ def check_and_create_alerts(reading: SensorReading) -> list[Alert]:
                 )
 
             alert = Alert(
+                tenant_id=tenant_id,
                 device_id=reading.device_id,
                 reading_id=reading.reading_id,
                 alert_type=meta["alert_type"],
@@ -148,7 +149,7 @@ def check_and_create_alerts(reading: SensorReading) -> list[Alert]:
 
 
 def create_prediction_alert(
-    device_id: int, predicted_class: str, confidence: float
+    device_id: int, predicted_class: str, confidence: float, tenant_id: int
 ) -> Alert | None:
     """Create a 'prediction' alert when the predicted condition is warning or critical.
 
@@ -163,6 +164,7 @@ def create_prediction_alert(
         f"(confidence {confidence:.1%})"
     )
     alert = Alert(
+        tenant_id=tenant_id,
         device_id=device_id,
         alert_type="prediction",
         severity=severity,

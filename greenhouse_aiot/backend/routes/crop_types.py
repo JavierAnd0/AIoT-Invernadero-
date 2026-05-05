@@ -1,17 +1,16 @@
 """Crop-type routes — species catalog management."""
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, g, jsonify, request
 
 from models import db
 from models.crop_type import CropType
-from routes import role_required
+from routes import tenant_required
 
 crop_types_bp = Blueprint("crop_types", __name__)
 
 
 @crop_types_bp.get("/")
-@jwt_required()
+@tenant_required()
 def list_crop_types():
     """Return all crop types.
     ---
@@ -22,7 +21,7 @@ def list_crop_types():
 
 
 @crop_types_bp.post("/")
-@role_required("admin")
+@tenant_required("admin")
 def create_crop_type():
     """Add a new crop species to the catalog.
     ---
@@ -91,7 +90,7 @@ def create_crop_type():
 
 
 @crop_types_bp.get("/<int:crop_type_id>")
-@jwt_required()
+@tenant_required()
 def get_crop_type(crop_type_id: int):
     """Return a single crop type.
     ---

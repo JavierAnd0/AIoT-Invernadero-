@@ -86,6 +86,7 @@ def _generate_readings(app) -> None:
             baseline = ZONE_BASELINES.get(device.zone_id, _DEFAULT_BASELINE)
 
             reading = SensorReading(
+                tenant_id=device.tenant_id,
                 device_id=device.device_id,
                 temperature=_add_noise(baseline["temperature"],   "temperature"),
                 humidity=_add_noise(   baseline["humidity"],      "humidity"),
@@ -104,7 +105,7 @@ def _generate_readings(app) -> None:
 
             # Trigger alert evaluation
             try:
-                alert_service.check_and_create_alerts(reading)
+                alert_service.check_and_create_alerts(reading, device.tenant_id)
             except Exception:
                 logger.exception("Alert check failed for device %d", device.device_id)
 
@@ -120,6 +121,7 @@ def _generate_readings(app) -> None:
                 }
                 pred_result = prediction_service.run_prediction(features)
                 pred = Prediction(
+                    tenant_id=device.tenant_id,
                     device_id=device.device_id,
                     reading_id=reading.reading_id,
                     model_name=pred_result["model_name"],
@@ -136,6 +138,7 @@ def _generate_readings(app) -> None:
                         device.device_id,
                         pred_result["predicted_class"],
                         pred_result["confidence"],
+                        device.tenant_id,
                     )
             except Exception:
                 logger.exception("Prediction failed for device %d", device.device_id)

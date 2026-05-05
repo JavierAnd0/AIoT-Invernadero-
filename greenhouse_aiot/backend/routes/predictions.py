@@ -1,19 +1,18 @@
-"""Prediction routes — POST /predict and GET /predictions endpoints.
+"""Prediction routes — POST /predict and GET /predictions endpoints (tenant-scoped).
 
 Blueprint prefix is /api/v1 (not /api/v1/predictions) so that:
-  POST /api/v1/predict         — single-sample inference
-  GET  /api/v1/predictions     — history
+  POST /api/v1/predict                       — single-sample inference
+  GET  /api/v1/predictions                   — history
   GET  /api/v1/predictions/device/<id>
 """
 
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, g, jsonify, request
 
 from models import db
 from models.device import Device
 from models.prediction import Prediction
 from models.sensor_reading import SensorReading
-from routes import role_required
+from routes import tenant_required
 from services import alert_service, prediction_service
 
 predictions_bp = Blueprint("predictions", __name__)
@@ -24,49 +23,24 @@ _FEATURE_NAMES = [
 
 
 @predictions_bp.post("/predict")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def predict_endpoint():
     """Run an AI inference on sensor readings and persist the result.
     ---
     tags: [Predictions]
     security: [{BearerAuth: []}]
-    parameters:
-      - in: body
-        required: true
-        schema:
-          type: object
-          required: [device_id]
-          properties:
-            device_id:    {type: integer}
-            temperature:  {type: number}
-            humidity:     {type: number}
-            ph:           {type: number}
-            light_lux:    {type: number}
-            co2_ppm:      {type: number}
-            soil_moisture:{type: number}
-            model_name:   {type: string}
-    responses:
-      200:
-        description: Prediction result
-      400:
-        description: Missing features
-      404:
-        description: Device not found
-      503:
-        description: AI model unavailable
     """
     data = request.get_json(silent=True) or {}
 
     if not data.get("device_id"):
         return jsonify({"error": "device_id is required"}), 400
 
-    device = Device.query.get(data["device_id"])
+    device = Device.query.filter_by(device_id=data["device_id"], tenant_id=g.tenant_id).first()
     if device is None:
         return jsonify({"error": "Device not found"}), 404
 
     model_name = data.get("model_name", "random_forest")
 
-    # ── Run inference ─────────────────────────────────────────────────────────
     try:
         result = prediction_service.run_prediction(data, model_name=model_name)
     except RuntimeError as exc:
@@ -74,18 +48,17 @@ def predict_endpoint():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    # ── Determine reference reading_id ────────────────────────────────────────
     last_reading = (
         SensorReading.query
-        .filter_by(device_id=device.device_id)
+        .filter_by(device_id=device.device_id, tenant_id=g.tenant_id)
         .order_by(SensorReading.recorded_at.desc())
         .first()
     )
 
     if last_reading is None:
-        # Create a synthetic reading so the FK constraint is satisfied
         features = prediction_service._normalize_features(data)
         synth = SensorReading(
+            tenant_id=g.tenant_id,
             device_id=device.device_id,
             is_simulated=True,
             **{k: v for k, v in features.items() if k in _FEATURE_NAMES},
@@ -96,8 +69,8 @@ def predict_endpoint():
     else:
         reading_id = last_reading.reading_id
 
-    # ── Persist prediction ────────────────────────────────────────────────────
     pred = Prediction(
+        tenant_id=g.tenant_id,
         device_id=device.device_id,
         reading_id=reading_id,
         model_name=result["model_name"],
@@ -110,13 +83,13 @@ def predict_endpoint():
     db.session.add(pred)
     db.session.flush()
 
-    # ── Optional prediction alert ─────────────────────────────────────────────
     alert_created = False
     if result["predicted_class"] in {"warning", "critical"}:
         alert = alert_service.create_prediction_alert(
             device.device_id,
             result["predicted_class"],
             result["confidence"],
+            g.tenant_id,
         )
         alert_created = alert is not None
 
@@ -135,9 +108,9 @@ def predict_endpoint():
 
 
 @predictions_bp.get("/predictions")
-@role_required("admin")
+@tenant_required("admin")
 def list_predictions():
-    """Return AI prediction history with optional filters.
+    """Return AI prediction history for this tenant with optional filters.
     ---
     tags: [Predictions]
     security: [{BearerAuth: []}]
@@ -150,7 +123,7 @@ def list_predictions():
     from_date  = request.args.get("from_date")
     to_date    = request.args.get("to_date")
 
-    q = Prediction.query.order_by(Prediction.created_at.desc())
+    q = Prediction.query.filter_by(tenant_id=g.tenant_id).order_by(Prediction.created_at.desc())
     if device_id:
         q = q.filter_by(device_id=device_id)
     if pred_class:
@@ -170,20 +143,20 @@ def list_predictions():
 
 
 @predictions_bp.get("/predictions/device/<int:device_id>")
-@role_required("admin", "operator")
+@tenant_required("admin", "operator")
 def predictions_by_device(device_id: int):
-    """Return recent predictions for one device.
+    """Return recent predictions for one device in this tenant.
     ---
     tags: [Predictions]
     security: [{BearerAuth: []}]
     """
-    if Device.query.get(device_id) is None:
+    if Device.query.filter_by(device_id=device_id, tenant_id=g.tenant_id).first() is None:
         return jsonify({"error": "Device not found"}), 404
 
     limit = request.args.get("limit", 50, type=int)
     preds = (
         Prediction.query
-        .filter_by(device_id=device_id)
+        .filter_by(device_id=device_id, tenant_id=g.tenant_id)
         .order_by(Prediction.created_at.desc())
         .limit(limit)
         .all()

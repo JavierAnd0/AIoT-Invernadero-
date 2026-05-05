@@ -2,7 +2,7 @@
 
 from flask import Blueprint, current_app, jsonify, request
 
-from routes import role_required
+from routes import tenant_required
 from services import simulator_service
 
 simulator_bp = Blueprint("simulator", __name__)
@@ -12,7 +12,7 @@ _MAX_INTERVAL = 120
 
 
 @simulator_bp.post("/start")
-@role_required("admin")
+@tenant_required("admin")
 def start_simulator():
     """Start the IoT simulator scheduler.
     ---
@@ -60,7 +60,7 @@ def start_simulator():
 
 
 @simulator_bp.post("/stop")
-@role_required("admin")
+@tenant_required("admin")
 def stop_simulator():
     """Stop the IoT simulator scheduler.
     ---
@@ -81,7 +81,7 @@ def stop_simulator():
 
 
 @simulator_bp.get("/status")
-@role_required("admin")
+@tenant_required("admin")
 def simulator_status():
     """Return current simulator state.
     ---
