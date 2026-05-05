@@ -171,31 +171,29 @@ def google_callback():
             or User.query.filter_by(email=email).first()
         )
 
-        if user:
-            user.google_id     = google_id
-            user.avatar_url    = avatar_url
-            user.auth_provider = "google"
-            user.updated_at    = datetime.utcnow()
-        else:
+        if not user:
+            # Only allow Google sign-in for existing accounts (created by admin).
+            # Exception: if no users exist yet, bootstrap the first admin.
+            if User.query.count() > 0:
+                return redirect(f"{frontend_url}/auth/callback?error=account_not_found")
             base = email.split("@")[0].replace(".", "_")
             username = base
-            counter  = 1
-            while User.query.filter_by(username=username).first():
-                username = f"{base}_{counter}"
-                counter += 1
-
-            role = "admin" if User.query.count() == 0 else "viewer"
             user = User(
                 username=username,
                 email=email,
                 full_name=full_name,
-                role=role,
+                role="admin",
                 auth_provider="google",
                 google_id=google_id,
                 avatar_url=avatar_url,
                 is_active=True,
             )
             db.session.add(user)
+        else:
+            user.google_id     = google_id
+            user.avatar_url    = avatar_url
+            user.auth_provider = "google"
+            user.updated_at    = datetime.utcnow()
 
         db.session.commit()
 
