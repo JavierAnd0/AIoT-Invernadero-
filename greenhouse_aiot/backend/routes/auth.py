@@ -103,11 +103,12 @@ def register():
     if User.query.filter_by(email=data["email"]).first():
         return jsonify({"error": "Email already registered"}), 409
 
+    role = "admin" if User.query.count() == 0 else "viewer"
     user = User(
         username=data["username"],
         email=data["email"],
         full_name=data["full_name"],
-        role="viewer",
+        role=role,
         auth_provider="local",
         is_active=True,
     )
@@ -183,11 +184,12 @@ def google_callback():
                 username = f"{base}_{counter}"
                 counter += 1
 
+            role = "admin" if User.query.count() == 0 else "viewer"
             user = User(
                 username=username,
                 email=email,
                 full_name=full_name,
-                role="viewer",
+                role=role,
                 auth_provider="google",
                 google_id=google_id,
                 avatar_url=avatar_url,
