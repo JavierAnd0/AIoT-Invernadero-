@@ -10,7 +10,7 @@ class SensorReading(db.Model):
 
     __tablename__ = "sensor_readings"
 
-    reading_id    = db.Column(db.BigInteger,    primary_key=True)
+    reading_id    = db.Column(db.BigInteger,    primary_key=True, autoincrement=True)
     tenant_id     = db.Column(db.Integer,       db.ForeignKey("tenants.tenant_id"), nullable=False, index=True)
     device_id     = db.Column(db.Integer,       db.ForeignKey("devices.device_id"), nullable=False)
     temperature   = db.Column(db.Numeric(5,  2))
