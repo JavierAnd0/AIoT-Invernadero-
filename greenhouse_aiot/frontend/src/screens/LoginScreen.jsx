@@ -26,8 +26,8 @@ export default function LoginScreen({ onLogin }) {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const role = await doLogin(email, pass);
-    if (role) onLogin(role);
+    const result = await doLogin(email, pass);
+    if (result.ok) onLogin();
   }
 
   return (

@@ -35,25 +35,25 @@ function defaultScreenForRole(role) {
 }
 
 export default function App() {
-  const { isAuthenticated, role, doLogout } = useAuth();
+  const { isAuthenticated, currentRole, doLogout } = useAuth();
   const [screen, setScreen] = useState('dashboard');
   const [zone,   setZone]   = useState(null);
 
-  function handleLogin(r) {
-    setScreen(defaultScreenForRole(r));
+  function handleLogin() {
+    setScreen('dashboard');
   }
 
   useEffect(() => {
-    if (!SCREEN_ROLES[screen]?.includes(role)) {
-      setScreen(defaultScreenForRole(role));
+    if (!SCREEN_ROLES[screen]?.includes(currentRole)) {
+      setScreen('dashboard');
     }
-  }, [role, screen]);
+  }, [currentRole, screen]);
 
   // OAuth2 callback — Google redirects here with ?token=
   if (window.location.pathname === '/auth/callback') {
-    return <AuthCallback onLogin={(_role) => {
-      setScreen(defaultScreenForRole(_role));
+    return <AuthCallback onLogin={() => {
       window.history.replaceState({}, '', '/');
+      setScreen('dashboard');
     }} />;
   }
 
@@ -82,7 +82,7 @@ export default function App() {
     <Shell
       screen={screen} setScreen={setScreen}
       zone={zone}     setZone={setZone}
-      role={role}
+      role={currentRole}
       onLogout={doLogout}
     >
       {renderScreen()}

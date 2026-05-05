@@ -1,8 +1,20 @@
 import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
+/**
+ * Landing page for the Google OAuth2 callback.
+ *
+ * The backend redirects here with:
+ *   /auth/callback?token=JWT&requires_tenant_selection=false|true
+ * or on error:
+ *   /auth/callback?error=<reason>
+ *
+ * We call restoreFromOAuth() (which reads tenant_id from the JWT payload and
+ * saves the minimal session) then hand off to onLogin() so App.jsx can
+ * clear the /auth/callback path and render the main app.
+ */
 export default function AuthCallback({ onLogin }) {
-  const { setSession } = useAuth();
+  const { restoreFromOAuth } = useAuth();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -10,23 +22,24 @@ export default function AuthCallback({ onLogin }) {
     const error  = params.get('error');
 
     if (error) {
-      window.location.href = '/?oauth_error=' + error;
+      window.location.href = '/?oauth_error=' + encodeURIComponent(error);
       return;
     }
 
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const user = { role: payload.role, user_id: parseInt(payload.sub) };
-        setSession(token, user);
-        onLogin(user.role);
+        const requiresTenantSelection =
+          params.get('requires_tenant_selection') === 'true';
+        restoreFromOAuth(token, requiresTenantSelection);
+        // onLogin() — no role needed; App.jsx reads currentRole from context
+        onLogin();
       } catch {
         window.location.href = '/?oauth_error=invalid_token';
       }
     } else {
       window.location.href = '/';
     }
-  }, [onLogin, setSession]);
+  }, [onLogin, restoreFromOAuth]);
 
   return (
     <div style={{

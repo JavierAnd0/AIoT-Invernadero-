@@ -3,6 +3,13 @@
 import os
 from datetime import timedelta
 
+# Sentinel values that flag "no real secret was configured"
+_DEV_SENTINEL_SECRETS = frozenset({
+    "dev-secret-change-in-prod",
+    "dev-jwt-secret-change-in-prod",
+    "",
+})
+
 
 class Config:
     """Base configuration shared by all environments."""
@@ -15,10 +22,15 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES: timedelta = timedelta(hours=24)
     JWT_ALGORITHM: str = "HS256"
 
-    # CORS
+    # CORS — comma-separated list from env; wildcard Vercel previews opt-in
     CORS_ORIGINS: list[str] = os.environ.get(
         "CORS_ORIGINS", "http://localhost:5173"
     ).split(",")
+    # Set ALLOW_VERCEL_PREVIEWS=true in env to allow any *.vercel.app origin.
+    # Useful for preview deployments, but disabled by default in production.
+    ALLOW_VERCEL_PREVIEWS: bool = os.environ.get(
+        "ALLOW_VERCEL_PREVIEWS", "false"
+    ).lower() == "true"
 
     # AI module
     AI_MODELS_PATH: str = os.environ.get("AI_MODELS_PATH", "../ai/models")
@@ -35,7 +47,7 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-    """Development configuration with SQLite fallback."""
+    """Development configuration with PostgreSQL fallback to localhost."""
 
     DEBUG: bool = True
     SQLALCHEMY_DATABASE_URI: str = os.environ.get(
@@ -43,14 +55,25 @@ class DevelopmentConfig(Config):
         "postgresql://postgres:postgres@localhost:5432/greenhouse_dev",
     )
     SQLALCHEMY_ECHO: bool = False
+    # Allow Vercel previews in dev by default
+    ALLOW_VERCEL_PREVIEWS: bool = True
 
 
 class ProductionConfig(Config):
-    """Production configuration — DATABASE_URL must be set in environment."""
+    """Production configuration — critical env vars must be set explicitly.
+
+    The application factory (app.py) validates that SECRET_KEY and
+    JWT_SECRET_KEY are not the dev-time placeholder values before serving
+    any request.  If they are missing the server refuses to start.
+    """
 
     DEBUG: bool = False
     SQLALCHEMY_DATABASE_URI: str = os.environ.get("DATABASE_URL", "")
     PREFERRED_URL_SCHEME: str = os.environ.get("PREFERRED_URL_SCHEME", "https")
+    # Vercel previews are opt-in in production (default off)
+    ALLOW_VERCEL_PREVIEWS: bool = os.environ.get(
+        "ALLOW_VERCEL_PREVIEWS", "false"
+    ).lower() == "true"
 
 
 class TestingConfig(Config):
@@ -59,7 +82,6 @@ class TestingConfig(Config):
     TESTING: bool = True
     DEBUG: bool = True
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///test_greenhouse.db"
-    # Disable CSRF / session protection in tests
     WTF_CSRF_ENABLED: bool = False
     JWT_ACCESS_TOKEN_EXPIRES: timedelta = timedelta(hours=1)
 

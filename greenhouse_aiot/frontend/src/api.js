@@ -84,9 +84,9 @@ export const predict              = (data)   => api.post('/predict', data).then(
 export const getPredictions       = (params) => api.get('/predictions', { params }).then(r => r.data);
 export const getDevicePredictions = (id)     => api.get(`/predictions/device/${id}`).then(r => r.data);
 
-// USERS
+// USERS — list/update/deactivate existing tenant members
+// NOTE: creating users is done via inviteMember (POST /tenants/<id>/members)
 export const getUsers   = (params) => api.get('/users/', { params }).then(r => r.data);
-export const createUser = (data)   => api.post('/users/', data).then(r => r.data);
 export const updateUser = (id, d)  => api.put(`/users/${id}`, d).then(r => r.data);
 export const deleteUser = (id)     => api.delete(`/users/${id}`).then(r => r.data);
 

@@ -41,9 +41,21 @@ def create_app(config_name: str | None = None) -> Flask:
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    cors_origins = app.config["CORS_ORIGINS"]
-    # Always allow Vercel preview and production deployments
-    cors_origins = list(cors_origins) + [r"https://.*\.vercel\.app"]
+    # ── Security guard — refuse to start in production with weak secrets ──────
+    if config_name == "production":
+        from config import _DEV_SENTINEL_SECRETS
+        for _key in ("SECRET_KEY", "JWT_SECRET_KEY"):
+            if app.config.get(_key) in _DEV_SENTINEL_SECRETS:
+                raise RuntimeError(
+                    f"FATAL: {_key} is missing or still using a dev-time placeholder. "
+                    "Set a strong random value in your environment before running in production."
+                )
+
+    # ── CORS ──────────────────────────────────────────────────────────────────
+    cors_origins = list(app.config["CORS_ORIGINS"])
+    # Wildcard Vercel preview domains — only when explicitly opted in via env
+    if app.config.get("ALLOW_VERCEL_PREVIEWS"):
+        cors_origins.append(r"https://.*\.vercel\.app")
     CORS(app, origins=cors_origins, supports_credentials=True)
 
     # ── OAuth2 (Authlib) ──────────────────────────────────────────────────────
