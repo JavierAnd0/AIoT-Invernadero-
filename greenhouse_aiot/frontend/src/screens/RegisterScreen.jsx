@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { register, loginWithGoogle } from '../api';
+import { bootstrap, loginWithGoogle } from '../api';
 import { useAuth } from '../hooks/useAuth';
 
 export default function RegisterScreen({ onSuccess, onBack }) {
   const { setSession } = useAuth();
   const [form, setForm] = useState({
     full_name: '', username: '', email: '', password: '', confirm: '',
+    tenant_name: '',
   });
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,16 +30,24 @@ export default function RegisterScreen({ onSuccess, onBack }) {
 
     setLoading(true);
     try {
-      const data = await register({
-        username:  form.username,
-        email:     form.email,
-        password:  form.password,
-        full_name: form.full_name,
+      const data = await bootstrap({
+        username:    form.username,
+        email:       form.email,
+        password:    form.password,
+        full_name:   form.full_name,
+        tenant_name: form.tenant_name || form.username,
       });
-      setSession(data.token, data.user);
-      onSuccess(data.user.role);
+      const firstTenant = data.tenants?.[0];
+      setSession({
+        token:    data.token,
+        user:     data.user,
+        tenants:  data.tenants || [],
+        tenantId: firstTenant?.tenant_id ?? null,
+        role:     firstTenant?.role ?? 'admin',
+      });
+      onSuccess(firstTenant?.role ?? 'admin');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.error || 'Setup failed');
     } finally {
       setLoading(false);
     }
@@ -67,7 +76,7 @@ export default function RegisterScreen({ onSuccess, onBack }) {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>🌿</div>
           <div style={{ color: '#22c55e', fontSize: 22, fontWeight: 700 }}>GreenCore</div>
-          <div style={{ color: '#4b7a56', fontSize: 12, marginTop: 4 }}>Create your account</div>
+          <div style={{ color: '#4b7a56', fontSize: 12, marginTop: 4 }}>Initial system setup</div>
         </div>
 
         {/* Google sign-up */}
@@ -97,6 +106,11 @@ export default function RegisterScreen({ onSuccess, onBack }) {
         </div>
 
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <label style={labelStyle}>ORGANISATION / GREENHOUSE NAME</label>
+            <input value={form.tenant_name} onChange={update('tenant_name')}
+              placeholder="Invernadero Principal" autoComplete="organization" style={inputStyle} />
+          </div>
           <div>
             <label style={labelStyle}>FULL NAME</label>
             <input value={form.full_name} onChange={update('full_name')}
