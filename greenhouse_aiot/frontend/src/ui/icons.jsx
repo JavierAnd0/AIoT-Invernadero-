@@ -27,6 +27,7 @@ import {
   XCircle,
   AlertCircle,
   Leaf,
+  Menu,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -62,6 +63,7 @@ export const ICONS = {
   checkCircle: CheckCircle,
   xCircle: XCircle,
   alertCircle: AlertCircle,
+  menu: Menu,
 };
 
 export function Icon({ name, size = 18, color, ...props }) {
