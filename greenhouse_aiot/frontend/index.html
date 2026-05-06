@@ -12,6 +12,41 @@
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f1; }
       @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes ping  { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+      /* ── CSS custom properties ── */
+      :root {
+        --bg-page:    #f0f4f1;
+        --bg-card:    #ffffff;
+        --bg-sidebar: #ffffff;
+        --border:     #e5f0e8;
+        --text-primary:   #111827;
+        --text-secondary: #6b7280;
+        --text-muted:     #9ca3af;
+        --input-bg:   #fafafa;
+        --input-border: #e5e7eb;
+        --row-hover:  #f9fafb;
+      }
+
+      [data-theme="dark"] {
+        --bg-page:    #0f172a;
+        --bg-card:    #1e293b;
+        --bg-sidebar: #1e293b;
+        --border:     #334155;
+        --text-primary:   #f1f5f9;
+        --text-secondary: #94a3b8;
+        --text-muted:     #64748b;
+        --input-bg:   #0f172a;
+        --input-border: #334155;
+        --row-hover:  #334155;
+      }
+
+      body { background: var(--bg-page); color: var(--text-primary); transition: background 0.2s, color 0.2s; }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     </style>
   </head>
   <body>

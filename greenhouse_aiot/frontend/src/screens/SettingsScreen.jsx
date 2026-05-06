@@ -49,6 +49,7 @@ function InfoRow({ label, value }) {
 }
 
 function SaveBanner({ saved }) {
+  const { t } = useTranslation();
   if (!saved) return null;
   return (
     <div style={{
@@ -62,15 +63,16 @@ function SaveBanner({ saved }) {
 
 // ── PreferencesSection ───────────────────────────────────────────────────────
 
-function PreferencesSection({ user, onSaved }) {
+function PreferencesSection() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  // Read current values from i18n / ThemeProvider (source of truth is localStorage)
   const [form, setForm] = useState({
-    language: user.language || 'en',
-    theme: user.theme || 'system',
+    language: i18n.language || localStorage.getItem('language') || 'en',
+    theme: theme || localStorage.getItem('theme') || 'system',
   });
 
   async function handleSubmit(e) {
@@ -78,19 +80,18 @@ function PreferencesSection({ user, onSaved }) {
     setError('');
     setSaving(true);
     try {
-      const res = await updateProfile(form);
-      setForm({ language: res.user.language, theme: res.user.theme });
+      // Preferences are client-side only — no backend call needed.
       if (form.language !== i18n.language) {
         i18n.changeLanguage(form.language);
+        localStorage.setItem('language', form.language);
       }
       if (form.theme !== theme) {
-        setTheme(form.theme);
+        setTheme(form.theme); // ThemeProvider already persists to localStorage
       }
-      onSaved(res.user);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not update preferences');
+      setError('Could not update preferences');
     } finally {
       setSaving(false);
     }
@@ -519,6 +520,7 @@ function AvatarCard({ user, currentRole }) {
 // ── main screen ───────────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const { user: authUser, tenants, currentTenantId, currentRole, setSession, token } = useAuth();
 
   // Keep a local copy of user so profile updates reflect immediately
@@ -548,7 +550,7 @@ export default function SettingsScreen() {
       </div>
 
       <AvatarCard user={user} currentRole={currentRole} />
-      <PreferencesSection user={user} onSaved={handleProfileSaved} />
+      <PreferencesSection />
       <ProfileSection user={user} onSaved={handleProfileSaved} />
       <PasswordSection user={user} />
       <AccountSection

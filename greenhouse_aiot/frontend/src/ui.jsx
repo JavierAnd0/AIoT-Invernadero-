@@ -57,8 +57,8 @@ export function PulseDot({ color = '#22c55e', size = 8 }) {
 export function Card({ children, style = {} }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: 12,
-      border: '1px solid #e5f0e8', padding: 20, ...style,
+      background: 'var(--bg-card)', borderRadius: 12,
+      border: '1px solid var(--border)', padding: 20, ...style,
     }}>
       {children}
     </div>

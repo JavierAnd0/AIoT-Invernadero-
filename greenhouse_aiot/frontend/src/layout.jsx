@@ -25,7 +25,7 @@ export function Shell({ children, screen, setScreen, zone, setZone, role, onLogo
         role={role}
         onLogout={onLogout}
       />
-      <main style={{ flex: 1, overflow: 'auto', background: '#f0f4f1', padding: 28 }}>
+      <main style={{ flex: 1, overflow: 'auto', background: 'var(--bg-page)', padding: 28 }}>
         {children}
       </main>
     </div>
