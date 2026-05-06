@@ -67,7 +67,7 @@ export default function CropsScreen({ zone }) {
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>{t('crops.newBatch')}</div>
           <ErrorBanner message={saveError} />
-          <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             <Input label={t('crops.batchCode')} value={form.batch_code} onChange={e => upd('batch_code', e.target.value)} />
             <Input label={t('crops.quantity')} type="number" value={form.quantity} onChange={e => upd('quantity', e.target.value)} />
             <Select

@@ -119,7 +119,8 @@ export default function DeviceManagement() {
       )}
 
       <Card>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
               {[t('devices.colName'), t('devices.colSerial'), t('devices.colType'), t('devices.colZone'), t('devices.colFirmware'), t('devices.colLastSeen'), t('devices.colStatus'), t('devices.colActions')].map(h => (
@@ -156,7 +157,8 @@ export default function DeviceManagement() {
               </tr>
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
     </div>
   );

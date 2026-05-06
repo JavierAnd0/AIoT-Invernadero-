@@ -17,6 +17,7 @@ import {
   getCrops, getDeviceReadings,
 } from '../api';
 import { Card, Badge, LineChart, STATUS_COLOR, SEV_COLOR } from '../ui';
+import { ResponsiveGrid } from '../components/ResponsiveGrid.jsx';
 
 const METRIC = [
   { key: 'temp',  labelKey: 'sensors.temperature', unit: '°C', color: '#f59e0b', icon: 'temp' },
@@ -27,6 +28,13 @@ const METRIC = [
 
 export default function DashboardScreen({ zone }) {
   const { t } = useTranslation();
+  // Simple responsive behavior based on window width
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const { data: zones }          = useApi(getZones, []);
   const { data: latestReadings } = usePolling(getLatestReadings, 30000);
   const { data: openAlerts }     = usePolling(getOpenAlerts, 30000);
@@ -94,7 +102,7 @@ export default function DashboardScreen({ zone }) {
       </div>
 
       {/* Metric cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      <ResponsiveGrid min={240} gap={14}>
         {METRIC.map(m => (
           <Card key={m.key} style={{ padding: '14px 18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -111,9 +119,9 @@ export default function DashboardScreen({ zone }) {
             </div>
           </Card>
         ))}
-      </div>
+      </ResponsiveGrid>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: width < 900 ? '1fr' : '2fr 1fr', gap: 16 }}>
         {/* Chart */}
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>
