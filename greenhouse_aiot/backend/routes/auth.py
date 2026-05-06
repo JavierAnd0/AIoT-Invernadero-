@@ -111,7 +111,9 @@ def login():
       403:
         description: Account deactivated or no tenant memberships
     """
-    data     = request.get_json(silent=True) or {}
+    # force=True parses body as JSON even if Content-Type header is missing/wrong
+    # (can happen behind Nginx/Dokploy proxy that strips headers)
+    data     = request.get_json(force=True, silent=True) or {}
     username = data.get("username", "").strip()
     password = data.get("password", "")
 
