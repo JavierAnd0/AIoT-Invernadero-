@@ -50,8 +50,8 @@ export default function CropsScreen({ zone }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Crops</h1>
-          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{crops.length} batches</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Crops</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{crops.length} batches</div>
         </div>
         {canManage && (
           <Btn onClick={() => setShowForm(f => !f)}>+ New Batch</Btn>
@@ -65,7 +65,7 @@ export default function CropsScreen({ zone }) {
 
       {showForm && (
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 14 }}>New Crop Batch</div>
+          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>New Crop Batch</div>
           <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Input label="Batch Code" value={form.batch_code} onChange={e => upd('batch_code', e.target.value)} />
@@ -93,9 +93,9 @@ export default function CropsScreen({ zone }) {
       <Card>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ background: '#f9fafb' }}>
+            <tr style={{ background: 'var(--bg-card-alt)' }}>
               {['Batch', 'Crop Type', 'Zone', 'Status', 'Quantity', 'Progress', 'Days Left'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 11 }}>{h}</th>
+                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -106,19 +106,19 @@ export default function CropsScreen({ zone }) {
               const daysLeft    = Math.max(0, growthDays - daysElapsed);
               const pct         = Math.min(100, Math.round((daysElapsed / growthDays) * 100));
               return (
-                <tr key={c.crop_id} style={{ borderTop: '1px solid #f0f4f1' }}>
+                <tr key={c.crop_id} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{c.batch_code}</td>
                   <td style={{ padding: '10px 12px' }}>{c.crop_type?.name || '—'}</td>
-                  <td style={{ padding: '10px 12px', color: '#6b7280', fontSize: 12 }}>{c.zone?.description || c.zone_id}</td>
+                  <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', fontSize: 12 }}>{c.zone?.description || c.zone_id}</td>
                   <td style={{ padding: '10px 12px' }}>
                     <Badge label={c.status} color={STATUS_COLOR[c.status] || '#6b7280'} />
                   </td>
                   <td style={{ padding: '10px 12px' }}>{c.quantity}</td>
                   <td style={{ padding: '10px 12px', minWidth: 100 }}>
-                    <div style={{ height: 6, background: '#f0f4f1', borderRadius: 3 }}>
+                    <div style={{ height: 6, background: 'var(--border)', borderRadius: 3 }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: '#22c55e', borderRadius: 3 }} />
                     </div>
-                    <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2 }}>{pct}%</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{pct}%</div>
                   </td>
                   <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{daysLeft}d</td>
                 </tr>
@@ -126,7 +126,7 @@ export default function CropsScreen({ zone }) {
             })}
             {crops.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af' }}>No crops found</td>
+                <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>No crops found</td>
               </tr>
             )}
           </tbody>

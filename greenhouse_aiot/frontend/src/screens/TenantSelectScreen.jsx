@@ -1,4 +1,5 @@
 import { useAuth } from '../hooks/useAuth';
+import { Icon } from '../ui/icons';
 
 /**
  * Tenant selection screen.
@@ -25,7 +26,7 @@ export default function TenantSelectScreen() {
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🏢</div>
+          <Icon name="building" size={48} color="#22c55e" style={{ marginBottom: 8 }} />
           <div style={{ color: '#22c55e', fontSize: 20, fontWeight: 700 }}>
             Select Organisation
           </div>
@@ -41,7 +42,7 @@ export default function TenantSelectScreen() {
             background: '#3b0a0a', color: '#f87171',
             padding: '8px 12px', borderRadius: 8, fontSize: 12, marginBottom: 16,
           }}>
-            ⚠ {error}
+            <Icon name="alertCircle" size={14} /> {error}
           </div>
         )}
 

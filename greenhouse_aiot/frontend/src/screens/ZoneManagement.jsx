@@ -52,8 +52,8 @@ export default function ZoneManagement() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Zone Management</h1>
-          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{zoneList.length} zones</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Zone Management</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{zoneList.length} zones</div>
         </div>
         {canCreate && <Btn onClick={() => { setShowForm(f => !f); setEditing(null); setForm({ name:'', description:'', area_m2:'' }); }}>
           + Add Zone
@@ -85,12 +85,12 @@ export default function ZoneManagement() {
         {zoneList.map(z => (
           <Card key={z.zone_id}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: '#111827' }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>
                 {z.description || z.name}
               </div>
               <Badge label={z.is_active ? 'Active' : 'Inactive'} color={z.is_active ? '#22c55e' : '#6b7280'} />
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
               {z.area_m2 != null && <span>{z.area_m2} m²</span>}
               {z.name && <span style={{ marginLeft: 8 }}>· {z.name}</span>}
             </div>

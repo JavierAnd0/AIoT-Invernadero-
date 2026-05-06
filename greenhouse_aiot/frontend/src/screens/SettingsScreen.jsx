@@ -4,8 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { updateProfile, changePassword } from '../api';
 import { Card, Btn, Input, Badge, ErrorBanner } from '../ui';
-
-// ── helpers ───────────────────────────────────────────────────────────────────
+import { Icon } from '../ui/icons';
 
 const ROLE_COLOR = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
 const PROVIDER_LABEL = { local: 'Password', google: 'Google' };
@@ -25,8 +24,6 @@ function formatDate(iso) {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 }
-
-// ── sub-components ────────────────────────────────────────────────────────────
 
 function SectionTitle({ children }) {
   return (
@@ -49,30 +46,27 @@ function InfoRow({ label, value }) {
 }
 
 function SaveBanner({ saved }) {
-  const { t } = useTranslation();
   if (!saved) return null;
   return (
     <div style={{
       background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
       padding: '10px 14px', fontSize: 13, color: '#15803d', fontWeight: 500,
     }}>
-      ✓ {t('settings.saved')}
+      <Icon name="checkCircle" size={16} color="#15803d" style={{ marginRight: 8 }} />
+      {t('settings.saved')}
     </div>
   );
 }
 
-// ── PreferencesSection ───────────────────────────────────────────────────────
-
-function PreferencesSection() {
+function PreferencesSection({ user, onSaved }) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-  // Read current values from i18n / ThemeProvider (source of truth is localStorage)
   const [form, setForm] = useState({
-    language: i18n.language || localStorage.getItem('language') || 'en',
-    theme: theme || localStorage.getItem('theme') || 'system',
+    language: user.language || 'en',
+    theme: user.theme || 'system',
   });
 
   async function handleSubmit(e) {
@@ -80,22 +74,29 @@ function PreferencesSection() {
     setError('');
     setSaving(true);
     try {
-      // Preferences are client-side only — no backend call needed.
+      const res = await updateProfile(form);
+      setForm({ language: res.user.language, theme: res.user.theme });
       if (form.language !== i18n.language) {
         i18n.changeLanguage(form.language);
-        localStorage.setItem('language', form.language);
       }
       if (form.theme !== theme) {
-        setTheme(form.theme); // ThemeProvider already persists to localStorage
+        setTheme(form.theme);
       }
+      onSaved(res.user);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      setError('Could not update preferences');
+      setError(err.response?.data?.error || 'Could not update preferences');
     } finally {
       setSaving(false);
     }
   }
+
+  const themeOptions = [
+    { value: 'light', icon: 'sun', labelKey: 'settings.light' },
+    { value: 'dark', icon: 'moon', labelKey: 'settings.dark' },
+    { value: 'system', icon: 'system', labelKey: 'settings.system' },
+  ];
 
   return (
     <Card>
@@ -122,7 +123,7 @@ function PreferencesSection() {
                   fontFamily: 'inherit',
                 }}
               >
-                {lang === 'en' ? t('settings.english') : t('settings.spanish')}
+                {lang === 'en' ? '🇺🇸 ' + t('settings.english') : '🇪🇸 ' + t('settings.spanish')}
               </button>
             ))}
           </div>
@@ -132,23 +133,22 @@ function PreferencesSection() {
             {t('settings.theme')}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['light', 'dark', 'system'].map(th => (
+            {themeOptions.map(opt => (
               <button
-                key={th}
+                key={opt.value}
                 type="button"
-                onClick={() => setForm(p => ({ ...p, theme: th }))}
+                onClick={() => setForm(p => ({ ...p, theme: opt.value }))}
                 style={{
                   flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
-                  borderColor: form.theme === th ? '#22c55e' : '#e5e7eb',
-                  background: form.theme === th ? '#f0fdf4' : '#fff',
-                  color: form.theme === th ? '#15803d' : '#6b7280',
+                  borderColor: form.theme === opt.value ? '#22c55e' : '#e5e7eb',
+                  background: form.theme === opt.value ? '#f0fdf4' : '#fff',
+                  color: form.theme === opt.value ? '#15803d' : '#6b7280',
                   fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'inherit',
+                  fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}
               >
-                {th === 'light' ? '☀️ ' + t('settings.light') :
-                 th === 'dark' ? '🌙 ' + t('settings.dark') :
-                 '💻 ' + t('settings.system')}
+                <Icon name={opt.icon} size={16} color={form.theme === opt.value ? '#15803d' : '#6b7280'} />
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
@@ -163,13 +163,12 @@ function PreferencesSection() {
   );
 }
 
-// ── ProfileSection ─────────────────────────────────────────────────────────────
-
 function ProfileSection({ user, onSaved }) {
-  const [form,    setForm]    = useState({ full_name: user.full_name || '', email: user.email || '' });
-  const [saving,  setSaving]  = useState(false);
-  const [error,   setError]   = useState('');
-  const [saved,   setSaved]   = useState(false);
+  const { t } = useTranslation();
+  const [form, setForm] = useState({ full_name: user.full_name || '', email: user.email || '' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
 
   const dirty = form.full_name !== (user.full_name || '') || form.email !== (user.email || '');
 
@@ -190,27 +189,26 @@ function ProfileSection({ user, onSaved }) {
 
   return (
     <Card>
-      <SectionTitle>Profile information</SectionTitle>
+      <SectionTitle>{t('settings.profile')}</SectionTitle>
       <ErrorBanner message={error} />
       <SaveBanner saved={saved} />
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
         <Input
-          label="Full Name"
+          label={t('settings.fullName')}
           value={form.full_name}
           onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))}
           required
         />
         <Input
-          label="Email"
+          label={t('settings.email')}
           type="email"
           value={form.email}
           onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
           required
         />
-        {/* Username is immutable — shown read-only */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>
-            Username
+            {t('settings.username')}
           </div>
           <div style={{
             padding: '9px 12px', background: '#f9fafb', border: '1px solid #e5e7eb',
@@ -218,12 +216,12 @@ function ProfileSection({ user, onSaved }) {
             fontFamily: "'DM Mono', monospace",
           }}>
             {user.username}
-            <span style={{ marginLeft: 8, fontSize: 10, color: '#d1d5db' }}>cannot be changed</span>
+            <span style={{ marginLeft: 8, fontSize: 10, color: '#d1d5db' }}>{t('settings.usernameImmutable')}</span>
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Btn type="submit" disabled={saving || !dirty}>
-            {saving ? 'Saving…' : 'Save changes'}
+            {saving ? 'Saving…' : t('settings.saveChanges')}
           </Btn>
         </div>
       </form>
@@ -231,16 +229,15 @@ function ProfileSection({ user, onSaved }) {
   );
 }
 
-// ── PasswordSection ────────────────────────────────────────────────────────────
-
 function PasswordSection({ user }) {
+  const { t } = useTranslation();
   const isGoogle = user.auth_provider === 'google' && !user.password_hash;
 
-  const [form,    setForm]    = useState({ current_password: '', new_password: '', confirm: '' });
-  const [saving,  setSaving]  = useState(false);
-  const [error,   setError]   = useState('');
-  const [saved,   setSaved]   = useState(false);
-  const [show,    setShow]    = useState({ current: false, next: false, confirm: false });
+  const [form, setForm] = useState({ current_password: '', new_password: '', confirm: '' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [show, setShow] = useState({ current: false, next: false, confirm: false });
 
   function toggleShow(field) {
     setShow(p => ({ ...p, [field]: !p[field] }));
@@ -276,19 +273,19 @@ function PasswordSection({ user }) {
   if (isGoogle) {
     return (
       <Card>
-        <SectionTitle>Security</SectionTitle>
+        <SectionTitle>{t('settings.security')}</SectionTitle>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 16px', background: '#f9fafb',
           border: '1px solid #e5e7eb', borderRadius: 10,
         }}>
-          <span style={{ fontSize: 22 }}>🔒</span>
+          <Icon name="lock" size={22} color="#6b7280" />
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
-              Managed by Google
+              {t('settings.managedByGoogle')}
             </div>
             <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              Your account uses Google Sign-In. Password management is handled by Google.
+              {t('settings.googleSignInDesc')}
             </div>
           </div>
         </div>
@@ -298,40 +295,39 @@ function PasswordSection({ user }) {
 
   return (
     <Card>
-      <SectionTitle>Change password</SectionTitle>
+      <SectionTitle>{t('settings.changePassword')}</SectionTitle>
       <ErrorBanner message={error} />
       <SaveBanner saved={saved} />
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
         <PasswordInput
-          label="Current password"
+          label={t('settings.currentPassword')}
           value={form.current_password}
           show={show.current}
           onToggle={() => toggleShow('current')}
           onChange={e => setForm(p => ({ ...p, current_password: e.target.value }))}
         />
         <PasswordInput
-          label="New password (min 8 chars)"
+          label={t('settings.newPassword')}
           value={form.new_password}
           show={show.next}
           onToggle={() => toggleShow('next')}
           onChange={e => setForm(p => ({ ...p, new_password: e.target.value }))}
         />
         <PasswordInput
-          label="Confirm new password"
+          label={t('settings.confirmPassword')}
           value={form.confirm}
           show={show.confirm}
           onToggle={() => toggleShow('confirm')}
           onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
         />
 
-        {/* Password strength indicator */}
         {form.new_password && (
           <PasswordStrength password={form.new_password} />
         )}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Btn type="submit" disabled={saving || !form.current_password || !form.new_password || !form.confirm}>
-            {saving ? 'Updating…' : 'Update password'}
+            {saving ? 'Updating…' : t('settings.saveChanges')}
           </Btn>
         </div>
       </form>
@@ -365,7 +361,7 @@ function PasswordInput({ label, value, show, onToggle, onChange }) {
             color: '#9ca3af', fontSize: 14, padding: 0,
           }}
         >
-          {show ? '🙈' : '👁'}
+          <Icon name={show ? 'eyeOff' : 'eye'} size={16} />
         </button>
       </div>
     </div>
@@ -373,11 +369,12 @@ function PasswordInput({ label, value, show, onToggle, onChange }) {
 }
 
 function PasswordStrength({ password }) {
+  const { t } = useTranslation();
   const checks = [
-    { label: '8+ characters',          ok: password.length >= 8 },
-    { label: 'Uppercase letter',        ok: /[A-Z]/.test(password) },
-    { label: 'Number',                  ok: /\d/.test(password) },
-    { label: 'Special character',       ok: /[^A-Za-z0-9]/.test(password) },
+    { label: '8+ characters', ok: password.length >= 8 },
+    { label: 'Uppercase', ok: /[A-Z]/.test(password) },
+    { label: 'Number', ok: /\d/.test(password) },
+    { label: 'Special', ok: /[^A-Za-z0-9]/.test(password) },
   ];
   const score = checks.filter(c => c.ok).length;
   const colors = ['#ef4444', '#f59e0b', '#f59e0b', '#22c55e', '#22c55e'];
@@ -399,7 +396,7 @@ function PasswordStrength({ password }) {
         <div style={{ display: 'flex', gap: 10 }}>
           {checks.map(c => (
             <span key={c.label} style={{ color: c.ok ? '#22c55e' : '#d1d5db' }}>
-              {c.ok ? '✓' : '○'} {c.label}
+              <Icon name={c.ok ? 'checkCircle' : 'xCircle'} size={12} /> {c.label}
             </span>
           ))}
         </div>
@@ -408,19 +405,18 @@ function PasswordStrength({ password }) {
   );
 }
 
-// ── AccountSection ─────────────────────────────────────────────────────────────
-
 function AccountSection({ user, tenants, currentTenantId, currentRole }) {
+  const { t } = useTranslation();
   const currentTenant = tenants?.find(t => t.tenant_id === currentTenantId);
 
   return (
     <Card>
-      <SectionTitle>Account details</SectionTitle>
+      <SectionTitle>{t('settings.accountDetails')}</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <InfoRow label="Member since" value={formatDate(user.created_at)} />
-        <InfoRow label="Last updated"  value={formatDate(user.updated_at)} />
+        <InfoRow label={t('settings.member_since')} value={formatDate(user.created_at)} />
+        <InfoRow label={t('settings.last_updated')} value={formatDate(user.updated_at)} />
         <InfoRow
-          label="Authentication"
+          label={t('settings.authentication')}
           value={
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span style={{
@@ -443,7 +439,7 @@ function AccountSection({ user, tenants, currentTenantId, currentRole }) {
         />
         {currentTenant && (
           <InfoRow
-            label="Current organisation"
+            label={t('settings.currentOrganisation')}
             value={
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontSize: 13, color: '#111827' }}>{currentTenant.name}</span>
@@ -458,7 +454,7 @@ function AccountSection({ user, tenants, currentTenantId, currentRole }) {
         {tenants?.length > 1 && (
           <div style={{ marginTop: 12, padding: '10px 0' }}>
             <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8 }}>
-              All organisations
+              {t('settings.allOrganisations')}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {tenants.map(t => (
@@ -478,8 +474,6 @@ function AccountSection({ user, tenants, currentTenantId, currentRole }) {
     </Card>
   );
 }
-
-// ── AvatarCard ─────────────────────────────────────────────────────────────────
 
 function AvatarCard({ user, currentRole }) {
   return (
@@ -517,18 +511,14 @@ function AvatarCard({ user, currentRole }) {
   );
 }
 
-// ── main screen ───────────────────────────────────────────────────────────────
-
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const { user: authUser, tenants, currentTenantId, currentRole, setSession, token } = useAuth();
 
-  // Keep a local copy of user so profile updates reflect immediately
   const [user, setUser] = useState(authUser);
 
   function handleProfileSaved(updatedUser) {
     setUser(updatedUser);
-    // Also sync back to AuthContext so navbar / other screens see the update
     setSession({
       token,
       user:     updatedUser,
@@ -550,7 +540,7 @@ export default function SettingsScreen() {
       </div>
 
       <AvatarCard user={user} currentRole={currentRole} />
-      <PreferencesSection />
+      <PreferencesSection user={user} onSaved={handleProfileSaved} />
       <ProfileSection user={user} onSaved={handleProfileSaved} />
       <PasswordSection user={user} />
       <AccountSection

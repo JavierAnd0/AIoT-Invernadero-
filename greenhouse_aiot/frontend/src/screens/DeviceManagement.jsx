@@ -76,8 +76,8 @@ export default function DeviceManagement() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Device Management</h1>
-          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{deviceList.length} devices</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Device Management</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{deviceList.length} devices</div>
         </div>
         {canCreate && <Btn onClick={() => setShowForm(f => !f)}>+ Add Device</Btn>}
       </div>
@@ -119,21 +119,21 @@ export default function DeviceManagement() {
       <Card>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ background: '#f9fafb' }}>
+            <tr style={{ background: 'var(--bg-card-alt)' }}>
               {['Name', 'Serial', 'Type', 'Zone', 'Firmware', 'Last Seen', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 11 }}>{h}</th>
+                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {deviceList.map(d => (
-              <tr key={d.device_id} style={{ borderTop: '1px solid #f0f4f1' }}>
+              <tr key={d.device_id} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600 }}>{d.name || '—'}</td>
                 <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 11 }}>{d.serial_number}</td>
-                <td style={{ padding: '10px 12px', color: '#6b7280' }}>{d.device_type}</td>
-                <td style={{ padding: '10px 12px', color: '#6b7280' }}>{d.zone?.description || d.zone_id}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{d.device_type}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{d.zone?.description || d.zone_id}</td>
                 <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 11 }}>{d.firmware_version || '—'}</td>
-                <td style={{ padding: '10px 12px', color: '#9ca3af', fontSize: 11 }}>{timeAgo(d.last_seen_at)}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 11 }}>{timeAgo(d.last_seen_at)}</td>
                 <td style={{ padding: '10px 12px' }}>
                   <Badge label={d.status} color={STATUS_COLOR[d.status] || '#6b7280'} />
                 </td>
@@ -150,7 +150,7 @@ export default function DeviceManagement() {
             ))}
             {deviceList.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af' }}>No devices found</td>
+                <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>No devices found</td>
               </tr>
             )}
           </tbody>

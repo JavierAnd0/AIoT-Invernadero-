@@ -99,8 +99,8 @@ export default function UserManagement() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>User Management</h1>
-          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{users.length} users</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>User Management</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{users.length} users</div>
         </div>
         <Btn onClick={() => setShowForm(f => !f)}>+ Add User</Btn>
       </div>
@@ -134,9 +134,9 @@ export default function UserManagement() {
         {saveError && !showForm && <ErrorBanner message={saveError} />}
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ background: '#f9fafb' }}>
+            <tr style={{ background: 'var(--bg-card-alt)' }}>
               {['Username', 'Full Name', 'Email', 'Role', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 11 }}>
+                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>
                   {h}
                 </th>
               ))}
@@ -146,7 +146,7 @@ export default function UserManagement() {
             {users.map(u => {
               const isSelf = u.user_id === currentUser?.user_id;
               return (
-              <tr key={u.user_id} style={{ borderTop: '1px solid #f0f4f1' }}>
+              <tr key={u.user_id} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600, fontFamily: "'DM Mono', monospace", fontSize: 12 }}>
                   {u.username}
                   {isSelf && (
@@ -154,7 +154,7 @@ export default function UserManagement() {
                   )}
                 </td>
                 <td style={{ padding: '10px 12px' }}>{u.full_name || '—'}</td>
-                <td style={{ padding: '10px 12px', color: '#6b7280', fontSize: 12 }}>{u.email || '—'}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', fontSize: 12 }}>{u.email || '—'}</td>
                 <td style={{ padding: '10px 12px' }}>
                   {/* role comes from tenant_memberships, not global users.role */}
                   {isSelf ? (
@@ -167,8 +167,9 @@ export default function UserManagement() {
                       onChange={e => handleRoleChange(u.user_id, e.target.value)}
                       style={{
                         fontSize: 12, padding: '3px 6px', borderRadius: 6,
-                        border: '1px solid #d1d5db',
-                        color: ROLE_COLOR[u.role] || '#6b7280',
+                        border: '1px solid var(--input-border)',
+                        background: 'var(--input-bg)',
+                        color: ROLE_COLOR[u.role] || 'var(--text-secondary)',
                         fontWeight: 600, cursor: 'pointer',
                       }}
                     >
@@ -187,7 +188,7 @@ export default function UserManagement() {
                 </td>
                 <td style={{ padding: '10px 12px' }}>
                   {isSelf ? (
-                    <span style={{ fontSize: 11, color: '#9ca3af' }}>—</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
                   ) : u.member_active ? (
                     <Btn
                       variant="danger"
@@ -211,7 +212,7 @@ export default function UserManagement() {
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af' }}>
+                <td colSpan={6} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   No users found
                 </td>
               </tr>

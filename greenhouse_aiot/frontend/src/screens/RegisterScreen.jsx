@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { bootstrap, loginWithGoogle } from '../api';
 import { useAuth } from '../hooks/useAuth';
+import { Icon } from '../ui/icons';
 
 export default function RegisterScreen({ onSuccess, onBack }) {
   const { setSession } = useAuth();
@@ -74,7 +75,7 @@ export default function RegisterScreen({ onSuccess, onBack }) {
         borderRadius: 16, padding: '40px 36px', width: 380,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🌿</div>
+          <Icon name="leaf" size={48} color="#22c55e" style={{ marginBottom: 8 }} />
           <div style={{ color: '#22c55e', fontSize: 22, fontWeight: 700 }}>GreenCore</div>
           <div style={{ color: '#4b7a56', fontSize: 12, marginTop: 4 }}>Initial system setup</div>
         </div>
@@ -142,7 +143,7 @@ export default function RegisterScreen({ onSuccess, onBack }) {
               background: '#3b0a0a', color: '#f87171', padding: '8px 12px',
               borderRadius: 8, fontSize: 12,
             }}>
-              ⚠ {error}
+              <Icon name="alertCircle" size={14} /> {error}
             </div>
           )}
 

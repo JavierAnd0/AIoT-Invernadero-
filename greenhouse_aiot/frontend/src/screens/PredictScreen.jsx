@@ -3,9 +3,11 @@ import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getDevices, getDeviceReadings, predict } from '../api';
 import { Card, Select, Btn, Input, SemiGauge, ErrorBanner, LoadingSpinner } from '../ui';
+import { Icon } from '../ui/icons';
 
 const CLS_COLOR = { optimal: '#22c55e', warning: '#f59e0b', critical: '#ef4444' };
-const CLS_ICON  = { optimal: '✓', warning: '⚠', critical: '✕' };
+
+const CLS_ICON = { optimal: 'checkCircle', warning: 'alertCircle', critical: 'xCircle' };
 
 const FIELDS = [
   { key: 'temp',  label: 'Temperature (°C)', min: 0,  max: 50  },
@@ -76,8 +78,8 @@ export default function PredictScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>AI Condition Prediction</h1>
-        <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>AI Condition Prediction</h1>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>
           Predict greenhouse condition from sensor values
         </div>
       </div>
@@ -153,7 +155,7 @@ export default function PredictScreen() {
                 border: `1px solid ${CLS_COLOR[result.cls] || '#22c55e'}44`,
                 borderRadius: 12, padding: '14px 24px', textAlign: 'center',
               }}>
-                <div style={{ fontSize: 28 }}>{CLS_ICON[result.cls]}</div>
+                <Icon name={CLS_ICON[result.cls]} size={28} color={CLS_COLOR[result.cls]} />
                 <div style={{ fontSize: 20, fontWeight: 700, color: CLS_COLOR[result.cls] || '#22c55e', marginTop: 4 }}>
                   {result.cls?.toUpperCase()}
                 </div>

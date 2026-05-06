@@ -1,4 +1,4 @@
-// no react hooks needed here — chart.js registration is module-level
+import { useTheme } from './hooks/useTheme';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -74,9 +74,9 @@ export function Btn({ children, onClick, variant = 'primary', disabled = false, 
   };
   const variants = {
     primary:   { background: '#22c55e', color: '#fff' },
-    secondary: { background: '#f0f4f1', color: '#374151' },
-    danger:    { background: '#fee2e2', color: '#b91c1c' },
-    ghost:     { background: 'transparent', color: '#6b7280', border: '1px solid #e5e7eb' },
+    secondary: { background: 'var(--bg-card-alt)', color: 'var(--text-primary)', border: '1px solid var(--border)' },
+    danger:    { background: 'var(--danger-bg)', color: 'var(--danger-text)', border: '1px solid var(--danger-border)' },
+    ghost:     { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' },
   };
   return (
     <button type={type} onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
@@ -88,7 +88,7 @@ export function Btn({ children, onClick, variant = 'primary', disabled = false, 
 export function Input({ label, value, onChange, type = 'text', placeholder = '', disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
-      {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
+      {label && <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>{label}</label>}
       <input
         type={type}
         value={value}
@@ -96,10 +96,10 @@ export function Input({ label, value, onChange, type = 'text', placeholder = '',
         placeholder={placeholder}
         disabled={disabled}
         style={{
-          padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
+          padding: '8px 12px', borderRadius: 8, border: '1px solid var(--input-border)',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: disabled ? '#f3f4f6' : '#fafafa',
-          color: '#111827',
+          background: disabled ? 'var(--row-hover)' : 'var(--input-bg)',
+          color: 'var(--text-primary)',
           cursor: disabled ? 'not-allowed' : 'text',
         }}
       />
@@ -110,16 +110,16 @@ export function Input({ label, value, onChange, type = 'text', placeholder = '',
 export function Select({ label, value, onChange, options = [], disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
-      {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
+      {label && <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>{label}</label>}
       <select
         value={value}
         onChange={onChange}
         disabled={disabled}
         style={{
-          padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
+          padding: '8px 12px', borderRadius: 8, border: '1px solid var(--input-border)',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: disabled ? '#f3f4f6' : '#fafafa',
-          color: '#111827',
+          background: disabled ? 'var(--row-hover)' : 'var(--input-bg)',
+          color: 'var(--text-primary)',
           cursor: disabled ? 'not-allowed' : 'pointer',
         }}
       >
@@ -132,6 +132,9 @@ export function Select({ label, value, onChange, options = [], disabled = false,
 }
 
 export function LineChart({ labels = [], datasets = [], height = 180 }) {
+  const { resolvedTheme } = useTheme();
+  const gridColor  = resolvedTheme === 'dark' ? '#263348' : '#e5f0e8';
+  const tickColor  = resolvedTheme === 'dark' ? '#8da4bf' : '#6b7280';
   const data = {
     labels,
     datasets: datasets.map((ds) => ({
@@ -150,8 +153,8 @@ export function LineChart({ labels = [], datasets = [], height = 180 }) {
     maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
     scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 10 }, maxTicksLimit: 8 } },
-      y: { grid: { color: '#f0f4f1' }, ticks: { font: { size: 10 } } },
+      x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 8 } },
+      y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
     },
   };
   return (
@@ -165,10 +168,10 @@ export function LoadingSpinner({ text = 'Loading...' }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      gap: 10, padding: '40px 0', color: '#6b7280', fontSize: 13,
+      gap: 10, padding: '40px 0', color: 'var(--text-secondary)', fontSize: 13,
     }}>
       <div style={{
-        width: 16, height: 16, border: '2px solid #e5e7eb',
+        width: 16, height: 16, border: '2px solid var(--border)',
         borderTop: '2px solid #22c55e', borderRadius: '50%',
         animation: 'spin 0.7s linear infinite',
       }} />
@@ -181,8 +184,9 @@ export function ErrorBanner({ message }) {
   if (!message) return null;
   return (
     <div style={{
-      background: '#fee2e2', color: '#b91c1c', padding: '10px 14px',
-      borderRadius: 8, fontSize: 12, marginBottom: 12,
+      background: 'var(--danger-bg)', color: 'var(--danger-text)',
+      border: '1px solid var(--danger-border)',
+      padding: '10px 14px', borderRadius: 8, fontSize: 12, marginBottom: 12,
     }}>
       ⚠ {message}
     </div>
@@ -203,15 +207,15 @@ export function SemiGauge({ value = 0, max = 100, color = '#22c55e', label = '' 
   return (
     <svg width={160} height={90} style={{ overflow: 'visible' }}>
       <path d={`M ${toXY(-90)[0]} ${toXY(-90)[1]} A ${r} ${r} 0 1 1 ${toXY(90)[0]} ${toXY(90)[1]}`}
-        fill="none" stroke="#e5e7eb" strokeWidth={10} strokeLinecap="round" />
+        fill="none" style={{ stroke: 'var(--border)' }} strokeWidth={10} strokeLinecap="round" />
       {pct > 0 && (
         <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`}
           fill="none" stroke={color} strokeWidth={10} strokeLinecap="round" />
       )}
-      <text x={cx} y={cy + 8} textAnchor="middle" fontSize={18} fontWeight={700} fill="#111827">
+      <text x={cx} y={cy + 8} textAnchor="middle" fontSize={18} fontWeight={700} style={{ fill: 'var(--text-primary)' }}>
         {value}
       </text>
-      <text x={cx} y={cy + 24} textAnchor="middle" fontSize={10} fill="#6b7280">
+      <text x={cx} y={cy + 24} textAnchor="middle" fontSize={10} style={{ fill: 'var(--text-secondary)' }}>
         {label}
       </text>
     </svg>

@@ -16,32 +16,47 @@
 
       /* ── CSS custom properties ── */
       :root {
-        --bg-page:    #f0f4f1;
-        --bg-card:    #ffffff;
-        --bg-sidebar: #ffffff;
-        --border:     #e5f0e8;
+        --bg-page:        #f0f4f1;
+        --bg-card:        #ffffff;
+        --bg-card-alt:    #f4f7f5;
+        --bg-sidebar:     #08160d;
+        --border:         #e5f0e8;
         --text-primary:   #111827;
         --text-secondary: #6b7280;
         --text-muted:     #9ca3af;
-        --input-bg:   #fafafa;
-        --input-border: #e5e7eb;
-        --row-hover:  #f9fafb;
+        --input-bg:       #fafafa;
+        --input-border:   #d1d5db;
+        --row-hover:      #f9fafb;
+        --danger-bg:      #fee2e2;
+        --danger-text:    #b91c1c;
+        --danger-border:  #fca5a5;
+        --success-bg:     #f0fdf4;
+        --success-text:   #16a34a;
+        --success-border: #bbf7d0;
       }
 
       [data-theme="dark"] {
-        --bg-page:    #0f172a;
-        --bg-card:    #1e293b;
-        --bg-sidebar: #1e293b;
-        --border:     #334155;
-        --text-primary:   #f1f5f9;
-        --text-secondary: #94a3b8;
-        --text-muted:     #64748b;
-        --input-bg:   #0f172a;
-        --input-border: #334155;
-        --row-hover:  #334155;
+        --bg-page:        #0b1120;
+        --bg-card:        #162032;
+        --bg-card-alt:    #1a2a40;
+        --bg-sidebar:     #08160d;
+        --border:         #263348;
+        --text-primary:   #e2e8f0;
+        --text-secondary: #8da4bf;
+        --text-muted:     #506070;
+        --input-bg:       #0f1a2e;
+        --input-border:   #2d4060;
+        --row-hover:      #1a2a40;
+        --danger-bg:      #3f0d0d;
+        --danger-text:    #f87171;
+        --danger-border:  #7f1d1d;
+        --success-bg:     #052e16;
+        --success-text:   #4ade80;
+        --success-border: #166534;
       }
 
       body { background: var(--bg-page); color: var(--text-primary); transition: background 0.2s, color 0.2s; }
+      input, select, textarea, button { transition: background 0.2s, color 0.2s, border-color 0.2s; }
 
       /* Scrollbar */
       ::-webkit-scrollbar { width: 6px; }

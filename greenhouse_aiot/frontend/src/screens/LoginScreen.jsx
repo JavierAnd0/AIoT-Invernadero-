@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { loginWithGoogle } from '../api';
+import { Icon } from '../ui/icons';
 import RegisterScreen from './RegisterScreen';
 
 const QUICK = [
@@ -53,7 +54,7 @@ export default function LoginScreen({ onLogin }) {
         borderRadius: 16, padding: '40px 36px', width: 380,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>🌿</div>
+          <Icon name="leaf" size={48} color="#22c55e" style={{ marginBottom: 8 }} />
           <div style={{ color: '#22c55e', fontSize: 22, fontWeight: 700 }}>GreenCore</div>
           <div style={{ color: '#4b7a56', fontSize: 12, marginTop: 4 }}>AIoT Greenhouse Management</div>
         </div>
@@ -127,7 +128,7 @@ export default function LoginScreen({ onLogin }) {
               borderRadius: 8, fontSize: 13, fontWeight: 500,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <span>⚠</span>
+              <Icon name="alertCircle" size={16} color="#f87171" />
               <span>{displayError}</span>
             </div>
           )}

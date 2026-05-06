@@ -42,8 +42,8 @@ export default function AlertsScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Alerts</h1>
-          <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{alerts.length} alerts</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Alerts</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{alerts.length} alerts</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {STATUS_FILTER.map(s => (
@@ -51,9 +51,9 @@ export default function AlertsScreen() {
               key={s}
               onClick={() => setFilter(s)}
               style={{
-                padding: '6px 14px', borderRadius: 20, border: 'none',
-                background: filter === s ? '#22c55e' : '#f0f4f1',
-                color: filter === s ? '#fff' : '#374151',
+                padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border)',
+                background: filter === s ? '#22c55e' : 'var(--bg-card-alt)',
+                color: filter === s ? '#fff' : 'var(--text-primary)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -69,10 +69,10 @@ export default function AlertsScreen() {
       {!loading && (
         <Card>
           {alerts.length === 0
-            ? <div style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>No alerts found</div>
+            ? <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>No alerts found</div>
             : alerts.map(a => (
                 <div key={a.alert_id} style={{
-                  padding: '14px 0', borderBottom: '1px solid #f0f4f1',
+                  padding: '14px 0', borderBottom: '1px solid var(--border)',
                   display: 'flex', alignItems: 'center', gap: 14,
                 }}>
                   <div style={{
@@ -81,7 +81,7 @@ export default function AlertsScreen() {
                   }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                         {a.alert_type}
                       </span>
                       <Badge label={a.severity} color={SEV_COLOR[a.severity] || '#6b7280'} />
@@ -90,7 +90,7 @@ export default function AlertsScreen() {
                         color={a.status === 'open' ? '#ef4444' : a.status === 'acknowledged' ? '#f59e0b' : '#22c55e'}
                       />
                     </div>
-                    <div style={{ fontSize: 11, color: '#6b7280' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                       Value: <span style={{ fontFamily: "'DM Mono', monospace" }}>
                         {a.measured_value != null ? Number(a.measured_value).toFixed(2) : '—'}
                       </span>
@@ -102,7 +102,7 @@ export default function AlertsScreen() {
                       <span style={{ marginLeft: 8 }}>{timeAgo(a.created_at)}</span>
                     </div>
                     {a.message && (
-                      <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{a.message}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{a.message}</div>
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
