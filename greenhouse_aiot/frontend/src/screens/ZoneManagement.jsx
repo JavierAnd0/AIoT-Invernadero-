@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getZones, createZone, updateZone } from '../api';
 import { Card, Badge, Btn, Input, LoadingSpinner, ErrorBanner } from '../ui';
 
 export default function ZoneManagement() {
+  const { t } = useTranslation();
   const { currentRole: role } = useAuth();
   const canCreate = role === 'admin' || role === 'operator';
   const canEdit = role === 'admin';
@@ -52,30 +54,30 @@ export default function ZoneManagement() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Zone Management</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{zoneList.length} zones</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('zones.title')}</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('zones.count', { count: zoneList.length })}</div>
         </div>
         {canCreate && <Btn onClick={() => { setShowForm(f => !f); setEditing(null); setForm({ name:'', description:'', area_m2:'' }); }}>
-          + Add Zone
+          {t('zones.addZone')}
         </Btn>}
       </div>
 
       <ErrorBanner message={error} />
-      {!canCreate && <ErrorBanner message="Only admin or operator can create zones. Only admin can edit existing zones." />}
+      {!canCreate && <ErrorBanner message={t('zones.viewOnlyMsg')} />}
 
       {showForm && (
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14 }}>
-            {editing ? 'Edit Zone' : 'New Zone'}
+          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14, color: 'var(--text-primary)' }}>
+            {editing ? t('zones.editZone') : t('zones.newZone')}
           </div>
           <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Input label="Name" value={form.name} onChange={e => upd('name', e.target.value)} />
-            <Input label="Area (m²)" type="number" value={form.area_m2} onChange={e => upd('area_m2', e.target.value)} />
-            <Input label="Description" value={form.description} onChange={e => upd('description', e.target.value)} style={{ gridColumn: '1/-1' }} />
+            <Input label={t('zones.name')} value={form.name} onChange={e => upd('name', e.target.value)} />
+            <Input label={t('zones.area')} type="number" value={form.area_m2} onChange={e => upd('area_m2', e.target.value)} />
+            <Input label={t('zones.description')} value={form.description} onChange={e => upd('description', e.target.value)} style={{ gridColumn: '1/-1' }} />
             <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Btn variant="ghost" onClick={() => { setShowForm(false); setEditing(null); }}>Cancel</Btn>
-              <Btn type="submit" disabled={saving}>{saving ? 'Saving…' : editing ? 'Update' : 'Create'}</Btn>
+              <Btn variant="ghost" onClick={() => { setShowForm(false); setEditing(null); }}>{t('common.cancel')}</Btn>
+              <Btn type="submit" disabled={saving}>{saving ? t('common.saving') : editing ? t('common.update') : t('common.create')}</Btn>
             </div>
           </form>
         </Card>
@@ -88,7 +90,7 @@ export default function ZoneManagement() {
               <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>
                 {z.description || z.name}
               </div>
-              <Badge label={z.is_active ? 'Active' : 'Inactive'} color={z.is_active ? '#22c55e' : '#6b7280'} />
+              <Badge label={z.is_active ? t('zones.active') : t('zones.inactive')} color={z.is_active ? '#22c55e' : '#6b7280'} />
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
               {z.area_m2 != null && <span>{z.area_m2} m²</span>}
@@ -96,7 +98,7 @@ export default function ZoneManagement() {
             </div>
             {canEdit && (
               <Btn variant="ghost" onClick={() => startEdit(z)} style={{ width: '100%', fontSize: 11 }}>
-                Edit
+                {t('zones.edit')}
               </Btn>
             )}
           </Card>

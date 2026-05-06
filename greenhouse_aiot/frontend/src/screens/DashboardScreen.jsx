@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi, usePolling } from '../hooks/useApi';
+
+function timeAgo(isoStr) {
+  if (!isoStr) return '—';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hr ago`;
+  return `${Math.floor(hr / 24)} days ago`;
+}
 import { Icon } from '../ui/icons';
 import {
   getLatestReadings, getOpenAlerts, getDevices, getZones,
@@ -57,17 +67,17 @@ export default function DashboardScreen({ zone }) {
 
   const chartLabels = sr.map(r => new Date(r.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const chartDatasets = [
-    { label: 'Temp °C', data: sr.map(r => r.temperature), color: '#f59e0b' },
-    { label: 'Humidity %', data: sr.map(r => r.humidity), color: '#3b82f6' },
+    { label: t('sensors.colTemp'), data: sr.map(r => r.temperature), color: '#f59e0b' },
+    { label: t('sensors.colHumidity'), data: sr.map(r => r.humidity), color: '#3b82f6' },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Dashboard</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('dashboard.title')}</h1>
           <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>
-            {zoneLabel} · Live data
+            {zoneLabel} · {t('dashboard.liveData')}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -77,7 +87,7 @@ export default function DashboardScreen({ zone }) {
               border: '1px solid var(--danger-border)',
               borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600,
             }}>
-              {alertList.length} open alert{alertList.length > 1 ? 's' : ''}
+              {alertList.length} {alertList.length > 1 ? t('dashboard.openAlerts') : t('dashboard.openAlerts')}
             </span>
           )}
         </div>
@@ -107,12 +117,12 @@ export default function DashboardScreen({ zone }) {
         {/* Chart */}
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>
-            Sensor History (last 24 readings)
+            {t('dashboard.sensorHistory')}
           </div>
           {sr.length > 0
             ? <LineChart labels={chartLabels} datasets={chartDatasets} height={200} />
             : <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: '40px 0' }}>
-                No readings available
+                {t('dashboard.noReadings')}
               </div>
           }
         </Card>
@@ -120,10 +130,10 @@ export default function DashboardScreen({ zone }) {
         {/* Alerts */}
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 12 }}>
-            Open Alerts
+            {t('dashboard.openAlerts')}
           </div>
           {alertList.length === 0
-            ? <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: '20px 0' }}>No open alerts</div>
+            ? <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: '20px 0' }}>{t('dashboard.noOpenAlerts')}</div>
             : alertList.slice(0, 5).map(a => (
                 <div key={a.alert_id} style={{
                   padding: '8px 0', borderBottom: '1px solid var(--border)',
@@ -143,10 +153,10 @@ export default function DashboardScreen({ zone }) {
       {/* Crops */}
       <Card>
         <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 12 }}>
-          Active Crops
+          {t('dashboard.activeCrops')}
         </div>
         {cropList.length === 0
-          ? <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>No crops in this zone</div>
+          ? <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('dashboard.noCropsZone')}</div>
           : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
               {cropList.map(c => {
@@ -169,13 +179,13 @@ export default function DashboardScreen({ zone }) {
                       />
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                      Batch: {c.batch_code} · {c.quantity} units
+                      {t('dashboard.batch')}: {c.batch_code} · {c.quantity} {t('dashboard.units')}
                     </div>
                     <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: '#22c55e', borderRadius: 2 }} />
                     </div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                      {daysElapsed}d elapsed · {daysLeft}d left
+                      {daysElapsed}d {t('dashboard.elapsed')} · {daysLeft}d {t('dashboard.left')}
                     </div>
                   </div>
                 );

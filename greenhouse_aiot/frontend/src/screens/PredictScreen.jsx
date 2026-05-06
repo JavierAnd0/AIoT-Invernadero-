@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getDevices, getDeviceReadings, predict } from '../api';
@@ -6,18 +7,10 @@ import { Card, Select, Btn, Input, SemiGauge, ErrorBanner, LoadingSpinner } from
 import { Icon } from '../ui/icons';
 
 const CLS_COLOR = { optimal: '#22c55e', warning: '#f59e0b', critical: '#ef4444' };
-
-const CLS_ICON = { optimal: 'checkCircle', warning: 'alertCircle', critical: 'xCircle' };
-
-const FIELDS = [
-  { key: 'temp',  label: 'Temperature (°C)', min: 0,  max: 50  },
-  { key: 'hum',   label: 'Humidity (%)',      min: 0,  max: 100 },
-  { key: 'ph',    label: 'pH',                min: 0,  max: 14  },
-  { key: 'light', label: 'Light (lux)',        min: 0,  max: 10000 },
-  { key: 'co2',   label: 'CO₂ (ppm)',          min: 300,max: 5000 },
-];
+const CLS_ICON  = { optimal: 'checkCircle', warning: 'alertCircle', critical: 'xCircle' };
 
 export default function PredictScreen() {
+  const { t } = useTranslation();
   const { currentRole: role } = useAuth();
   const canPredict = role === 'admin' || role === 'operator';
   const { data: devices } = useApi(getDevices, []);
@@ -26,6 +19,14 @@ export default function PredictScreen() {
   const [result,      setResult]      = useState(null);
   const [predLoading, setPredLoading] = useState(false);
   const [predError,   setPredError]   = useState('');
+
+  const FIELDS = [
+    { key: 'temp',  label: t('predict.fieldTemp'), min: 0,   max: 50    },
+    { key: 'hum',   label: t('predict.fieldHum'),  min: 0,   max: 100   },
+    { key: 'ph',    label: t('predict.fieldPh'),   min: 0,   max: 14    },
+    { key: 'light', label: t('predict.fieldLight'),min: 0,   max: 10000 },
+    { key: 'co2',   label: t('predict.fieldCo2'),  min: 300, max: 5000  },
+  ];
 
   useEffect(() => {
     if (devices?.length && !deviceId) setDeviceId(devices[0].device_id);
@@ -49,12 +50,12 @@ export default function PredictScreen() {
     setPredLoading(true); setPredError(''); setResult(null);
     try {
       const data = await predict({
-        device_id: deviceId,
+        device_id:   deviceId,
         temperature: parseFloat(form.temp),
-        humidity: parseFloat(form.hum),
-        ph: parseFloat(form.ph),
-        light_lux: parseFloat(form.light),
-        co2_ppm: parseFloat(form.co2),
+        humidity:    parseFloat(form.hum),
+        ph:          parseFloat(form.ph),
+        light_lux:   parseFloat(form.light),
+        co2_ppm:     parseFloat(form.co2),
       });
       setResult({
         cls:   data.predicted_class,
@@ -66,33 +67,38 @@ export default function PredictScreen() {
         ],
       });
     } catch (err) {
-      setPredError(err.response?.data?.error || 'Prediction failed');
+      const status = err.response?.status;
+      const msg = err.response?.data?.error || err.message || '';
+      if (status === 503) {
+        setPredError(t('predict.aiUnavailable'));
+      } else {
+        setPredError(msg || t('predict.aiUnavailable'));
+      }
     } finally {
       setPredLoading(false);
     }
   }
 
-  const probLabels = ['Optimal', 'Warning', 'Critical'];
+  const probLabels = [t('predict.optimal'), t('predict.warning'), t('predict.critical')];
   const probColors = ['#22c55e', '#f59e0b', '#ef4444'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>AI Condition Prediction</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('predict.title')}</h1>
         <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>
-          Predict greenhouse condition from sensor values
+          {t('predict.subtitle')}
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Input form */}
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 16 }}>
-            Input Values
+          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 16 }}>
+            {t('predict.inputValues')}
           </div>
           <form onSubmit={runPrediction} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Select
-              label="Device"
+              label={t('predict.device')}
               value={deviceId || ''}
               onChange={e => setDeviceId(Number(e.target.value))}
               options={(devices || []).map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
@@ -113,31 +119,30 @@ export default function PredictScreen() {
 
             <ErrorBanner message={predError} />
             {!canPredict && (
-              <ErrorBanner message="Only admin or operator can run AI predictions." />
+              <ErrorBanner message={t('predict.adminOperatorOnly')} />
             )}
 
             <div style={{ display: 'flex', gap: 10 }}>
               <Btn variant="ghost" onClick={autofill} disabled={!canPredict} style={{ flex: 1 }}>
-                ↺ Autofill from device
+                {t('predict.autofill')}
               </Btn>
               <Btn type="submit" disabled={predLoading || !canPredict} style={{ flex: 1 }}>
-                {predLoading ? 'Running…' : '▶ Run Prediction'}
+                {predLoading ? t('predict.running') : t('predict.run')}
               </Btn>
             </div>
           </form>
         </Card>
 
-        {/* Result */}
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 16 }}>
-            Result
+          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 16 }}>
+            {t('predict.result')}
           </div>
 
-          {predLoading && <LoadingSpinner text="Running model…" />}
+          {predLoading && <LoadingSpinner text={t('predict.running')} />}
 
           {!predLoading && !result && (
             <div style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>
-              Fill in values and run prediction
+              {t('predict.fillValues')}
             </div>
           )}
 
@@ -147,7 +152,7 @@ export default function PredictScreen() {
                 value={result.conf}
                 max={100}
                 color={CLS_COLOR[result.cls] || '#22c55e'}
-                label="Confidence"
+                label={t('predict.confidence')}
               />
 
               <div style={{
@@ -160,13 +165,13 @@ export default function PredictScreen() {
                   {result.cls?.toUpperCase()}
                 </div>
                 <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-                  {result.conf}% confidence
+                  {result.conf}% {t('predict.confidence')}
                 </div>
               </div>
 
               <div style={{ width: '100%' }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 10 }}>
-                  CLASS PROBABILITIES
+                  {t('predict.classProbabilities')}
                 </div>
                 {probLabels.map((label, i) => (
                   <div key={label} style={{ marginBottom: 8 }}>

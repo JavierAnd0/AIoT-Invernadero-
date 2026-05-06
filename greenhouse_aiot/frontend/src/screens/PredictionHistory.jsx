@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getPredictions } from '../api';
 import { Card, Badge, LoadingSpinner, ErrorBanner } from '../ui';
@@ -15,6 +16,7 @@ function timeAgo(isoStr) {
 }
 
 export default function PredictionHistory() {
+  const { t } = useTranslation();
   const { data: predData, loading, error } = useApi(getPredictions);
   const predictions = predData?.predictions || (Array.isArray(predData) ? predData : []);
 
@@ -23,8 +25,8 @@ export default function PredictionHistory() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Prediction History</h1>
-        <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>{predictions.length} predictions</div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('predictions.title')}</h1>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('predictions.count', { count: predictions.length })}</div>
       </div>
 
       <ErrorBanner message={error} />
@@ -32,18 +34,18 @@ export default function PredictionHistory() {
       <Card>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ background: '#f9fafb' }}>
-              {['Time', 'Device', 'Model', 'Result', 'Confidence', 'Temp', 'Humidity', 'CO₂', 'Light'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 11 }}>{h}</th>
+            <tr style={{ background: 'var(--bg-card-alt)' }}>
+              {[t('predictions.colTime'), t('predictions.colDevice'), t('predictions.colModel'), t('predictions.colResult'), t('predictions.colConfidence'), t('predictions.colTemp'), t('predictions.colHumidity'), t('predictions.colCo2'), t('predictions.colLight')].map(h => (
+                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {predictions.map(p => (
-              <tr key={p.prediction_id} style={{ borderTop: '1px solid #f0f4f1' }}>
-                <td style={{ padding: '10px 12px', color: '#9ca3af', fontSize: 11 }}>{timeAgo(p.created_at)}</td>
+              <tr key={p.prediction_id} style={{ borderTop: '1px solid var(--border)' }}>
+                <td style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: 11 }}>{timeAgo(p.created_at)}</td>
                 <td style={{ padding: '10px 12px', fontSize: 12 }}>{p.device?.name || p.device_id || '—'}</td>
-                <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 11, color: '#6b7280' }}>
+                <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'var(--text-secondary)' }}>
                   {p.model_name || '—'}
                 </td>
                 <td style={{ padding: '10px 12px' }}>
@@ -68,8 +70,8 @@ export default function PredictionHistory() {
             ))}
             {predictions.length === 0 && (
               <tr>
-                <td colSpan={9} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af' }}>
-                  No predictions yet. Use AI Predict to generate one.
+                <td colSpan={9} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  {t('predictions.noPredictions')}
                 </td>
               </tr>
             )}

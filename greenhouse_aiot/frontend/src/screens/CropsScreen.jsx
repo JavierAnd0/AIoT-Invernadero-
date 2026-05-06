@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getCrops, createCrop, getCropTypes, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, STATUS_COLOR } from '../ui';
 
 export default function CropsScreen({ zone }) {
+  const { t } = useTranslation();
   const { currentRole: role } = useAuth();
   const canManage = role === 'admin' || role === 'operator';
   const { data: cropsData, loading, error, refetch } = useApi(
@@ -38,7 +40,7 @@ export default function CropsScreen({ zone }) {
       setShowForm(false);
       setForm({ batch_code:'', crop_type_id:'', zone_id:'', quantity:'' });
     } catch (err) {
-      setSaveError(err.response?.data?.error || 'Could not create crop batch');
+      setSaveError(err.response?.data?.error || t('crops.couldNotCreate'));
     } finally {
       setSaving(false);
     }
@@ -50,41 +52,39 @@ export default function CropsScreen({ zone }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Crops</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{crops.length} batches</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('crops.title')}</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('crops.count', { count: crops.length })}</div>
         </div>
         {canManage && (
-          <Btn onClick={() => setShowForm(f => !f)}>+ New Batch</Btn>
+          <Btn onClick={() => setShowForm(f => !f)}>{t('crops.newBatchBtn')}</Btn>
         )}
       </div>
 
       <ErrorBanner message={error} />
-      {!canManage && (
-        <ErrorBanner message="Your account can view crops, but only admin or operator can create new batches." />
-      )}
+      {!canManage && <ErrorBanner message={t('crops.viewOnlyMsg')} />}
 
       {showForm && (
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>New Crop Batch</div>
+          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>{t('crops.newBatch')}</div>
           <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Input label="Batch Code" value={form.batch_code} onChange={e => upd('batch_code', e.target.value)} />
-            <Input label="Quantity" type="number" value={form.quantity} onChange={e => upd('quantity', e.target.value)} />
+            <Input label={t('crops.batchCode')} value={form.batch_code} onChange={e => upd('batch_code', e.target.value)} />
+            <Input label={t('crops.quantity')} type="number" value={form.quantity} onChange={e => upd('quantity', e.target.value)} />
             <Select
-              label="Crop Type"
+              label={t('crops.cropType')}
               value={form.crop_type_id}
               onChange={e => upd('crop_type_id', e.target.value)}
-              options={[{ value:'', label:'Select…' }, ...(cropTypes || []).map(t => ({ value: t.crop_type_id, label: t.name }))]}
+              options={[{ value:'', label: t('common.select') }, ...(cropTypes || []).map(tp => ({ value: tp.crop_type_id, label: tp.name }))]}
             />
             <Select
-              label="Zone"
+              label={t('crops.zone')}
               value={form.zone_id}
               onChange={e => upd('zone_id', e.target.value)}
-              options={[{ value:'', label:'Select…' }, ...(zones || []).map(z => ({ value: z.zone_id, label: z.description || z.name }))]}
+              options={[{ value:'', label: t('common.select') }, ...(zones || []).map(z => ({ value: z.zone_id, label: z.description || z.name }))]}
             />
             <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Btn variant="ghost" onClick={() => setShowForm(false)}>Cancel</Btn>
-              <Btn type="submit" disabled={saving}>{saving ? 'Saving…' : 'Create'}</Btn>
+              <Btn variant="ghost" onClick={() => setShowForm(false)}>{t('common.cancel')}</Btn>
+              <Btn type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.create')}</Btn>
             </div>
           </form>
         </Card>
@@ -94,7 +94,7 @@ export default function CropsScreen({ zone }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
-              {['Batch', 'Crop Type', 'Zone', 'Status', 'Quantity', 'Progress', 'Days Left'].map(h => (
+              {[t('crops.colBatch'), t('crops.colCropType'), t('crops.colZone'), t('crops.colStatus'), t('crops.colQuantity'), t('crops.colProgress'), t('crops.colDaysLeft')].map(h => (
                 <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -126,7 +126,7 @@ export default function CropsScreen({ zone }) {
             })}
             {crops.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>No crops found</td>
+                <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('crops.noCrops')}</td>
               </tr>
             )}
           </tbody>

@@ -12,9 +12,21 @@ logger = logging.getLogger(__name__)
 
 # ── D4 AI module import ───────────────────────────────────────────────────────
 
-_AI_MODULE_PATH = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "ai")
-)
+def _find_ai_module_path() -> str:
+    """Return the AI module directory, supporting both local dev and Docker layouts.
+
+    Local dev: backend/services/ -> backend/ -> greenhouse_aiot/ -> greenhouse_aiot/ai/
+    Docker:    /app/services/    -> /app/    -> /app/ai/
+    """
+    svc_dir = os.path.dirname(os.path.abspath(__file__))
+    # Docker: one level up from services/ lands at /app/, then ai/
+    candidate = os.path.normpath(os.path.join(svc_dir, "..", "ai"))
+    if os.path.isdir(candidate):
+        return candidate
+    # Local dev: two levels up from services/ lands at greenhouse_aiot/, then ai/
+    return os.path.normpath(os.path.join(svc_dir, "..", "..", "ai"))
+
+_AI_MODULE_PATH = _find_ai_module_path()
 
 # Loaded lazily on first call so tests can patch _predict before import.
 _predict = None

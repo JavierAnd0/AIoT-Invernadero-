@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getAlerts, acknowledgeAlert, resolveAlert } from '../api';
 import { Card, Badge, Btn, LoadingSpinner, ErrorBanner, SEV_COLOR } from '../ui';
@@ -16,6 +17,7 @@ function timeAgo(isoStr) {
 const STATUS_FILTER = ['all', 'open', 'acknowledged', 'resolved'];
 
 export default function AlertsScreen() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState('all');
   const { data: alertsData, loading, error, refetch } = useApi(
     () => getAlerts(filter !== 'all' ? { status: filter } : undefined),
@@ -38,12 +40,14 @@ export default function AlertsScreen() {
     refetch();
   }
 
+  const filterLabel = { all: t('alerts.all'), open: t('alerts.open'), acknowledged: t('alerts.acknowledged'), resolved: t('alerts.resolved') };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Alerts</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{alerts.length} alerts</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('alerts.title')}</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{alerts.length} {t('alerts.title').toLowerCase()}</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {STATUS_FILTER.map(s => (
@@ -57,7 +61,7 @@ export default function AlertsScreen() {
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {filterLabel[s]}
             </button>
           ))}
         </div>
@@ -69,7 +73,7 @@ export default function AlertsScreen() {
       {!loading && (
         <Card>
           {alerts.length === 0
-            ? <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>No alerts found</div>
+            ? <div style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '40px 0' }}>{t('alerts.noAlertsFound')}</div>
             : alerts.map(a => (
                 <div key={a.alert_id} style={{
                   padding: '14px 0', borderBottom: '1px solid var(--border)',
@@ -91,11 +95,11 @@ export default function AlertsScreen() {
                       />
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                      Value: <span style={{ fontFamily: "'DM Mono', monospace" }}>
+                      {t('alerts.value')}: <span style={{ fontFamily: "'DM Mono', monospace" }}>
                         {a.measured_value != null ? Number(a.measured_value).toFixed(2) : '—'}
                       </span>
                       {a.threshold_value != null && (
-                        <> · Threshold: <span style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <> · {t('alerts.threshold')}: <span style={{ fontFamily: "'DM Mono', monospace" }}>
                           {Number(a.threshold_value).toFixed(2)}
                         </span></>
                       )}
@@ -108,12 +112,12 @@ export default function AlertsScreen() {
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                     {a.status === 'open' && (
                       <Btn variant="ghost" onClick={() => ack(a.alert_id)} style={{ fontSize: 11, padding: '5px 10px' }}>
-                        Acknowledge
+                        {t('alerts.acknowledge')}
                       </Btn>
                     )}
                     {(a.status === 'open' || a.status === 'acknowledged') && (
                       <Btn variant="secondary" onClick={() => resolve(a.alert_id)} style={{ fontSize: 11, padding: '5px 10px' }}>
-                        Resolve
+                        {t('alerts.resolve')}
                       </Btn>
                     )}
                   </div>

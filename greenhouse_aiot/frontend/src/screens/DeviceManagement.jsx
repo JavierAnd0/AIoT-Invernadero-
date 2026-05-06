@@ -1,21 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getDevices, createDevice, updateDeviceStatus, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
 
-const STATUS_OPTS = [
-  { value: 'online',      label: 'Online'      },
-  { value: 'offline',     label: 'Offline'     },
-  { value: 'error',       label: 'Error'       },
-  { value: 'maintenance', label: 'Maintenance' },
-];
-const DEVICE_TYPE_OPTS = [
-  { value: 'sensor_node', label: 'Sensor Node' },
-  { value: 'actuator', label: 'Actuator' },
-  { value: 'gateway', label: 'Gateway' },
-  { value: 'simulated', label: 'Simulated' },
-];
 const STATUS_COLOR = { online: '#22c55e', offline: '#6b7280', error: '#ef4444', maintenance: '#f59e0b' };
 
 function timeAgo(isoStr) {
@@ -29,6 +18,7 @@ function timeAgo(isoStr) {
 }
 
 export default function DeviceManagement() {
+  const { t } = useTranslation();
   const { currentRole: role } = useAuth();
   const canCreate = role === 'admin';
   const canUpdateStatus = role === 'admin' || role === 'operator';
@@ -40,6 +30,20 @@ export default function DeviceManagement() {
   const [saveError, setSaveError] = useState('');
 
   const deviceList = Array.isArray(devices) ? devices : [];
+
+  const STATUS_OPTS = [
+    { value: 'online',      label: t('devices.online') },
+    { value: 'offline',     label: t('devices.offline') },
+    { value: 'error',       label: t('devices.error') },
+    { value: 'maintenance', label: t('devices.maintenance') },
+  ];
+
+  const DEVICE_TYPE_OPTS = [
+    { value: 'sensor_node', label: t('devices.sensorNode') },
+    { value: 'actuator',    label: t('devices.actuator') },
+    { value: 'gateway',     label: t('devices.gateway') },
+    { value: 'simulated',   label: t('devices.simulated') },
+  ];
 
   function upd(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
@@ -76,41 +80,39 @@ export default function DeviceManagement() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Device Management</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{deviceList.length} devices</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('devices.title')}</h1>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('devices.count', { count: deviceList.length })}</div>
         </div>
-        {canCreate && <Btn onClick={() => setShowForm(f => !f)}>+ Add Device</Btn>}
+        {canCreate && <Btn onClick={() => setShowForm(f => !f)}>{t('devices.addDevice')}</Btn>}
       </div>
 
       <ErrorBanner message={error} />
       <ErrorBanner message={saveError} />
-      {!canCreate && (
-        <ErrorBanner message="Only admin users can register new devices. Operators can update device status." />
-      )}
+      {!canCreate && <ErrorBanner message={t('devices.adminOnlyMsg')} />}
 
       {showForm && (
         <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14 }}>New Device</div>
+          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14, color: 'var(--text-primary)' }}>{t('devices.newDevice')}</div>
           <ErrorBanner message={saveError} />
           <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Input label="Name" value={form.name} onChange={e => upd('name', e.target.value)} />
-            <Input label="Serial Number" value={form.serial_number} onChange={e => upd('serial_number', e.target.value)} />
+            <Input label={t('devices.name')} value={form.name} onChange={e => upd('name', e.target.value)} />
+            <Input label={t('devices.serialNumber')} value={form.serial_number} onChange={e => upd('serial_number', e.target.value)} />
             <Select
-              label="Type"
+              label={t('devices.type')}
               value={form.device_type}
               onChange={e => upd('device_type', e.target.value)}
               options={DEVICE_TYPE_OPTS}
             />
             <Select
-              label="Zone"
+              label={t('devices.zone')}
               value={form.zone_id}
               onChange={e => upd('zone_id', e.target.value)}
-              options={[{ value:'', label:'Select zone…' }, ...(zones || []).map(z => ({ value: z.zone_id, label: z.description || z.name }))]}
+              options={[{ value:'', label: t('devices.selectZone') }, ...(zones || []).map(z => ({ value: z.zone_id, label: z.description || z.name }))]}
             />
-            <Input label="Firmware Version" value={form.firmware_version} onChange={e => upd('firmware_version', e.target.value)} />
+            <Input label={t('devices.firmware')} value={form.firmware_version} onChange={e => upd('firmware_version', e.target.value)} />
             <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Btn variant="ghost" onClick={() => setShowForm(false)}>Cancel</Btn>
-              <Btn type="submit" disabled={saving}>{saving ? 'Saving…' : 'Create'}</Btn>
+              <Btn variant="ghost" onClick={() => setShowForm(false)}>{t('common.cancel')}</Btn>
+              <Btn type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.create')}</Btn>
             </div>
           </form>
         </Card>
@@ -120,7 +122,7 @@ export default function DeviceManagement() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
-              {['Name', 'Serial', 'Type', 'Zone', 'Firmware', 'Last Seen', 'Status', 'Actions'].map(h => (
+              {[t('devices.colName'), t('devices.colSerial'), t('devices.colType'), t('devices.colZone'), t('devices.colFirmware'), t('devices.colLastSeen'), t('devices.colStatus'), t('devices.colActions')].map(h => (
                 <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -150,7 +152,7 @@ export default function DeviceManagement() {
             ))}
             {deviceList.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>No devices found</td>
+                <td colSpan={8} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('devices.noDevices')}</td>
               </tr>
             )}
           </tbody>

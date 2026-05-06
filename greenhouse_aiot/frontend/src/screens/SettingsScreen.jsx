@@ -45,15 +45,16 @@ function InfoRow({ label, value }) {
   );
 }
 
-function SaveBanner({ saved }) {
+function SaveBanner({ saved, message }) {
   if (!saved) return null;
   return (
     <div style={{
       background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
       padding: '10px 14px', fontSize: 13, color: '#15803d', fontWeight: 500,
+      display: 'flex', alignItems: 'center', gap: 8,
     }}>
-      <Icon name="checkCircle" size={16} color="#15803d" style={{ marginRight: 8 }} />
-      {t('settings.saved')}
+      <Icon name="checkCircle" size={16} color="#15803d" />
+      {message}
     </div>
   );
 }
@@ -93,16 +94,16 @@ function PreferencesSection({ user, onSaved }) {
   }
 
   const themeOptions = [
-    { value: 'light', icon: 'sun', labelKey: 'settings.light' },
-    { value: 'dark', icon: 'moon', labelKey: 'settings.dark' },
     { value: 'system', icon: 'system', labelKey: 'settings.system' },
+    { value: 'light',  icon: 'sun',    labelKey: 'settings.light' },
+    { value: 'dark',   icon: 'moon',   labelKey: 'settings.dark' },
   ];
 
   return (
     <Card>
       <SectionTitle>{t('settings.language')} & {t('settings.theme')}</SectionTitle>
       <ErrorBanner message={error} />
-      <SaveBanner saved={saved} />
+      <SaveBanner saved={saved} message={t('settings.saved')} />
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
@@ -132,23 +133,31 @@ function PreferencesSection({ user, onSaved }) {
           <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
             {t('settings.theme')}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            display: 'inline-flex', gap: 4,
+            background: 'var(--bg-card-alt)', borderRadius: 999, padding: 4,
+            border: '1px solid var(--border)',
+          }}>
             {themeOptions.map(opt => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setForm(p => ({ ...p, theme: opt.value }))}
+                title={t(opt.labelKey)}
                 style={{
-                  flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
-                  borderColor: form.theme === opt.value ? '#22c55e' : '#e5e7eb',
-                  background: form.theme === opt.value ? '#f0fdf4' : '#fff',
-                  color: form.theme === opt.value ? '#15803d' : '#6b7280',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  width: 40, height: 40, borderRadius: 999, border: 'none',
+                  background: form.theme === opt.value ? 'var(--bg-card)' : 'transparent',
+                  boxShadow: form.theme === opt.value ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.15s',
                 }}
               >
-                <Icon name={opt.icon} size={16} color={form.theme === opt.value ? '#15803d' : '#6b7280'} />
-                {t(opt.labelKey)}
+                <Icon
+                  name={opt.icon}
+                  size={18}
+                  color={form.theme === opt.value ? 'var(--text-primary)' : 'var(--text-muted)'}
+                />
               </button>
             ))}
           </div>
@@ -191,7 +200,7 @@ function ProfileSection({ user, onSaved }) {
     <Card>
       <SectionTitle>{t('settings.profile')}</SectionTitle>
       <ErrorBanner message={error} />
-      <SaveBanner saved={saved} />
+      <SaveBanner saved={saved} message={t('settings.saved')} />
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
         <Input
           label={t('settings.fullName')}
@@ -221,7 +230,7 @@ function ProfileSection({ user, onSaved }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Btn type="submit" disabled={saving || !dirty}>
-            {saving ? 'Saving…' : t('settings.saveChanges')}
+            {saving ? t('common.saving') : t('settings.saveChanges')}
           </Btn>
         </div>
       </form>
@@ -248,10 +257,10 @@ function PasswordSection({ user }) {
     setError(''); setSaved(false);
 
     if (form.new_password !== form.confirm) {
-      setError('New passwords do not match'); return;
+      setError(t('settings.passwordsNoMatch')); return;
     }
     if (form.new_password.length < 8) {
-      setError('New password must be at least 8 characters'); return;
+      setError(t('settings.passwordTooShort')); return;
     }
 
     setSaving(true);
@@ -297,7 +306,7 @@ function PasswordSection({ user }) {
     <Card>
       <SectionTitle>{t('settings.changePassword')}</SectionTitle>
       <ErrorBanner message={error} />
-      <SaveBanner saved={saved} />
+      <SaveBanner saved={saved} message={t('settings.saved')} />
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
         <PasswordInput
           label={t('settings.currentPassword')}
@@ -327,7 +336,7 @@ function PasswordSection({ user }) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Btn type="submit" disabled={saving || !form.current_password || !form.new_password || !form.confirm}>
-            {saving ? 'Updating…' : t('settings.saveChanges')}
+            {saving ? t('common.saving') : t('settings.saveChanges')}
           </Btn>
         </div>
       </form>
@@ -371,14 +380,14 @@ function PasswordInput({ label, value, show, onToggle, onChange }) {
 function PasswordStrength({ password }) {
   const { t } = useTranslation();
   const checks = [
-    { label: '8+ characters', ok: password.length >= 8 },
-    { label: 'Uppercase', ok: /[A-Z]/.test(password) },
-    { label: 'Number', ok: /\d/.test(password) },
-    { label: 'Special', ok: /[^A-Za-z0-9]/.test(password) },
+    { label: t('settings.pwCheck8chars'),   ok: password.length >= 8 },
+    { label: t('settings.pwCheckUppercase'), ok: /[A-Z]/.test(password) },
+    { label: t('settings.pwCheckNumber'),    ok: /\d/.test(password) },
+    { label: t('settings.pwCheckSpecial'),   ok: /[^A-Za-z0-9]/.test(password) },
   ];
   const score = checks.filter(c => c.ok).length;
   const colors = ['#ef4444', '#f59e0b', '#f59e0b', '#22c55e', '#22c55e'];
-  const labels = ['Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
+  const labels = [t('settings.pwStrengthVeryWeak'), t('settings.pwStrengthWeak'), t('settings.pwStrengthFair'), t('settings.pwStrengthGood'), t('settings.pwStrengthStrong')];
 
   return (
     <div style={{ fontSize: 12 }}>
