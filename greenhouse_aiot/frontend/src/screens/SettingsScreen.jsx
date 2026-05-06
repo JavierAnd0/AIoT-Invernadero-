@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 import { updateProfile, changePassword } from '../api';
 import { Card, Btn, Input, Badge, ErrorBanner } from '../ui';
 
@@ -53,8 +55,110 @@ function SaveBanner({ saved }) {
       background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
       padding: '10px 14px', fontSize: 13, color: '#15803d', fontWeight: 500,
     }}>
-      ✓ Changes saved successfully
+      ✓ {t('settings.saved')}
     </div>
+  );
+}
+
+// ── PreferencesSection ───────────────────────────────────────────────────────
+
+function PreferencesSection({ user, onSaved }) {
+  const { t, i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState({
+    language: user.language || 'en',
+    theme: user.theme || 'system',
+  });
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+    try {
+      const res = await updateProfile(form);
+      setForm({ language: res.user.language, theme: res.user.theme });
+      if (form.language !== i18n.language) {
+        i18n.changeLanguage(form.language);
+      }
+      if (form.theme !== theme) {
+        setTheme(form.theme);
+      }
+      onSaved(res.user);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update preferences');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card>
+      <SectionTitle>{t('settings.language')} & {t('settings.theme')}</SectionTitle>
+      <ErrorBanner message={error} />
+      <SaveBanner saved={saved} />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
+            {t('settings.language')}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['en', 'es'].map(lang => (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => setForm(p => ({ ...p, language: lang }))}
+                style={{
+                  flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
+                  borderColor: form.language === lang ? '#22c55e' : '#e5e7eb',
+                  background: form.language === lang ? '#f0fdf4' : '#fff',
+                  color: form.language === lang ? '#15803d' : '#6b7280',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {lang === 'en' ? t('settings.english') : t('settings.spanish')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
+            {t('settings.theme')}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['light', 'dark', 'system'].map(th => (
+              <button
+                key={th}
+                type="button"
+                onClick={() => setForm(p => ({ ...p, theme: th }))}
+                style={{
+                  flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
+                  borderColor: form.theme === th ? '#22c55e' : '#e5e7eb',
+                  background: form.theme === th ? '#f0fdf4' : '#fff',
+                  color: form.theme === th ? '#15803d' : '#6b7280',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {th === 'light' ? '☀️ ' + t('settings.light') :
+                 th === 'dark' ? '🌙 ' + t('settings.dark') :
+                 '💻 ' + t('settings.system')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Btn type="submit" disabled={saving}>
+            {saving ? t('common.loading') : t('settings.saveChanges')}
+          </Btn>
+        </div>
+      </form>
+    </Card>
   );
 }
 
@@ -437,13 +541,14 @@ export default function SettingsScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 640 }}>
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Settings</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>{t('settings.title')}</h1>
         <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
-          Manage your profile, password, and account details
+          {t('settings.profileDesc')}
         </div>
       </div>
 
       <AvatarCard user={user} currentRole={currentRole} />
+      <PreferencesSection user={user} onSaved={handleProfileSaved} />
       <ProfileSection user={user} onSaved={handleProfileSaved} />
       <PasswordSection user={user} />
       <AccountSection

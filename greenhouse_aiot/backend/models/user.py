@@ -24,8 +24,12 @@ class User(db.Model):
     auth_provider = db.Column(db.String(20),  nullable=False, default="local")
     google_id     = db.Column(db.String(100), unique=True,    nullable=True)
     avatar_url    = db.Column(db.String(500),                 nullable=True)
+    language     = db.Column(db.String(10),                 nullable=False, default="en")
+    theme         = db.Column(db.String(10),                 nullable=False, default="system")
 
     VALID_PROVIDERS: frozenset[str] = frozenset({"local", "google"})
+    VALID_LANGUAGES: frozenset[str] = frozenset({"en", "es"})
+    VALID_THEMES: frozenset[str] = frozenset({"light", "dark", "system"})
 
     # ── Relationships ─────────────────────────────────────────────────────────
     memberships = db.relationship(
@@ -72,6 +76,8 @@ class User(db.Model):
             "is_active":     self.is_active,
             "auth_provider": self.auth_provider,
             "avatar_url":    self.avatar_url,
+            "language":      self.language,
+            "theme":         self.theme,
             "created_at":    self.created_at.isoformat() if self.created_at else None,
             "updated_at":    self.updated_at.isoformat() if self.updated_at else None,
         }

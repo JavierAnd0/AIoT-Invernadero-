@@ -46,6 +46,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
 EXPOSE 5001
 
 CMD ["sh", "-c", "\
+  python scripts/ensure_columns.py && \
   flask --app 'app:create_app(\"production\")' db upgrade && \
   python -c \"\
 import os; os.environ.setdefault('FLASK_ENV','production'); \

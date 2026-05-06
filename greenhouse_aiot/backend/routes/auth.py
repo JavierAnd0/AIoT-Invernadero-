@@ -460,7 +460,19 @@ def update_profile():
             return jsonify({"error": "Email already in use by another account"}), 409
         user.email = email
 
-    if not any(k in data for k in ("full_name", "email")):
+    if "language" in data:
+        language = data["language"].strip().lower()
+        if language not in User.VALID_LANGUAGES:
+            return jsonify({"error": f"Invalid language. Choose from {sorted(User.VALID_LANGUAGES)}"}), 400
+        user.language = language
+
+    if "theme" in data:
+        theme = data["theme"].strip().lower()
+        if theme not in User.VALID_THEMES:
+            return jsonify({"error": f"Invalid theme. Choose from {sorted(User.VALID_THEMES)}"}), 400
+        user.theme = theme
+
+    if not any(k in data for k in ("full_name", "email", "language", "theme")):
         return jsonify({"error": "No updatable fields provided (full_name, email)"}), 400
 
     user.updated_at = datetime.utcnow()
