@@ -18,6 +18,7 @@ Auth flow changes from the original single-tenant version
 """
 
 import logging
+import re
 from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, redirect, request, url_for
@@ -402,3 +403,124 @@ def me():
         "user":    user.to_dict(),
         "tenants": _membership_list(user_id),
     }), 200
+
+
+# ── PATCH /auth/profile — update own profile ──────────────────────────────────
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+@auth_bp.patch("/profile")
+@jwt_required()
+def update_profile():
+    """Update the authenticated user's own profile (full_name, email).
+
+    Username cannot be changed — it is used as a stable identifier.
+    Google-managed fields (avatar_url, google_id) are read-only here.
+    ---
+    tags: [Auth]
+    security: [{BearerAuth: []}]
+    parameters:
+      - in: body
+        schema:
+          type: object
+          properties:
+            full_name: {type: string}
+            email:     {type: string, format: email}
+    responses:
+      200:
+        description: Updated user profile
+      400:
+        description: Validation error
+      409:
+        description: Email already in use by another account
+    """
+    user_id = int(get_jwt_identity())
+    user    = User.query.get(user_id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "full_name" in data:
+        full_name = data["full_name"].strip()
+        if not full_name:
+            return jsonify({"error": "full_name cannot be empty"}), 400
+        user.full_name = full_name
+
+    if "email" in data:
+        email = data["email"].strip().lower()
+        if not _EMAIL_RE.match(email):
+            return jsonify({"error": "Invalid email format"}), 400
+        conflict = User.query.filter(
+            User.email == email,
+            User.user_id != user_id,
+        ).first()
+        if conflict:
+            return jsonify({"error": "Email already in use by another account"}), 409
+        user.email = email
+
+    if not any(k in data for k in ("full_name", "email")):
+        return jsonify({"error": "No updatable fields provided (full_name, email)"}), 400
+
+    user.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"user": user.to_dict()}), 200
+
+
+# ── POST /auth/change-password ────────────────────────────────────────────────
+@auth_bp.post("/change-password")
+@jwt_required()
+def change_password():
+    """Change the authenticated user's password.
+
+    Only available for local (password-based) accounts.
+    Google-only accounts cannot set a password here.
+    ---
+    tags: [Auth]
+    security: [{BearerAuth: []}]
+    parameters:
+      - in: body
+        required: true
+        schema:
+          type: object
+          required: [current_password, new_password]
+          properties:
+            current_password: {type: string}
+            new_password:     {type: string, minLength: 8}
+    responses:
+      200:
+        description: Password updated
+      400:
+        description: Validation error or not a local account
+      401:
+        description: Current password incorrect
+    """
+    user_id = int(get_jwt_identity())
+    user    = User.query.get(user_id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    if not user.password_hash:
+        return jsonify({
+            "error": "Your account uses Google Sign-In — password change is not available."
+        }), 400
+
+    data             = request.get_json(silent=True) or {}
+    current_password = data.get("current_password", "")
+    new_password     = data.get("new_password", "")
+
+    if not current_password or not new_password:
+        return jsonify({"error": "current_password and new_password are required"}), 400
+
+    if not user.check_password(current_password):
+        return jsonify({"error": "Current password is incorrect"}), 401
+
+    if len(new_password) < 8:
+        return jsonify({"error": "New password must be at least 8 characters"}), 400
+
+    if current_password == new_password:
+        return jsonify({"error": "New password must be different from the current one"}), 400
+
+    user.set_password(new_password)
+    user.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"message": "Password updated successfully"}), 200

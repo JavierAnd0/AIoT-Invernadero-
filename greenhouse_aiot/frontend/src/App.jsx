@@ -16,19 +16,21 @@ import UserManagement    from './screens/UserManagement';
 import CropTypeCatalog   from './screens/CropTypeCatalog';
 import SimulatorScreen   from './screens/SimulatorScreen';
 import PredictionHistory from './screens/PredictionHistory';
+import SettingsScreen    from './screens/SettingsScreen';
 
 const SCREEN_ROLES = {
-  dashboard: ['admin', 'operator', 'viewer'],
-  sensors: ['admin', 'operator', 'viewer'],
-  crops: ['admin', 'operator', 'viewer'],
-  alerts: ['admin', 'operator', 'viewer'],
-  predict: ['admin', 'operator'],
+  dashboard:   ['admin', 'operator', 'viewer'],
+  sensors:     ['admin', 'operator', 'viewer'],
+  crops:       ['admin', 'operator', 'viewer'],
+  alerts:      ['admin', 'operator', 'viewer'],
+  predict:     ['admin', 'operator'],
   predictions: ['admin', 'operator'],
-  devices: ['admin', 'operator'],
-  zones: ['admin', 'operator'],
-  users: ['admin'],
-  croptypes: ['admin'],
-  simulator: ['admin'],
+  devices:     ['admin', 'operator'],
+  zones:       ['admin', 'operator'],
+  users:       ['admin'],
+  croptypes:   ['admin'],
+  simulator:   ['admin'],
+  settings:    ['admin', 'operator', 'viewer'],
 };
 
 function defaultScreenForRole(role) {
@@ -80,6 +82,7 @@ export default function App() {
       case 'users':       return <UserManagement />;
       case 'croptypes':   return <CropTypeCatalog />;
       case 'simulator':   return <SimulatorScreen />;
+      case 'settings':    return <SettingsScreen />;
       default:            return <DashboardScreen zone={zone} />;
     }
   }

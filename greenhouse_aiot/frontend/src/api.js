@@ -90,6 +90,10 @@ export const getUsers   = (params) => api.get('/users/', { params }).then(r => r
 export const updateUser = (id, d)  => api.put(`/users/${id}`, d).then(r => r.data);
 export const deleteUser = (id)     => api.delete(`/users/${id}`).then(r => r.data);
 
+// PROFILE (own user)
+export const updateProfile    = (data) => api.patch('/auth/profile', data).then(r => r.data);
+export const changePassword   = (data) => api.post('/auth/change-password', data).then(r => r.data);
+
 // SIMULATOR
 export const startSimulator     = (interval_seconds) =>
   api.post('/simulator/start', { interval_seconds }).then(r => r.data);

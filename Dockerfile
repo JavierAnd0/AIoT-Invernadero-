@@ -45,4 +45,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
 
 EXPOSE 5001
 
-CMD ["sh", "-c", "flask --app 'app:create_app(\"production\")' db upgrade && gunicorn 'app:create_app(\"production\")' --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 --access-logfile - --error-logfile -"]
+CMD ["sh", "-c", "\
+  flask --app 'app:create_app(\"production\")' db upgrade && \
+  python -c \"\
+import os; os.environ.setdefault('FLASK_ENV','production'); \
+from app import create_app; app = create_app('production'); \
+app.app_context().push(); \
+from scripts.seed import run_seed; run_seed()\" && \
+  gunicorn 'app:create_app(\"production\")' --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 --access-logfile - --error-logfile -"]

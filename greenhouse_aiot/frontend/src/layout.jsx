@@ -119,6 +119,21 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
         <div style={{ color: '#4b7a56', fontSize: 10, paddingLeft: 6, marginBottom: 6 }}>
           {role?.toUpperCase()}
         </div>
+        {/* Settings — accessible to all roles */}
+        <button
+          onClick={() => setScreen('settings')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 9, width: '100%',
+            padding: '8px 10px', borderRadius: 8, border: 'none',
+            background: screen === 'settings' ? '#22c55e18' : 'transparent',
+            color: screen === 'settings' ? '#22c55e' : '#86a08a',
+            fontSize: 12, fontWeight: screen === 'settings' ? 600 : 400,
+            cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+          }}
+        >
+          <span style={{ fontSize: 14 }}>⚙</span>
+          Settings
+        </button>
         <button
           onClick={onLogout}
           style={{
