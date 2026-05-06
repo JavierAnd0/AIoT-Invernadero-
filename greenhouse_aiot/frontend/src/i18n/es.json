@@ -31,6 +31,7 @@
     "cropTypes": "Tipos de Cultivo",
     "simulator": "Simulador",
     "settings": "Configuración",
+    "predictions": "Hist. de Pred.",
     "logout": "Cerrar sesión"
   },
   "dashboard": {
@@ -81,6 +82,7 @@
     "system": "Sistema",
     "saveChanges": "Guardar cambios",
     "saved": "Cambios guardados exitosamente",
+    "moreLangSoon": "Más idiomas próximamente",
     "fullName": "Nombre Completo",
     "email": "Correo Electrónico",
     "username": "Usuario",

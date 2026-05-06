@@ -31,6 +31,7 @@
     "cropTypes": "Crop Types",
     "simulator": "Simulator",
     "settings": "Settings",
+    "predictions": "Pred. History",
     "logout": "Logout"
   },
   "dashboard": {
@@ -81,6 +82,7 @@
     "system": "System",
     "saveChanges": "Save changes",
     "saved": "Changes saved successfully",
+    "moreLangSoon": "More languages coming soon",
     "fullName": "Full Name",
     "email": "Email",
     "username": "Username",

@@ -1,19 +1,20 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getOpenAlerts, getZones } from './api';
 import { useApi, usePolling } from './hooks/useApi';
 
 const NAV = [
-  { key: 'dashboard',   label: 'Dashboard',    icon: '◈', roles: ['admin','operator','viewer'] },
-  { key: 'sensors',     label: 'Sensors',       icon: '⊡', roles: ['admin','operator','viewer'] },
-  { key: 'crops',       label: 'Crops',         icon: '✿', roles: ['admin','operator','viewer'] },
-  { key: 'alerts',      label: 'Alerts',        icon: '⚠', roles: ['admin','operator','viewer'] },
-  { key: 'predict',     label: 'AI Predict',    icon: '◉', roles: ['admin','operator'] },
-  { key: 'predictions', label: 'Pred. History', icon: '⊙', roles: ['admin','operator'] },
-  { key: 'devices',     label: 'Devices',       icon: '⊞', roles: ['admin','operator'] },
-  { key: 'zones',       label: 'Zones',         icon: '⊟', roles: ['admin','operator'] },
-  { key: 'users',       label: 'Users',         icon: '⊕', roles: ['admin'] },
-  { key: 'croptypes',   label: 'Crop Types',    icon: '⊗', roles: ['admin'] },
-  { key: 'simulator',   label: 'Simulator',     icon: '▷', roles: ['admin'] },
+  { key: 'dashboard',   labelKey: 'nav.dashboard',   icon: '◈', roles: ['admin','operator','viewer'] },
+  { key: 'sensors',     labelKey: 'nav.sensors',      icon: '⊡', roles: ['admin','operator','viewer'] },
+  { key: 'crops',       labelKey: 'nav.crops',        icon: '✿', roles: ['admin','operator','viewer'] },
+  { key: 'alerts',      labelKey: 'nav.alerts',       icon: '⚠', roles: ['admin','operator','viewer'] },
+  { key: 'predict',     labelKey: 'nav.predict',      icon: '◉', roles: ['admin','operator'] },
+  { key: 'predictions', labelKey: 'nav.predictions',  icon: '⊙', roles: ['admin','operator'] },
+  { key: 'devices',     labelKey: 'nav.devices',      icon: '⊞', roles: ['admin','operator'] },
+  { key: 'zones',       labelKey: 'nav.zones',        icon: '⊟', roles: ['admin','operator'] },
+  { key: 'users',       labelKey: 'nav.users',        icon: '⊕', roles: ['admin'] },
+  { key: 'croptypes',   labelKey: 'nav.cropTypes',    icon: '⊗', roles: ['admin'] },
+  { key: 'simulator',   labelKey: 'nav.simulator',    icon: '▷', roles: ['admin'] },
 ];
 
 export function Shell({ children, screen, setScreen, zone, setZone, role, onLogout }) {
@@ -33,6 +34,7 @@ export function Shell({ children, screen, setScreen, zone, setZone, role, onLogo
 }
 
 function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
+  const { t } = useTranslation();
   const { data: openAlertsArr } = usePolling(getOpenAlerts, 30000);
   const { data: zones } = useApi(getZones, []);
   const openAlerts = Array.isArray(openAlertsArr) ? openAlertsArr.length : 0;
@@ -75,7 +77,7 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
             }}
           >
             <span style={{ fontSize: 14 }}>{item.icon}</span>
-            {item.label}
+            {t(item.labelKey)}
             {item.key === 'alerts' && openAlerts > 0 && (
               <span style={{
                 marginLeft: 'auto', background: '#ef4444', color: '#fff',
@@ -91,7 +93,7 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
       {showZone && (
         <div style={{ marginTop: 16, paddingLeft: 4 }}>
           <div style={{ color: '#4b7a56', fontSize: 10, letterSpacing: 0.8, marginBottom: 6, paddingLeft: 6 }}>
-            ZONE
+            {t('nav.zones').toUpperCase()}
           </div>
           {zoneOptions.map(z => (
             <button key={z.zone_id}
@@ -132,7 +134,7 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
           }}
         >
           <span style={{ fontSize: 14 }}>⚙</span>
-          Settings
+          {t('nav.settings')}
         </button>
         <button
           onClick={onLogout}
@@ -143,7 +145,7 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout }) {
             fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', marginTop: 8,
           }}
         >
-          Sign out
+          {t('nav.logout')}
         </button>
       </div>
     </nav>

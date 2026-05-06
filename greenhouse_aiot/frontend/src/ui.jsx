@@ -74,7 +74,7 @@ export function Btn({ children, onClick, variant = 'primary', disabled = false, 
   };
   const variants = {
     primary:   { background: '#22c55e', color: '#fff' },
-    secondary: { background: '#f0f4f1', color: '#374151' },
+    secondary: { background: 'var(--bg-page)', color: 'var(--text-primary)' },
     danger:    { background: '#fee2e2', color: '#b91c1c' },
     ghost:     { background: 'transparent', color: '#6b7280', border: '1px solid #e5e7eb' },
   };
@@ -88,7 +88,7 @@ export function Btn({ children, onClick, variant = 'primary', disabled = false, 
 export function Input({ label, value, onChange, type = 'text', placeholder = '', disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
-      {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
+      {label && <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>{label}</label>}
       <input
         type={type}
         value={value}
@@ -96,10 +96,10 @@ export function Input({ label, value, onChange, type = 'text', placeholder = '',
         placeholder={placeholder}
         disabled={disabled}
         style={{
-          padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
+          padding: '8px 12px', borderRadius: 8, border: '1px solid var(--input-border)',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: disabled ? '#f3f4f6' : '#fafafa',
-          color: '#111827',
+          background: disabled ? 'var(--row-hover)' : 'var(--input-bg)',
+          color: 'var(--text-primary)',
           cursor: disabled ? 'not-allowed' : 'text',
         }}
       />
@@ -110,16 +110,16 @@ export function Input({ label, value, onChange, type = 'text', placeholder = '',
 export function Select({ label, value, onChange, options = [], disabled = false, style = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
-      {label && <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', letterSpacing: 0.5 }}>{label}</label>}
+      {label && <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>{label}</label>}
       <select
         value={value}
         onChange={onChange}
         disabled={disabled}
         style={{
-          padding: '8px 12px', borderRadius: 8, border: '1px solid #e5e7eb',
+          padding: '8px 12px', borderRadius: 8, border: '1px solid var(--input-border)',
           fontSize: 13, fontFamily: 'inherit', outline: 'none',
-          background: disabled ? '#f3f4f6' : '#fafafa',
-          color: '#111827',
+          background: disabled ? 'var(--row-hover)' : 'var(--input-bg)',
+          color: 'var(--text-primary)',
           cursor: disabled ? 'not-allowed' : 'pointer',
         }}
       >

@@ -32,7 +32,7 @@ function SectionTitle({ children }) {
   return (
     <div style={{
       fontSize: 11, fontWeight: 700, letterSpacing: 0.8,
-      color: '#6b7280', textTransform: 'uppercase', marginBottom: 16,
+      color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 16,
     }}>
       {children}
     </div>
@@ -41,9 +41,9 @@ function SectionTitle({ children }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f4f1' }}>
-      <span style={{ fontSize: 12, color: '#6b7280' }}>{label}</span>
-      <span style={{ fontSize: 13, color: '#111827', fontWeight: 500 }}>{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>
     </div>
   );
 }
@@ -66,99 +66,78 @@ function SaveBanner({ saved }) {
 function PreferencesSection() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
-  // Read current values from i18n / ThemeProvider (source of truth is localStorage)
-  const [form, setForm] = useState({
-    language: i18n.language || localStorage.getItem('language') || 'en',
-    theme: theme || localStorage.getItem('theme') || 'system',
-  });
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setSaving(true);
-    try {
-      // Preferences are client-side only — no backend call needed.
-      if (form.language !== i18n.language) {
-        i18n.changeLanguage(form.language);
-        localStorage.setItem('language', form.language);
-      }
-      if (form.theme !== theme) {
-        setTheme(form.theme); // ThemeProvider already persists to localStorage
-      }
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      setError('Could not update preferences');
-    } finally {
-      setSaving(false);
-    }
-  }
+  const THEME_OPTIONS = [
+    { value: 'light',  icon: '☀️', labelKey: 'settings.light'  },
+    { value: 'system', icon: '💻', labelKey: 'settings.system' },
+    { value: 'dark',   icon: '🌙', labelKey: 'settings.dark'   },
+  ];
+  const pillIndex = Math.max(0, THEME_OPTIONS.findIndex(o => o.value === theme));
+  const currentLang = i18n.language?.split('-')[0] || 'en';
 
   return (
     <Card>
       <SectionTitle>{t('settings.language')} & {t('settings.theme')}</SectionTitle>
-      <ErrorBanner message={error} />
-      <SaveBanner saved={saved} />
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
-            {t('settings.language')}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['en', 'es'].map(lang => (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => setForm(p => ({ ...p, language: lang }))}
-                style={{
-                  flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
-                  borderColor: form.language === lang ? '#22c55e' : '#e5e7eb',
-                  background: form.language === lang ? '#f0fdf4' : '#fff',
-                  color: form.language === lang ? '#15803d' : '#6b7280',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {lang === 'en' ? t('settings.english') : t('settings.spanish')}
-              </button>
-            ))}
-          </div>
+
+      {/* ── Language dropdown ── */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
+          {t('settings.language')}
         </div>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
-            {t('settings.theme')}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['light', 'dark', 'system'].map(th => (
-              <button
-                key={th}
-                type="button"
-                onClick={() => setForm(p => ({ ...p, theme: th }))}
-                style={{
-                  flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
-                  borderColor: form.theme === th ? '#22c55e' : '#e5e7eb',
-                  background: form.theme === th ? '#f0fdf4' : '#fff',
-                  color: form.theme === th ? '#15803d' : '#6b7280',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {th === 'light' ? '☀️ ' + t('settings.light') :
-                 th === 'dark' ? '🌙 ' + t('settings.dark') :
-                 '💻 ' + t('settings.system')}
-              </button>
-            ))}
-          </div>
+        <select
+          value={currentLang}
+          onChange={e => { i18n.changeLanguage(e.target.value); localStorage.setItem('language', e.target.value); }}
+          style={{
+            width: '100%', padding: '9px 12px', borderRadius: 8,
+            border: '1px solid var(--input-border)',
+            background: 'var(--input-bg)', color: 'var(--text-primary)',
+            fontSize: 13, fontFamily: 'inherit', outline: 'none', cursor: 'pointer',
+          }}
+        >
+          <option value="en">{t('settings.english')}</option>
+          <option value="es">{t('settings.spanish')}</option>
+        </select>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+          🌍 {t('settings.moreLangSoon')}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Btn type="submit" disabled={saving}>
-            {saving ? t('common.loading') : t('settings.saveChanges')}
-          </Btn>
+      </div>
+
+      {/* ── 3-position sliding theme toggle ── */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
+          {t('settings.theme')}
         </div>
-      </form>
+        <div style={{
+          position: 'relative', display: 'flex',
+          background: 'var(--bg-page)', border: '1px solid var(--input-border)',
+          borderRadius: 10, padding: 3,
+        }}>
+          {/* Sliding pill */}
+          <div style={{
+            position: 'absolute', top: 3,
+            left: `calc(${pillIndex} * (100% - 6px) / 3 + 3px)`,
+            width: 'calc((100% - 6px) / 3)', height: 'calc(100% - 6px)',
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            transition: 'left 0.25s ease', pointerEvents: 'none',
+          }} />
+          {THEME_OPTIONS.map(opt => (
+            <button key={opt.value} type="button" onClick={() => setTheme(opt.value)}
+              style={{
+                flex: 1, position: 'relative', zIndex: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                padding: '8px 4px', background: 'none', border: 'none', borderRadius: 8,
+                fontSize: 12, fontWeight: theme === opt.value ? 600 : 400,
+                color: theme === opt.value ? 'var(--text-primary)' : 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'color 0.25s',
+              }}
+            >
+              <span>{opt.icon}</span>
+              <span>{t(opt.labelKey)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </Card>
   );
 }
