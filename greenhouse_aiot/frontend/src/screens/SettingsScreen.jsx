@@ -64,47 +64,38 @@ function PreferencesSection({ user, onSaved }) {
   const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     language: user.language || 'en',
     theme: user.theme || 'system',
   });
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setSaving(true);
-    try {
-      const res = await updateProfile(form);
-      setForm({ language: res.user.language, theme: res.user.theme });
-      if (form.language !== i18n.language) {
-        i18n.changeLanguage(form.language);
-      }
-      if (form.theme !== theme) {
-        setTheme(form.theme);
-      }
-      onSaved(res.user);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not update preferences');
-    } finally {
-      setSaving(false);
-    }
-  }
-
+  // Auto-save on selection changes: language and theme are persisted on change
+  // to avoid the need for a separate Save button.
   const themeOptions = [
     { value: 'system', icon: 'system', labelKey: 'settings.system' },
     { value: 'light',  icon: 'sun',    labelKey: 'settings.light' },
     { value: 'dark',   icon: 'moon',   labelKey: 'settings.dark' },
   ];
 
+  // Handlers for immediate persistence
+  function changeLanguage(lang) {
+    if (form.language === lang) return;
+    setForm(p => ({ ...p, language: lang }));
+    // Persist to i18n and localStorage for future sessions
+    if (i18n.language !== lang) i18n.changeLanguage(lang);
+    localStorage.setItem('language', lang);
+  }
+
+  function changeThemeValue(val) {
+    if (form.theme === val) return;
+    setForm(p => ({ ...p, theme: val }));
+    setTheme(val);
+  }
+
   return (
     <Card>
       <SectionTitle>{t('settings.language')} & {t('settings.theme')}</SectionTitle>
-      <ErrorBanner message={error} />
-      <SaveBanner saved={saved} message={t('settings.saved')} />
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: error || saved ? 14 : 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
             {t('settings.language')}
@@ -114,7 +105,7 @@ function PreferencesSection({ user, onSaved }) {
               <button
                 key={lang}
                 type="button"
-                onClick={() => setForm(p => ({ ...p, language: lang }))}
+                onClick={() => changeLanguage(lang)}
                 style={{
                   flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid',
                   borderColor: form.language === lang ? '#22c55e' : '#e5e7eb',
@@ -142,7 +133,7 @@ function PreferencesSection({ user, onSaved }) {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setForm(p => ({ ...p, theme: opt.value }))}
+                onClick={() => changeThemeValue(opt.value)}
                 title={t(opt.labelKey)}
                 style={{
                   width: 40, height: 40, borderRadius: 999, border: 'none',
@@ -162,13 +153,8 @@ function PreferencesSection({ user, onSaved }) {
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Btn type="submit" disabled={saving}>
-            {saving ? t('common.loading') : t('settings.saveChanges')}
-          </Btn>
-        </div>
-      </form>
-    </Card>
+      </div>
+      </Card>
   );
 }
 
