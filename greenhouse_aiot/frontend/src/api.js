@@ -13,10 +13,22 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.reload();
+    const status = err.response?.status;
+    const url    = err.config?.url || '';
+
+    // 401 on auth endpoints = wrong credentials / expected failure — let the
+    // component handle the error message, do NOT reload.
+    const isAuthEndpoint = url.includes('/auth/login') ||
+                           url.includes('/auth/bootstrap') ||
+                           url.includes('/auth/change-password');
+
+    if (status === 401 && !isAuthEndpoint) {
+      // Expired or revoked token — clear session and return to login without
+      // a full page reload so the error state is preserved in the component.
+      ['token', 'user', 'tenants', 'tenantId', 'role'].forEach(k =>
+        localStorage.removeItem(k)
+      );
+      window.location.replace('/');
     }
     return Promise.reject(err);
   }

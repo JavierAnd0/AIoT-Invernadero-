@@ -4,16 +4,20 @@ import { loginWithGoogle } from '../api';
 import RegisterScreen from './RegisterScreen';
 
 const QUICK = [
-  { label: 'Admin',    user: 'admin',    pass: 'admin123' },
-  { label: 'Operator', user: 'operator', pass: 'op123' },
-  { label: 'Viewer',   user: 'viewer',   pass: 'view123' },
+  { label: 'Admin',    user: 'admin',    pass: 'GreenCore2025!' },
+  { label: 'Operator', user: 'carlos_m', pass: 'GreenCore2025!' },
+  { label: 'Viewer',   user: 'ana_g',    pass: 'GreenCore2025!' },
 ];
 
 export default function LoginScreen({ onLogin }) {
   const [email,        setEmail]        = useState('');
   const [pass,         setPass]         = useState('');
   const [showRegister, setShowRegister] = useState(false);
+  const [localError,   setLocalError]   = useState('');
   const { doLogin, error, loading } = useAuth();
+
+  // Merge hook-level error with local validation errors
+  const displayError = localError || error;
 
   if (showRegister) {
     return (
@@ -26,7 +30,15 @@ export default function LoginScreen({ onLogin }) {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const result = await doLogin(email, pass);
+    setLocalError('');
+
+    // Client-side guard before hitting the network
+    if (!email.trim() || !pass) {
+      setLocalError('Username and password are required');
+      return;
+    }
+
+    const result = await doLogin(email.trim(), pass);
     if (result.ok) onLogin();
   }
 
@@ -108,12 +120,15 @@ export default function LoginScreen({ onLogin }) {
             />
           </div>
 
-          {error && (
+          {displayError && (
             <div style={{
-              background: '#3b0a0a', color: '#f87171', padding: '8px 12px',
-              borderRadius: 8, fontSize: 12,
+              background: '#3b0a0a', border: '1px solid #7f1d1d',
+              color: '#f87171', padding: '10px 14px',
+              borderRadius: 8, fontSize: 13, fontWeight: 500,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              ⚠ {error}
+              <span>⚠</span>
+              <span>{displayError}</span>
             </div>
           )}
 
