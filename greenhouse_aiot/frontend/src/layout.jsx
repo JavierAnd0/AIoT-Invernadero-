@@ -5,17 +5,17 @@ import { useApi, usePolling } from './hooks/useApi';
 import { ICONS, Icon } from './ui/icons';
 
 const NAV = [
-  { key: 'dashboard',   labelKey: 'nav.dashboard',    icon: 'dashboard', roles: ['admin','operator','viewer'] },
-  { key: 'sensors',     labelKey: 'nav.sensors',     icon: 'sensors',    roles: ['admin','operator','viewer'] },
-  { key: 'crops',       labelKey: 'nav.crops',       icon: 'crops',     roles: ['admin','operator','viewer'] },
-  { key: 'alerts',      labelKey: 'nav.alerts',      icon: 'alerts',    roles: ['admin','operator','viewer'] },
-  { key: 'predict',     labelKey: 'nav.predict',    icon: 'predict',  roles: ['admin','operator'] },
-  { key: 'predictions', labelKey: 'nav.predictions', icon: 'predictions', roles: ['admin','operator'] },
-  { key: 'devices',     labelKey: 'nav.devices',   icon: 'devices',  roles: ['admin','operator'] },
-  { key: 'zones',       labelKey: 'nav.zones',      icon: 'zones',    roles: ['admin','operator'] },
-  { key: 'users',       labelKey: 'nav.users',      icon: 'users',   roles: ['admin'] },
-  { key: 'croptypes',   labelKey: 'nav.croptypes',   icon: 'croptypes', role: ['admin'] },
-  { key: 'simulator',   labelKey: 'nav.simulator',   icon: 'simulator', roles: ['admin'] },
+  { key: 'dashboard',   labelKey: 'nav.dashboard',   icon: '◈', roles: ['admin','operator','viewer'] },
+  { key: 'sensors',     labelKey: 'nav.sensors',      icon: '⊡', roles: ['admin','operator','viewer'] },
+  { key: 'crops',       labelKey: 'nav.crops',        icon: '✿', roles: ['admin','operator','viewer'] },
+  { key: 'alerts',      labelKey: 'nav.alerts',       icon: '⚠', roles: ['admin','operator','viewer'] },
+  { key: 'predict',     labelKey: 'nav.predict',      icon: '◉', roles: ['admin','operator'] },
+  { key: 'predictions', labelKey: 'nav.predictions',  icon: '⊙', roles: ['admin','operator'] },
+  { key: 'devices',     labelKey: 'nav.devices',      icon: '⊞', roles: ['admin','operator'] },
+  { key: 'zones',       labelKey: 'nav.zones',        icon: '⊟', roles: ['admin','operator'] },
+  { key: 'users',       labelKey: 'nav.users',        icon: '⊕', roles: ['admin'] },
+  { key: 'croptypes',   labelKey: 'nav.cropTypes',    icon: '⊗', roles: ['admin'] },
+  { key: 'simulator',   labelKey: 'nav.simulator',    icon: '▷', roles: ['admin'] },
 ];
 
 export function Shell({ children, screen, setScreen, zone, setZone, role, onLogout }) {
