@@ -44,9 +44,14 @@ app:
     secret: ${JWT_SECRET:aiot-greenhouse-super-secret-key-change-in-production-min-256-bits}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
-  flask-service-url: ${FLASK_SERVICE_URL:http://localhost:5001}
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+  ai:
+    script-path: ${AI_SCRIPT_PATH:../ai/predict_cli.py}
+    python-cmd: ${PYTHON_CMD:python3}
+  simulator:
+    enabled: ${SIMULATOR_ENABLED:true}
+    interval-ms: ${SIMULATOR_INTERVAL_MS:15000}
 
 logging:
   level:
