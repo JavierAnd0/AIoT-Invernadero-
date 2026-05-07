@@ -7,12 +7,14 @@ COPY src ./src
 RUN mvn package -DskipTests -q
 
 # ── Stage 2: Runtime con Java + Python para predicciones IA ─────────────────
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Instalar Python 3 y dependencias del modelo AI
-RUN apk add --no-cache python3 py3-pip py3-numpy && \
-    pip3 install --no-cache-dir joblib scikit-learn==1.5.1 --break-system-packages
+# Instalar Python 3, wget (para healthcheck) y dependencias del modelo AI
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip3 install --no-cache-dir numpy joblib scikit-learn==1.5.1 --break-system-packages
 
 COPY --from=builder /build/target/*.jar app.jar
 
