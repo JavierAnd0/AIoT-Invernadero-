@@ -1,0 +1,97 @@
+name: CD — Deploy a Producción
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Deploy Frontend a Vercel
+  # ─────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy a Vercel (producción)
+        working-directory: greenhouse_aiot/frontend
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ─────────────────────────────────────────────
+  # 2. Build y deploy Spring Boot con Docker
+  # ─────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Spring Boot Backend
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Spring Boot JAR
+        working-directory: greenhouse_aiot/spring-backend
+        run: mvn package -DskipTests
+
+      - name: Build imagen Docker Spring Boot
+        run: |
+          docker build -f greenhouse_aiot/spring-backend/Dockerfile \
+            -t aiot-greenhouse-spring:${{ github.sha }} \
+            greenhouse_aiot/spring-backend
+
+      - name: Login a GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push imagen Docker
+        run: |
+          docker tag aiot-greenhouse-spring:${{ github.sha }} \
+            ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
+          docker push ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
+
+      - name: Deploy al servidor de producción
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
+            docker stop greenhouse-spring || true
+            docker rm greenhouse-spring || true
+            docker run -d \
+              --name greenhouse-spring \
+              --restart always \
+              -p 8080:8080 \
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+              -e FLASK_SERVICE_URL=${{ secrets.FLASK_SERVICE_URL }} \
+              ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
