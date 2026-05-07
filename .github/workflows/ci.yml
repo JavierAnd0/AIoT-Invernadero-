@@ -1,0 +1,163 @@
+name: CI — Build, Test & Lint
+
+on:
+  push:
+    branches: [ main, develop, "feature/**" ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Spring Boot Tests (JUnit)
+  # ─────────────────────────────────────────────
+  spring-boot-test:
+    name: Spring Boot — JUnit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Ejecutar tests JUnit
+        working-directory: greenhouse_aiot/spring-backend
+        run: mvn test -Dfile.encoding=UTF-8
+
+      - name: Subir reporte de tests JUnit
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-test-results
+          path: greenhouse_aiot/spring-backend/target/surefire-reports/
+
+  # ─────────────────────────────────────────────
+  # 2. Flask / Python Tests (pytest)
+  # ─────────────────────────────────────────────
+  python-test:
+    name: Flask — pytest Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias Flask
+        working-directory: greenhouse_aiot/backend
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar tests Python
+        working-directory: greenhouse_aiot/backend
+        run: pytest tests/ -v --tb=short
+
+  # ─────────────────────────────────────────────
+  # 3. Frontend — Lint & Build
+  # ─────────────────────────────────────────────
+  frontend-build:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: greenhouse_aiot/frontend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: greenhouse_aiot/frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: greenhouse_aiot/frontend
+        run: npm run lint
+
+      - name: Build de producción
+        working-directory: greenhouse_aiot/frontend
+        run: npm run build
+
+  # ─────────────────────────────────────────────
+  # 4. Tests Selenium (E2E)
+  # ─────────────────────────────────────────────
+  selenium-test:
+    name: Selenium — Tests E2E
+    runs-on: ubuntu-latest
+    needs: [spring-boot-test, frontend-build]
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21 (para Spring Boot)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Configurar Python 3.11 (para Selenium)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configurar Node.js (para frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Levantar stack con Docker Compose
+        run: |
+          docker compose -f docker-compose.yml up -d greenhouse-db
+          sleep 10
+
+      - name: Levantar Spring Boot
+        working-directory: greenhouse_aiot/spring-backend
+        run: |
+          mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=test" &
+          sleep 20
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/greenhouse_dev
+          JWT_SECRET: ci-test-secret-key-for-github-actions-min-256-bits
+
+      - name: Levantar frontend
+        working-directory: greenhouse_aiot/frontend
+        run: |
+          npm ci
+          npm run build
+          npm run preview -- --port 5173 &
+          sleep 5
+
+      - name: Instalar dependencias Selenium
+        working-directory: greenhouse_aiot/frontend/tests/selenium
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar tests Selenium
+        working-directory: greenhouse_aiot/frontend/tests/selenium
+        run: pytest -v --html=selenium-report.html --self-contained-html
+        env:
+          SELENIUM_BASE_URL: http://localhost:5173
+
+      - name: Subir reporte Selenium
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-test-report
+          path: greenhouse_aiot/frontend/tests/selenium/selenium-report.html
