@@ -24,7 +24,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:}
             client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope: openid,email,profile
-            redirect-uri: "{baseUrl}/api/v1/auth/oauth2/callback/google"
+            redirect-uri: "{baseUrl}/api/v1/auth/oauth2/callback/{registrationId}"
 
 server:
   port: ${PORT:8080}
@@ -58,3 +58,4 @@ logging:
   level:
     com.aiot.greenhouse: INFO
     org.springframework.security: WARN
+
