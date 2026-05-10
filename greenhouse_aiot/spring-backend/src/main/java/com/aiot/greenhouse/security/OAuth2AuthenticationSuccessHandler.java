@@ -40,17 +40,27 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String googleId = oAuth2User.getAttribute("sub");
         String avatarUrl = oAuth2User.getAttribute("picture");
 
-        User user = userRepository.findByEmail(email).orElseGet(() ->
-            userRepository.save(User.builder()
-                .email(email)
-                .username(email.split("@")[0])
-                .fullName(name != null ? name : email)
+        if (email == null) {
+            email = googleId + "@google.com"; // Fallback email
+        }
+        
+        final String finalEmail = email;
+        final String finalName = name != null ? name : finalEmail;
+        
+        User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
+            String baseUsername = finalEmail.split("@")[0];
+            String uniqueUsername = baseUsername + "_" + googleId.substring(0, Math.min(5, googleId.length()));
+            
+            return userRepository.save(User.builder()
+                .email(finalEmail)
+                .username(uniqueUsername)
+                .fullName(finalName)
                 .googleId(googleId)
                 .authProvider("google")
                 .avatarUrl(avatarUrl)
                 .passwordHash("")
-                .build())
-        );
+                .build());
+        });
 
         if (user.getGoogleId() == null) {
             user.setGoogleId(googleId);
