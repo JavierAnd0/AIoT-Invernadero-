@@ -69,6 +69,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
+                .redirectionEndpoint(redirection -> redirection
+                    .baseUri("/api/v1/auth/oauth2/callback/*")
+                )
                 .successHandler(oauth2SuccessHandler)
             )
             .authenticationProvider(authenticationProvider())
