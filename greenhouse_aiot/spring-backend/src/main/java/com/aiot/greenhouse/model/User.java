@@ -37,9 +37,13 @@ public class User implements UserDetails {
     private String fullName;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20)
+    @Column(name = "role", length = 20)
     @Builder.Default
     private Role role = Role.VIEWER;
+
+    public Role getRole() {
+        return role != null ? role : Role.VIEWER;
+    }
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
