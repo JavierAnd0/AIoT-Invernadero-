@@ -55,6 +55,15 @@ public class GlobalExceptionHandler {
                 .build());
     }
 
+    /** Maneja rutas no encontradas. */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.builder()
+                .status(404)
+                .message("Ruta no encontrada: " + ex.getResourcePath())
+                .build());
+    }
+
     /** Maneja credenciales inválidas en login. */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
