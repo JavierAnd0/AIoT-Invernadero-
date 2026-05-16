@@ -3,6 +3,7 @@ package com.aiot.greenhouse.service;
 import com.aiot.greenhouse.dto.request.LoginRequest;
 import com.aiot.greenhouse.dto.request.RegisterRequest;
 import com.aiot.greenhouse.dto.response.AuthResponse;
+import com.aiot.greenhouse.model.Role;
 import com.aiot.greenhouse.model.User;
 import com.aiot.greenhouse.repository.UserRepository;
 import com.aiot.greenhouse.security.JwtTokenProvider;
@@ -71,11 +72,14 @@ public class AuthService {
                 messageSource.getMessage("error.email.taken", null, LocaleContextHolder.getLocale()));
         }
 
+        Role role = userRepository.count() == 0 ? Role.ADMIN : Role.VIEWER;
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
+                .role(role)
                 .build();
 
         userRepository.save(user);

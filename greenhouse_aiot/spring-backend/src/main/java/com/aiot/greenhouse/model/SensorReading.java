@@ -1,6 +1,7 @@
 package com.aiot.greenhouse.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class SensorReading {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "reading_id")
+    @JsonProperty("reading_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -53,5 +55,6 @@ public class SensorReading {
 
     @Column(name = "is_simulated", nullable = false)
     @Builder.Default
+    @JsonProperty("is_simulated")
     private boolean isSimulated = false;
 }

@@ -41,7 +41,7 @@ export default function DashboardScreen({ zone }) {
 
   const currentZone = zones?.find(z => z.zone_id === zone) || zones?.[0];
   const currentZoneId = currentZone?.zone_id;
-  const deviceForZone = devices?.find(d => d.zone_id === currentZoneId);
+  const deviceForZone = devices?.find(d => d.zone?.zone_id === currentZoneId);
   const deviceIdForZone = deviceForZone?.device_id;
 
   const { data: crops } = useApi(
@@ -62,8 +62,8 @@ export default function DashboardScreen({ zone }) {
     temp:  rawReading.temperature,
     hum:   rawReading.humidity,
     ph:    rawReading.ph,
-    light: rawReading.lightLux,
-    co2:   rawReading.co2Ppm,
+    light: rawReading.light_lux,
+    co2:   rawReading.co2_ppm,
   };
 
   const alertList = Array.isArray(openAlerts) ? openAlerts : [];

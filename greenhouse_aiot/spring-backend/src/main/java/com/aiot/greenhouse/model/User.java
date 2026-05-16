@@ -2,6 +2,7 @@ package com.aiot.greenhouse.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
+    @JsonProperty("user_id")
     private Long id;
 
     @Column(name = "username", nullable = false, unique = true, length = 80)
@@ -35,6 +37,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(name = "password_hash", length = 256)
+    @JsonIgnore
     private String passwordHash;
 
     @Column(name = "full_name", nullable = false, length = 150)
@@ -51,6 +54,7 @@ public class User implements UserDetails {
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
+    @JsonProperty("is_active")
     private boolean isActive = true;
 
     @Column(name = "google_id", length = 100)

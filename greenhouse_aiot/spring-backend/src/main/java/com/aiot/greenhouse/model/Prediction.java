@@ -1,6 +1,7 @@
 package com.aiot.greenhouse.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -21,6 +22,7 @@ public class Prediction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "prediction_id")
+    @JsonProperty("prediction_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

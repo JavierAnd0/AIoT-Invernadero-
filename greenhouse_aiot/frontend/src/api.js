@@ -100,7 +100,7 @@ export const acknowledgeAlert = (id)     => api.put(`/alerts/${id}/acknowledge`)
 export const resolveAlert     = (id)     => api.put(`/alerts/${id}/resolve`).then(r => r.data);
 
 // AI PREDICTIONS
-export const predict              = (data)   => api.post('/predict', data).then(r => r.data);
+export const predict              = (data)   => api.post('/predictions/predict', data).then(r => r.data);
 export const getPredictions       = (params) => api.get('/predictions', { params }).then(r => r.data);
 export const getDevicePredictions = (id)     => api.get(`/predictions/device/${id}`).then(r => r.data);
 

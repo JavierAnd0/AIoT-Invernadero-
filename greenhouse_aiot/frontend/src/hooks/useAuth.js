@@ -80,10 +80,10 @@ export function AuthProvider({ children }) {
       const data = await apiLogin(username, password);
 
       const userObj = {
-        user_id: data.userId,
+        user_id: data.user_id ?? data.userId,
         username: data.username,
         email: data.email,
-        full_name: data.fullName,
+        full_name: data.full_name ?? data.fullName,
       };
       const role = data.role?.toLowerCase() || 'viewer';
 
@@ -130,10 +130,10 @@ export function AuthProvider({ children }) {
   const restoreFromOAuth = useCallback((token, meData) => {
     const role = meData?.role?.toLowerCase() || 'viewer';
     const userObj = {
-      user_id:   meData?.userId,
+      user_id:   meData?.user_id ?? meData?.userId,
       username:  meData?.username,
       email:     meData?.email,
-      full_name: meData?.fullName,
+      full_name: meData?.full_name ?? meData?.fullName,
     };
     setSession({ token, user: userObj, role });
   }, [setSession]);
@@ -153,15 +153,18 @@ export function AuthProvider({ children }) {
   // restoreFromOAuth (OAuth callback) does NOT accidentally re-trigger this effect.
   useEffect(() => {
     if (!token) return;
+    // Skip on OAuth callback — AuthCallback manages its own session and calling getMe()
+    // here with a stale token races against restoreFromOAuth, wiping the new session.
+    if (window.location.pathname === '/auth/callback') return;
 
     getMe()
       .then(data => {
         const freshRole = data.role?.toLowerCase() || 'viewer';
         const userObj = {
-          user_id: data.userId,
+          user_id: data.user_id ?? data.userId,
           username: data.username,
           email: data.email,
-          full_name: data.fullName,
+          full_name: data.full_name ?? data.fullName,
         };
         setUser(userObj);
         setTenants([]);

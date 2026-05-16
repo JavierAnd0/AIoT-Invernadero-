@@ -1,4 +1,8 @@
 spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    mapper:
+      accept-case-insensitive-enums: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/greenhouse_dev}}
     username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
@@ -25,7 +29,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:}
             client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope: openid,email,profile
-            redirect-uri: "{baseUrl}/api/v1/auth/oauth2/callback/{registrationId}"
+            redirect-uri: "${BACKEND_URL:http://localhost:8080}/api/v1/auth/oauth2/callback/{registrationId}"
 
 server:
   port: ${PORT:8080}

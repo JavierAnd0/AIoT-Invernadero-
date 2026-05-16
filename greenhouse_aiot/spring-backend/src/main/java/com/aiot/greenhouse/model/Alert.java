@@ -1,6 +1,7 @@
 package com.aiot.greenhouse.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class Alert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "alert_id")
+    @JsonProperty("alert_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

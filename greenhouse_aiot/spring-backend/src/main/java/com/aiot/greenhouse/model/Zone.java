@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class Zone {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "zone_id")
+    @JsonProperty("zone_id")
     private Long id;
 
     @Column(name = "name", nullable = false, unique = true, length = 100)
@@ -30,6 +32,7 @@ public class Zone {
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default
+    @JsonProperty("is_active")
     private boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class CropType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crop_type_id")
+    @JsonProperty("crop_type_id")
     private Long id;
 
     @Column(name = "name", nullable = false, unique = true, length = 100)
