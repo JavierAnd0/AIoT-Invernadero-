@@ -4,6 +4,7 @@ import com.aiot.greenhouse.model.Zone;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /** Repositorio de acceso a datos para zonas del invernadero. */
 public interface ZoneRepository extends JpaRepository<Zone, Long> {
@@ -11,4 +12,6 @@ public interface ZoneRepository extends JpaRepository<Zone, Long> {
     List<Zone> findByIsActiveTrue();
 
     boolean existsByName(String name);
+
+    Optional<Zone> findByName(String name);
 }

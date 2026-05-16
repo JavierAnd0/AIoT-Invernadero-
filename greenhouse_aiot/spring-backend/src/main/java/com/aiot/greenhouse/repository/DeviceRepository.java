@@ -21,4 +21,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     @EntityGraph(attributePaths = {"zone", "registeredBy"})
     List<Device> findByStatus(Device.DeviceStatus status);
+
+    Optional<Device> findBySerialNumber(String serialNumber);
 }

@@ -21,4 +21,6 @@ public interface CropRepository extends JpaRepository<Crop, Long> {
 
     @EntityGraph(attributePaths = {"zone", "cropType", "createdBy"})
     List<Crop> findByStatus(Crop.CropStatus status);
+
+    Optional<Crop> findByBatchCode(String batchCode);
 }
