@@ -36,7 +36,6 @@ export default function DashboardScreen({ zone }) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   const { data: zones }          = useApi(getZones, []);
-  const { data: latestReadings } = usePolling(getLatestReadings, 30000);
   const { data: openAlerts }     = usePolling(getOpenAlerts, 30000);
   const { data: devices }        = useApi(getDevices, []);
 
@@ -58,13 +57,13 @@ export default function DashboardScreen({ zone }) {
   );
   const sr = srData || [];
 
-  const rawReading = latestReadings?.find(r => r.device?.zone_id === currentZoneId)?.reading || {};
+  const rawReading = sr[0] || {};
   const cs = {
     temp:  rawReading.temperature,
     hum:   rawReading.humidity,
     ph:    rawReading.ph,
-    light: rawReading.light_lux,
-    co2:   rawReading.co2_ppm,
+    light: rawReading.lightLux,
+    co2:   rawReading.co2Ppm,
   };
 
   const alertList = Array.isArray(openAlerts) ? openAlerts : [];

@@ -57,9 +57,7 @@ public class SensorReadingService {
      */
     @Transactional(readOnly = true)
     public SensorReading findLatest() {
-        return readingRepository.findLatest()
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
-                    messageSource.getMessage("error.reading.noneFound", null, LocaleContextHolder.getLocale())));
+        return readingRepository.findLatest().orElse(null);
     }
 
     /**
