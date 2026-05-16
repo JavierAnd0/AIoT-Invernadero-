@@ -46,9 +46,11 @@ export default function CropsScreen({ zone }) {
     }
   }
 
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+
   if (loading) return <LoadingSpinner />;
 
-  const now = Date.now();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

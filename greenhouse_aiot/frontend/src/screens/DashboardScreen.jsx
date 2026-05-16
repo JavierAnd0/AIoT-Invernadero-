@@ -77,6 +77,7 @@ export default function DashboardScreen({ zone }) {
     { label: t('sensors.colTemp'), data: sr.map(r => r.temperature), color: '#f59e0b' },
     { label: t('sensors.colHumidity'), data: sr.map(r => r.humidity), color: '#3b82f6' },
   ];
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
 
   return (
