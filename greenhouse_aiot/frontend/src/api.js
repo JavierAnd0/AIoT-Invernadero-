@@ -42,8 +42,10 @@ export const getMe = () => api.get('/auth/me').then(r => r.data);
 /** Verify a token explicitly (used by OAuth callback before committing the session). */
 export const getMeWithToken = (token) =>
   api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.data);
-export const bootstrap = (data) =>
+export const register = (data) =>
   api.post('/auth/register', data).then(r => r.data);
+// Alias for backward compatibility with RegisterScreen
+export const bootstrap = register;
 export const selectTenant = (tenantId) =>
   api.post('/auth/select-tenant', { tenant_id: tenantId }).then(r => r.data);
 export const loginWithGoogle = () => {
