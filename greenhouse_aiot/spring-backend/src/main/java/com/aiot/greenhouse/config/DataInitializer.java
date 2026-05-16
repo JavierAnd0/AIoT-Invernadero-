@@ -162,6 +162,10 @@ public class DataInitializer implements CommandLineRunner {
             jdbc.execute("ALTER TABLE devices DROP COLUMN IF EXISTS tenant_id CASCADE");
             jdbc.execute("ALTER TABLE crops DROP COLUMN IF EXISTS tenant_id CASCADE");
             jdbc.execute("ALTER TABLE users DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE sensor_readings DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE alerts DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE predictions DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE crop_types DROP COLUMN IF EXISTS tenant_id CASCADE");
         } catch (Exception e) {
             log.warn("Warning while dropping legacy columns: {}", e.getMessage());
         }
