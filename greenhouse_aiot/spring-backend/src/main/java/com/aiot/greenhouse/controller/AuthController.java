@@ -7,14 +7,17 @@ import com.aiot.greenhouse.model.User;
 import com.aiot.greenhouse.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -37,10 +40,22 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             return ResponseEntity.ok(authService.login(request));
+        } catch (AuthenticationServiceException e) {
+            String msg = "USE_GOOGLE_AUTH".equals(e.getMessage())
+                    ? "Esta cuenta usa Google para autenticarse. Por favor, usa el botón 'Continuar con Google'."
+                    : "Credenciales inválidas";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", msg));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Credenciales inválidas"));
         }
+    }
+
+    /** Redirige al endpoint OAuth2 de Spring Security (compatibilidad con builds anteriores). */
+    @GetMapping("/google")
+    @Operation(summary = "Redirigir a Google OAuth2")
+    public void googleRedirect(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google");
     }
 
     /**
