@@ -170,17 +170,20 @@ export function AuthProvider({ children }) {
         localStorage.setItem('role',    freshRole);
         localStorage.setItem('tenantId', '1');
       })
-      .catch(() => {
-        // Token is expired or invalid — clear everything so the login screen appears
-        clearSession();
-        setToken(null);
-        setUser(null);
-        setTenants([]);
-        setCurrentTenantId(null);
-        setCurrentRole('viewer');
-        setRequiresTenantSelection(false);
+      .catch((err) => {
+        console.error('getMe() failed:', err);
+        // Only clear session if it's an auth error. Network errors shouldn't log you out.
+        if (err.response && err.response.status === 401) {
+          clearSession();
+          setToken(null);
+          setUser(null);
+          setTenants([]);
+          setCurrentTenantId(null);
+          setCurrentRole('viewer');
+          setRequiresTenantSelection(false);
+        }
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);
   // ^ intentionally runs once on mount only; token + currentTenantId are read
   //   from the closure because they're set synchronously from localStorage above.
 
