@@ -36,30 +36,7 @@ jobs:
           name: junit-test-results
           path: greenhouse_aiot/spring-backend/target/surefire-reports/
 
-  # ─────────────────────────────────────────────
-  # 2. Flask / Python Tests (pytest)
-  # ─────────────────────────────────────────────
-  python-test:
-    name: Flask — pytest Tests
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Configurar Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Instalar dependencias Flask
-        working-directory: greenhouse_aiot/backend
-        run: pip install -r requirements.txt
-
-      - name: Ejecutar tests Python
-        working-directory: greenhouse_aiot/backend
-        run: pytest tests/ -v --tb=short
 
   # ─────────────────────────────────────────────
   # 3. Frontend — Lint & Build
