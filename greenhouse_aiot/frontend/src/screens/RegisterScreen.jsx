@@ -35,18 +35,22 @@ export default function RegisterScreen({ onSuccess, onBack }) {
         username:    form.username,
         email:       form.email,
         password:    form.password,
-        full_name:   form.full_name,
-        tenant_name: form.tenant_name || form.username,
+        fullName:    form.full_name,
       });
-      const firstTenant = data.tenants?.[0];
+      const userObj = {
+        user_id: data.userId,
+        username: data.username,
+        email: data.email,
+        full_name: data.fullName,
+      };
       setSession({
         token:    data.token,
-        user:     data.user,
-        tenants:  data.tenants || [],
-        tenantId: firstTenant?.tenant_id ?? null,
-        role:     firstTenant?.role ?? 'admin',
+        user:     userObj,
+        tenants:  [],
+        tenantId: 1,
+        role:     data.role?.toLowerCase() || 'admin',
       });
-      onSuccess(firstTenant?.role ?? 'admin');
+      onSuccess(data.role?.toLowerCase() || 'admin');
     } catch (err) {
       setError(err.response?.data?.error || 'Setup failed');
     } finally {
@@ -107,11 +111,11 @@ export default function RegisterScreen({ onSuccess, onBack }) {
         </div>
 
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
+          {/* <div>
             <label style={labelStyle}>ORGANISATION / GREENHOUSE NAME</label>
             <input value={form.tenant_name} onChange={update('tenant_name')}
               placeholder="Invernadero Principal" autoComplete="organization" style={inputStyle} />
-          </div>
+          </div> */}
           <div>
             <label style={labelStyle}>FULL NAME</label>
             <input value={form.full_name} onChange={update('full_name')}

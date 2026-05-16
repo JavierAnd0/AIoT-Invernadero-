@@ -58,7 +58,7 @@ export default function UserManagement() {
   async function handleRoleChange(userId, role) {
     setSaveError('');
     try {
-      await updateUser(userId, { role });
+      await updateUser(userId, { role: role.toUpperCase() });
       refetch();
     } catch (err) {
       setSaveError(err.response?.data?.error || t('users.couldNotUpdate'));
@@ -77,10 +77,9 @@ export default function UserManagement() {
   }
 
   async function handleReactivate(user) {
-    if (!currentTenantId) return;
     setSaveError('');
     try {
-      await inviteMember(currentTenantId, { email: user.email, role: user.role });
+      await updateUser(user.id, { isActive: true });
       refetch();
     } catch (err) {
       setSaveError(err.response?.data?.error || t('users.couldNotReactivate'));
@@ -96,33 +95,11 @@ export default function UserManagement() {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('users.title')}</h1>
           <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('users.count', { count: users.length })}</div>
         </div>
-        <Btn onClick={() => setShowForm(f => !f)}>{t('users.addBtn')}</Btn>
       </div>
 
       <ErrorBanner message={error} />
 
-      {showForm && (
-        <Card>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14, color: 'var(--text-primary)' }}>{t('users.newUser')}</div>
-          <ErrorBanner message={saveError} />
-          <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Input label={t('users.usernameLabel')}  value={form.username}  onChange={e => upd('username',  e.target.value)} required />
-            <Input label={t('users.fullNameLabel')} value={form.full_name} onChange={e => upd('full_name', e.target.value)} required />
-            <Input label={t('users.emailLabel')}     type="email" value={form.email} onChange={e => upd('email', e.target.value)} required />
-            <Input label={t('users.passwordLabel')}  type="password" value={form.password} onChange={e => upd('password', e.target.value)} required minLength={8} />
-            <Select
-              label={t('users.roleLabel')}
-              value={form.role}
-              onChange={e => upd('role', e.target.value)}
-              options={['admin', 'operator', 'viewer'].map(r => ({ value: r, label: r }))}
-            />
-            <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Btn variant="ghost" onClick={() => setShowForm(false)}>{t('common.cancel')}</Btn>
-              <Btn type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.create')}</Btn>
-            </div>
-          </form>
-        </Card>
-      )}
+
 
       <Card>
         {saveError && !showForm && <ErrorBanner message={saveError} />}
@@ -138,31 +115,32 @@ export default function UserManagement() {
           </thead>
           <tbody>
             {users.map(u => {
-              const isSelf = u.user_id === currentUser?.user_id;
+              const isSelf = u.id === currentUser?.user_id || u.username === currentUser?.username;
+              const normalizedRole = u.role?.toLowerCase() || 'viewer';
               return (
-              <tr key={u.user_id} style={{ borderTop: '1px solid var(--border)' }}>
+              <tr key={u.id} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600, fontFamily: "'DM Mono', monospace", fontSize: 12 }}>
                   {u.username}
                   {isSelf && (
                     <span style={{ marginLeft: 6, fontSize: 10, color: '#22c55e', fontWeight: 700 }}>{t('users.you')}</span>
                   )}
                 </td>
-                <td style={{ padding: '10px 12px' }}>{u.full_name || '—'}</td>
+                <td style={{ padding: '10px 12px' }}>{u.fullName || '—'}</td>
                 <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', fontSize: 12 }}>{u.email || '—'}</td>
                 <td style={{ padding: '10px 12px' }}>
                   {isSelf ? (
-                    <span style={{ fontSize: 12, fontWeight: 600, color: ROLE_COLOR[u.role] || '#6b7280' }}>
-                      {u.role}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: ROLE_COLOR[normalizedRole] || '#6b7280' }}>
+                      {normalizedRole}
                     </span>
                   ) : (
                     <select
-                      value={u.role}
-                      onChange={e => handleRoleChange(u.user_id, e.target.value)}
+                      value={normalizedRole}
+                      onChange={e => handleRoleChange(u.id, e.target.value)}
                       style={{
                         fontSize: 12, padding: '3px 6px', borderRadius: 6,
                         border: '1px solid var(--input-border)',
                         background: 'var(--input-bg)',
-                        color: ROLE_COLOR[u.role] || 'var(--text-secondary)',
+                        color: ROLE_COLOR[normalizedRole] || 'var(--text-secondary)',
                         fontWeight: 600, cursor: 'pointer',
                       }}
                     >
@@ -174,15 +152,15 @@ export default function UserManagement() {
                 </td>
                 <td style={{ padding: '10px 12px' }}>
                   <Badge
-                    label={u.member_active ? t('users.active') : t('users.inactive')}
-                    color={u.member_active ? '#22c55e' : '#6b7280'}
+                    label={u.active ? t('users.active') : t('users.inactive')}
+                    color={u.active ? '#22c55e' : '#6b7280'}
                   />
                 </td>
                 <td style={{ padding: '10px 12px' }}>
                   {isSelf ? (
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
-                  ) : u.member_active ? (
-                    <Btn variant="danger" onClick={() => handleDeactivate(u.user_id)} style={{ fontSize: 11, padding: '4px 10px' }}>
+                  ) : u.active ? (
+                    <Btn variant="danger" onClick={() => handleDeactivate(u.id)} style={{ fontSize: 11, padding: '4px 10px' }}>
                       {t('users.deactivate')}
                     </Btn>
                   ) : (

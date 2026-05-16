@@ -20,8 +20,8 @@ function loadFromStorage() {
     user:            safeJson(localStorage.getItem('user'),    null),
     token:           localStorage.getItem('token')             || null,
     tenants:         safeJson(localStorage.getItem('tenants'), []),
-    currentTenantId: Number(localStorage.getItem('tenantId')) || null,
-    currentRole:     localStorage.getItem('role')              || 'viewer',
+    currentTenantId: localStorage.getItem('tenantId') ? Number(localStorage.getItem('tenantId')) : 1,
+    currentRole:     localStorage.getItem('role')              || 'admin',
   };
 }
 
@@ -57,14 +57,14 @@ export function AuthProvider({ children }) {
    * Persist a complete session in state + localStorage.
    * tenantId may be null when the user has multiple tenants and must select.
    */
-  const setSession = useCallback(({ token, user, tenants, tenantId, role }) => {
-    saveSession({ token, user, tenants, tenantId, role });
+  const setSession = useCallback(({ token, user, role }) => {
+    saveSession({ token, user, tenants: [], tenantId: 1, role });
     setToken(token);
     setUser(user);
-    setTenants(tenants || []);
-    setCurrentTenantId(tenantId ?? null);
-    setCurrentRole(role ?? 'viewer');
-    setRequiresTenantSelection(!tenantId && (tenants?.length ?? 0) > 1);
+    setTenants([]);
+    setCurrentTenantId(1);
+    setCurrentRole(role ?? 'admin');
+    setRequiresTenantSelection(false);
   }, []);
 
   /**
@@ -79,14 +79,16 @@ export function AuthProvider({ children }) {
     try {
       const data = await apiLogin(username, password);
 
-      // The server returns:
-      //   token, user, tenants[], requires_tenant_selection
-      const tenantList = data.tenants || [];
-      const tenantId   = data.requires_tenant_selection ? null : (tenantList[0]?.tenant_id ?? null);
-      const role       = tenantList.find(t => t.tenant_id === tenantId)?.role ?? 'viewer';
+      const userObj = {
+        user_id: data.userId,
+        username: data.username,
+        email: data.email,
+        full_name: data.fullName,
+      };
+      const role = data.role?.toLowerCase() || 'admin';
 
-      setSession({ token: data.token, user: data.user, tenants: tenantList, tenantId, role });
-      return { ok: true, requiresTenantSelection: !!data.requires_tenant_selection };
+      setSession({ token: data.token, user: userObj, role });
+      return { ok: true, requiresTenantSelection: false };
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
       return { ok: false };
@@ -121,17 +123,16 @@ export function AuthProvider({ children }) {
    * Restore a session from an OAuth callback URL token.
    * The AuthCallback screen calls this after parsing ?token= from the URL.
    */
-  const restoreFromOAuth = useCallback((token, requiresTenantSelection) => {
+  const restoreFromOAuth = useCallback((token) => {
     // Decode the JWT payload (not verification — server already verified it)
     try {
       const payload    = JSON.parse(atob(token.split('.')[1]));
       const userId     = payload.sub;
-      const tenantId   = payload.tenant_id ?? null;
-      // We don't have full user/tenants info at this point — call /auth/me after redirect
-      saveSession({ token, user: { user_id: userId }, tenants: [], tenantId, role: '' });
+      // We don't have full user info at this point — call /auth/me after redirect
+      saveSession({ token, user: { user_id: userId }, tenants: [], tenantId: 1, role: 'admin' });
       setToken(token);
-      setCurrentTenantId(tenantId);
-      setRequiresTenantSelection(requiresTenantSelection && !tenantId);
+      setCurrentTenantId(1);
+      setRequiresTenantSelection(false);
     } catch {
       // fallback — just save the token and let /auth/me fill in the rest
       localStorage.setItem('token', token);
@@ -149,21 +150,25 @@ export function AuthProvider({ children }) {
    *   - the role was changed by an admin and the JWT is still alive
    */
   useEffect(() => {
-    if (!token || !currentTenantId) return;
+    if (!token) return;
 
     getMe()
       .then(data => {
-        const tenantList = data.tenants || [];
-        const membership = tenantList.find(t => t.tenant_id === currentTenantId);
-        if (!membership) return; // tenant no longer active — let next request return 403
-
-        const freshRole = membership.role;
-        setUser(data.user);
-        setTenants(tenantList);
+        const freshRole = data.role?.toLowerCase() || 'admin';
+        const userObj = {
+          user_id: data.userId,
+          username: data.username,
+          email: data.email,
+          full_name: data.fullName,
+        };
+        setUser(userObj);
+        setTenants([]);
         setCurrentRole(freshRole);
-        localStorage.setItem('user',    JSON.stringify(data.user));
-        localStorage.setItem('tenants', JSON.stringify(tenantList));
+        setCurrentTenantId(1);
+        localStorage.setItem('user',    JSON.stringify(userObj));
+        localStorage.setItem('tenants', JSON.stringify([]));
         localStorage.setItem('role',    freshRole);
+        localStorage.setItem('tenantId', '1');
       })
       .catch(() => {
         // Token is expired or invalid — clear everything so the login screen appears
@@ -203,7 +208,7 @@ export function AuthProvider({ children }) {
     doSelectTenant,
     restoreFromOAuth,
     setSession,
-    isAuthenticated: !!token && !!currentTenantId,
+    isAuthenticated: !!token,
     // Convenience role checks
     isAdmin:    currentRole === 'admin',
     isOperator: currentRole === 'operator',

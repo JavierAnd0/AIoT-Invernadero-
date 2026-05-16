@@ -446,25 +446,9 @@ function AccountSection({ user, tenants, currentTenantId, currentRole }) {
             }
           />
         )}
-        {tenants?.length > 1 && (
-          <div style={{ marginTop: 12, padding: '10px 0' }}>
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8 }}>
-              {t('settings.allOrganisations')}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {tenants.map(t => (
-                <div key={t.tenant_id} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '6px 10px', background: t.tenant_id === currentTenantId ? '#f0fdf4' : '#f9fafb',
-                  borderRadius: 8, border: `1px solid ${t.tenant_id === currentTenantId ? '#bbf7d0' : '#f0f0f0'}`,
-                }}>
-                  <span style={{ fontSize: 13, color: '#374151' }}>{t.name}</span>
-                  <Badge label={t.role} color={ROLE_COLOR[t.role] || '#6b7280'} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* tenants?.length > 1 && (
+          ...
+        ) */}
       </div>
     </Card>
   );
@@ -536,8 +520,8 @@ export default function SettingsScreen() {
 
       <AvatarCard user={user} currentRole={currentRole} />
       <PreferencesSection user={user} onSaved={handleProfileSaved} />
-      <ProfileSection user={user} onSaved={handleProfileSaved} />
-      <PasswordSection user={user} />
+      {/* <ProfileSection user={user} onSaved={handleProfileSaved} />
+      <PasswordSection user={user} /> */}
       <AccountSection
         user={user}
         tenants={tenants}

@@ -39,7 +39,7 @@ export const login = (username, password) =>
   api.post('/auth/login', { username, password }).then(r => r.data);
 export const getMe = () => api.get('/auth/me').then(r => r.data);
 export const bootstrap = (data) =>
-  api.post('/auth/bootstrap', data).then(r => r.data);
+  api.post('/auth/register', data).then(r => r.data);
 export const selectTenant = (tenantId) =>
   api.post('/auth/select-tenant', { tenant_id: tenantId }).then(r => r.data);
 export const loginWithGoogle = () => {
@@ -47,15 +47,15 @@ export const loginWithGoogle = () => {
   window.location.href = `${apiBase}/auth/google`;
 };
 
-// TENANTS (admin)
-export const getTenantMembers  = (tenantId) =>
-  api.get(`/tenants/${tenantId}/members`).then(r => r.data);
-export const inviteMember = (tenantId, data) =>
-  api.post(`/tenants/${tenantId}/members`, data).then(r => r.data);
-export const updateMember = (tenantId, userId, data) =>
-  api.put(`/tenants/${tenantId}/members/${userId}`, data).then(r => r.data);
-export const removeMember = (tenantId, userId) =>
-  api.delete(`/tenants/${tenantId}/members/${userId}`).then(r => r.data);
+// TENANTS (admin) - Not supported in Spring Boot Backend currently
+// export const getTenantMembers  = (tenantId) =>
+//   api.get(`/tenants/${tenantId}/members`).then(r => r.data);
+// export const inviteMember = (tenantId, data) =>
+//   api.post(`/tenants/${tenantId}/members`, data).then(r => r.data);
+// export const updateMember = (tenantId, userId, data) =>
+//   api.put(`/tenants/${tenantId}/members/${userId}`, data).then(r => r.data);
+// export const removeMember = (tenantId, userId) =>
+//   api.delete(`/tenants/${tenantId}/members/${userId}`).then(r => r.data);
 
 // ZONES
 export const getZones   = ()      => api.get('/zones/').then(r => r.data);
@@ -102,9 +102,9 @@ export const getUsers   = (params) => api.get('/users/', { params }).then(r => r
 export const updateUser = (id, d)  => api.put(`/users/${id}`, d).then(r => r.data);
 export const deleteUser = (id)     => api.delete(`/users/${id}`).then(r => r.data);
 
-// PROFILE (own user)
-export const updateProfile    = (data) => api.patch('/auth/profile', data).then(r => r.data);
-export const changePassword   = (data) => api.post('/auth/change-password', data).then(r => r.data);
+// PROFILE (own user) - Not supported in Spring Boot Backend currently
+// export const updateProfile    = (data) => api.patch('/auth/profile', data).then(r => r.data);
+// export const changePassword   = (data) => api.post('/auth/change-password', data).then(r => r.data);
 
 // SIMULATOR
 export const startSimulator     = (interval_seconds) =>

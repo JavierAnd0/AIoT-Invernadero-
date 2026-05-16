@@ -26,7 +26,7 @@ export default function SimulatorScreen() {
   async function handleStart() {
     setActionError('');
     setActing(true);
-    try { await startSimulator(interval); refetchStatus(); }
+    try { await startSimulator(); refetchStatus(); }
     catch (err) { setActionError(err.response?.data?.error || t('simulator.couldNotStart')); }
     finally { setActing(false); }
   }
@@ -66,7 +66,7 @@ export default function SimulatorScreen() {
             {running && <Badge label="Live" color="#22c55e" />}
           </div>
 
-          {!running && (
+          {/* !running && (
             <Input
               label={t('simulator.interval')}
               type="number"
@@ -74,7 +74,7 @@ export default function SimulatorScreen() {
               onChange={e => setInterval_(Number(e.target.value))}
               style={{ marginBottom: 14 }}
             />
-          )}
+          ) */}
 
           {running
             ? <Btn variant="danger" onClick={handleStop} disabled={acting} style={{ width: '100%' }}>

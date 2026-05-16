@@ -28,9 +28,7 @@ export default function AuthCallback({ onLogin }) {
 
     if (token) {
       try {
-        const requiresTenantSelection =
-          params.get('requires_tenant_selection') === 'true';
-        restoreFromOAuth(token, requiresTenantSelection);
+        restoreFromOAuth(token);
         // onLogin() — no role needed; App.jsx reads currentRole from context
         onLogin();
       } catch {
