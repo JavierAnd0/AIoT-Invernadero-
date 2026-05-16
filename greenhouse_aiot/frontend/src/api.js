@@ -44,7 +44,9 @@ export const selectTenant = (tenantId) =>
   api.post('/auth/select-tenant', { tenant_id: tenantId }).then(r => r.data);
 export const loginWithGoogle = () => {
   const apiBase = import.meta.env.VITE_API_URL || '/api/v1';
-  window.location.href = `${apiBase}/auth/google`;
+  // VITE_API_URL might end in /api/v1, so we strip it out to hit the root context /oauth2/authorization/google
+  const rootUrl = apiBase.replace(/\/api\/v1\/?$/, '');
+  window.location.href = `${rootUrl}/oauth2/authorization/google`;
 };
 
 // TENANTS (admin) - Not supported in Spring Boot Backend currently

@@ -70,7 +70,7 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(authorization -> authorization
-                    .baseUri("/api/v1/auth")
+                    .baseUri("/oauth2/authorization")
                 )
                 .redirectionEndpoint(redirection -> redirection
                     .baseUri("/api/v1/auth/oauth2/callback/*")
@@ -78,7 +78,17 @@ public class SecurityConfig {
                 .successHandler(oauth2SuccessHandler)
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exceptions -> exceptions
+                .defaultAuthenticationEntryPointFor(
+                    (request, response, authException) -> {
+                        response.setStatus(401);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\": \"Unauthorized\"}");
+                    },
+                    request -> request.getRequestURI().startsWith("/api/")
+                )
+            );
 
         return http.build();
     }
