@@ -47,7 +47,7 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,https://*.vercel.app}
   ai:
     script-path: ${AI_SCRIPT_PATH:../ai/predict_cli.py}
     python-cmd: ${PYTHON_CMD:python3}
