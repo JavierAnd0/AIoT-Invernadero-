@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class SensorReading {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "device_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "registeredBy", "zone"})
     private Device device;
 
     @Column(name = "temperature", precision = 5, scale = 2)

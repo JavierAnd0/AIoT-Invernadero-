@@ -21,7 +21,7 @@ function loadFromStorage() {
     token:           localStorage.getItem('token')             || null,
     tenants:         safeJson(localStorage.getItem('tenants'), []),
     currentTenantId: localStorage.getItem('tenantId') ? Number(localStorage.getItem('tenantId')) : 1,
-    currentRole:     localStorage.getItem('role')              || 'admin',
+    currentRole:     localStorage.getItem('role')              || 'viewer',
   };
 }
 
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
     setUser(user);
     setTenants([]);
     setCurrentTenantId(1);
-    setCurrentRole(role ?? 'admin');
+    setCurrentRole(role ?? 'viewer');
     setRequiresTenantSelection(false);
   }, []);
 
@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
         email: data.email,
         full_name: data.fullName,
       };
-      const role = data.role?.toLowerCase() || 'admin';
+      const role = data.role?.toLowerCase() || 'viewer';
 
       setSession({ token: data.token, user: userObj, role });
       return { ok: true, requiresTenantSelection: false };
@@ -128,7 +128,7 @@ export function AuthProvider({ children }) {
    * AuthCallback calls getMe() explicitly before calling this, so we have real user data.
    */
   const restoreFromOAuth = useCallback((token, meData) => {
-    const role = meData?.role?.toLowerCase() || 'admin';
+    const role = meData?.role?.toLowerCase() || 'viewer';
     const userObj = {
       user_id:   meData?.userId,
       username:  meData?.username,
@@ -156,7 +156,7 @@ export function AuthProvider({ children }) {
 
     getMe()
       .then(data => {
-        const freshRole = data.role?.toLowerCase() || 'admin';
+        const freshRole = data.role?.toLowerCase() || 'viewer';
         const userObj = {
           user_id: data.userId,
           username: data.username,

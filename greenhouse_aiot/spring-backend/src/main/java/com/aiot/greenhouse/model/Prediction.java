@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -24,10 +25,12 @@ public class Prediction {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "device_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "registeredBy", "zone"})
     private Device device;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "reading_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "device"})
     private SensorReading reading;
 
     @Column(name = "model_name", nullable = false, length = 100)

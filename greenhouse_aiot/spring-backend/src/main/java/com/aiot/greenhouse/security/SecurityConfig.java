@@ -25,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 
 /**
  * Configuración principal de Spring Security.
@@ -78,6 +79,7 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(authorization -> authorization
                     .baseUri("/oauth2/authorization")
+                    .authorizationRequestRepository(authorizationRequestRepository())
                 )
                 .redirectionEndpoint(redirection -> redirection
                     .baseUri("/api/v1/auth/oauth2/callback/*")
@@ -97,12 +99,22 @@ public class SecurityConfig {
                         response.setContentType("application/json");
                         response.getWriter().write("{\"error\": \"Unauthorized\"}");
                     },
-                    // Return 401 for everything EXCEPT the OAuth2 authorization endpoint itself
                     request -> !request.getRequestURI().startsWith("/oauth2/authorization")
                 )
             );
 
         return http.build();
+    }
+
+    /**
+     * Repositorio de sesión para OAuth2 — mantiene el 'state' entre el redirect
+     * a Google y el callback de vuelta al backend. Sin esto se produce
+     * authorization_request_not_found cuando el navegador hace peticiones
+     * concurrentes (favicon, etc.) entre ambos pasos.
+     */
+    @Bean
+    public HttpSessionOAuth2AuthorizationRequestRepository authorizationRequestRepository() {
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
     }
 
     /** Encoder de contraseñas BCrypt. */

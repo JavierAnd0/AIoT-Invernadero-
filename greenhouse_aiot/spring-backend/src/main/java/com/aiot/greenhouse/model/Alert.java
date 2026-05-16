@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,14 +22,17 @@ public class Alert {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "device_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "registeredBy", "zone"})
     private Device device;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reading_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "device"})
     private SensorReading reading;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "authorities"})
     private User assignedTo;
 
     @Enumerated(EnumType.STRING)
