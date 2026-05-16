@@ -95,9 +95,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneral(Exception ex) {
         log.error("Error no manejado: {}", ex.getMessage(), ex);
+        // Expose exception type and message to aid production diagnosis
+        String detail = "[" + ex.getClass().getSimpleName() + "] " + ex.getMessage();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiError.builder()
                 .status(500)
-                .message(messageSource.getMessage("error.internal", null, LocaleContextHolder.getLocale()))
+                .message(detail)
                 .build());
     }
 }
