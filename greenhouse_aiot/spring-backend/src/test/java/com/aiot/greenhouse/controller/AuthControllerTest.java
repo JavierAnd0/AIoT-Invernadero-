@@ -3,6 +3,8 @@ package com.aiot.greenhouse.controller;
 import com.aiot.greenhouse.dto.request.LoginRequest;
 import com.aiot.greenhouse.dto.request.RegisterRequest;
 import com.aiot.greenhouse.dto.response.AuthResponse;
+import com.aiot.greenhouse.security.JwtTokenProvider;
+import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
 import com.aiot.greenhouse.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +38,12 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private UserDetailsService userDetailsService;
+    @MockBean
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
     @Test
     @DisplayName("Login exitoso devuelve 200 con token JWT")
@@ -128,6 +137,6 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.email").exists());
+                .andExpect(jsonPath("$.field_errors.email").exists());
     }
 }

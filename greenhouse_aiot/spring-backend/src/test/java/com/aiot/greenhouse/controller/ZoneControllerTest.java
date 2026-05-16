@@ -2,6 +2,8 @@ package com.aiot.greenhouse.controller;
 
 import com.aiot.greenhouse.dto.request.ZoneRequest;
 import com.aiot.greenhouse.model.Zone;
+import com.aiot.greenhouse.security.JwtTokenProvider;
+import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
 import com.aiot.greenhouse.service.ZoneService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,6 +40,12 @@ class ZoneControllerTest {
 
     @MockBean
     private ZoneService zoneService;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private UserDetailsService userDetailsService;
+    @MockBean
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
     @Test
     @WithMockUser(roles = "VIEWER")
@@ -108,6 +117,6 @@ class ZoneControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.name").exists());
+                .andExpect(jsonPath("$.field_errors.name").exists());
     }
 }

@@ -1,12 +1,15 @@
 package com.aiot.greenhouse.controller;
 
 import com.aiot.greenhouse.model.Alert;
+import com.aiot.greenhouse.security.JwtTokenProvider;
+import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
 import com.aiot.greenhouse.service.AlertService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +32,12 @@ class AlertControllerTest {
 
     @MockBean
     private AlertService alertService;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private UserDetailsService userDetailsService;
+    @MockBean
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
     @Test
     @WithMockUser(roles = "OPERATOR")

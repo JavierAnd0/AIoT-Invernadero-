@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from './ResponsiveGrid.module.css';
 
 // A lightweight responsive grid container that grows columns based on available width.

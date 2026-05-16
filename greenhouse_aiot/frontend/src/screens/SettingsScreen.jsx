@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { Card, Btn, Input, Badge, ErrorBanner } from '../ui';
+import { Card, Badge } from '../ui';
 import { Icon } from '../ui/icons';
 
 const ROLE_COLOR = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
@@ -44,23 +44,9 @@ function InfoRow({ label, value }) {
   );
 }
 
-function SaveBanner({ saved, message }) {
-  if (!saved) return null;
-  return (
-    <div style={{
-      background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8,
-      padding: '10px 14px', fontSize: 13, color: '#15803d', fontWeight: 500,
-      display: 'flex', alignItems: 'center', gap: 8,
-    }}>
-      <Icon name="checkCircle" size={16} color="#15803d" />
-      {message}
-    </div>
-  );
-}
-
-function PreferencesSection({ user, onSaved }) {
+function PreferencesSection({ user }) {
   const { t, i18n } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({

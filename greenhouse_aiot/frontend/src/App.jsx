@@ -33,9 +33,6 @@ const SCREEN_ROLES = {
   settings:    ['admin', 'operator', 'viewer'],
 };
 
-function defaultScreenForRole(role) {
-  return role === 'admin' || role === 'operator' ? 'dashboard' : 'dashboard';
-}
 
 export default function App() {
   const { isAuthenticated, requiresTenantSelection, currentRole, doLogout } = useAuth();

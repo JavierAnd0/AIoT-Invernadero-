@@ -13,7 +13,7 @@ function timeAgo(isoStr) {
 }
 import { Icon } from '../ui/icons';
 import {
-  getLatestReadings, getOpenAlerts, getDevices, getZones,
+  getOpenAlerts, getDevices, getZones,
   getCrops, getDeviceReadings,
 } from '../api';
 import { Card, Badge, LineChart, STATUS_COLOR, SEV_COLOR } from '../ui';

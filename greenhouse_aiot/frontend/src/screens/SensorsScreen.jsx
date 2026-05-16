@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getDevices, getDeviceReadings } from '../api';
@@ -9,7 +9,7 @@ export default function SensorsScreen({ zone }) {
   const { t } = useTranslation();
   const { data: devices, loading: dLoading } = useApi(() => getDevices(zone ? { zone_id: zone } : {}), [zone]);
   const [deviceId, setDeviceId] = useState(null);
-  const deviceList = Array.isArray(devices) ? devices : [];
+  const deviceList = useMemo(() => Array.isArray(devices) ? devices : [], [devices]);
 
   useEffect(() => {
     if (!deviceList.length) {

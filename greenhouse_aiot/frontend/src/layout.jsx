@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getOpenAlerts, getZones } from './api';
 import { useApi, usePolling } from './hooks/useApi';
@@ -126,7 +126,7 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout, onClose }) 
   const openAlerts = Array.isArray(openAlertsArr) ? openAlertsArr.length : 0;
   const showZone = ['dashboard', 'sensors', 'crops'].includes(screen);
   const visible = NAV.filter(n => n.roles.includes(role));
-  const zoneOptions = Array.isArray(zones) ? zones : [];
+  const zoneOptions = useMemo(() => Array.isArray(zones) ? zones : [], [zones]);
 
   useEffect(() => {
     if (!zoneOptions.length) return;
