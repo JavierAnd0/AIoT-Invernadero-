@@ -2,7 +2,7 @@ name: CI — Build, Test & Lint
 
 on:
   push:
-    branches: [ main, develop, "feature/**" ]
+    branches: [ main, develop, "feature/**", Javier ]
   pull_request:
     branches: [ main, develop ]
 
