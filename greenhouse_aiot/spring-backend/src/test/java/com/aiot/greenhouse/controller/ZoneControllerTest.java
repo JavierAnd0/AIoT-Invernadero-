@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests del ZoneController: CRUD de zonas con verificación de roles.
  */
 @WebMvcTest(ZoneController.class)
+@Import(JwtTokenProvider.class)
 @DisplayName("ZoneController Tests")
 class ZoneControllerTest {
 
@@ -40,8 +42,6 @@ class ZoneControllerTest {
 
     @MockBean
     private ZoneService zoneService;
-    @MockBean
-    private JwtTokenProvider jwtTokenProvider;
     @MockBean
     private UserDetailsService userDetailsService;
     @MockBean

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests del AlertController: listado, reconocimiento y resolución de alertas.
  */
 @WebMvcTest(AlertController.class)
+@Import(JwtTokenProvider.class)
 @DisplayName("AlertController Tests")
 class AlertControllerTest {
 
@@ -32,8 +34,6 @@ class AlertControllerTest {
 
     @MockBean
     private AlertService alertService;
-    @MockBean
-    private JwtTokenProvider jwtTokenProvider;
     @MockBean
     private UserDetailsService userDetailsService;
     @MockBean

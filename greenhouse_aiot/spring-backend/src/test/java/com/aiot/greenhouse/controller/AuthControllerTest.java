@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifica login exitoso, credenciales inválidas y registro de usuario.
  */
 @WebMvcTest(AuthController.class)
+@Import(JwtTokenProvider.class)
 @DisplayName("AuthController Tests")
 class AuthControllerTest {
 
@@ -38,8 +40,6 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
-    @MockBean
-    private JwtTokenProvider jwtTokenProvider;
     @MockBean
     private UserDetailsService userDetailsService;
     @MockBean
