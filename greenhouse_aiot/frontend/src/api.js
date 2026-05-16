@@ -20,7 +20,8 @@ api.interceptors.response.use(
     // component handle the error message, do NOT reload.
     const isAuthEndpoint = url.includes('/auth/login') ||
                            url.includes('/auth/bootstrap') ||
-                           url.includes('/auth/change-password');
+                           url.includes('/auth/change-password') ||
+                           url.includes('/auth/me');   // getMe() during OAuth callback must not force-reload
 
     if (status === 401 && !isAuthEndpoint) {
       // Expired or revoked token — clear session and return to login without
@@ -38,6 +39,9 @@ api.interceptors.response.use(
 export const login = (username, password) =>
   api.post('/auth/login', { username, password }).then(r => r.data);
 export const getMe = () => api.get('/auth/me').then(r => r.data);
+/** Verify a token explicitly (used by OAuth callback before committing the session). */
+export const getMeWithToken = (token) =>
+  api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.data);
 export const bootstrap = (data) =>
   api.post('/auth/register', data).then(r => r.data);
 export const selectTenant = (tenantId) =>

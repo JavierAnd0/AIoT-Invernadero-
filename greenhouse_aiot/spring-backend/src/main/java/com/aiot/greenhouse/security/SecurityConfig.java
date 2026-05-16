@@ -43,6 +43,9 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
     /**
      * Cadena de filtros de seguridad principal.
      * Configura rutas públicas, sesión stateless y filtros JWT y OAuth2.
@@ -80,6 +83,10 @@ public class SecurityConfig {
                     .baseUri("/api/v1/auth/oauth2/callback/*")
                 )
                 .successHandler(oauth2SuccessHandler)
+                .failureHandler((request, response, exception) -> {
+                    String reason = java.net.URLEncoder.encode(exception.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+                    response.sendRedirect(frontendUrl + "/auth/callback?error=" + reason);
+                })
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

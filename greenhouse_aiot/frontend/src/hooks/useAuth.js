@@ -123,22 +123,20 @@ export function AuthProvider({ children }) {
    * Restore a session from an OAuth callback URL token.
    * The AuthCallback screen calls this after parsing ?token= from the URL.
    */
-  const restoreFromOAuth = useCallback((token) => {
-    // Decode the JWT payload (not verification — server already verified it)
-    try {
-      const payload    = JSON.parse(atob(token.split('.')[1]));
-      const userId     = payload.sub;
-      // We don't have full user info at this point — call /auth/me after redirect
-      saveSession({ token, user: { user_id: userId }, tenants: [], tenantId: 1, role: 'admin' });
-      setToken(token);
-      setCurrentTenantId(1);
-      setRequiresTenantSelection(false);
-    } catch {
-      // fallback — just save the token and let /auth/me fill in the rest
-      localStorage.setItem('token', token);
-      setToken(token);
-    }
-  }, []);
+  /**
+   * Commit an OAuth session once the token has already been verified via /auth/me.
+   * AuthCallback calls getMe() explicitly before calling this, so we have real user data.
+   */
+  const restoreFromOAuth = useCallback((token, meData) => {
+    const role = meData?.role?.toLowerCase() || 'admin';
+    const userObj = {
+      user_id:   meData?.userId,
+      username:  meData?.username,
+      email:     meData?.email,
+      full_name: meData?.fullName,
+    };
+    setSession({ token, user: userObj, role });
+  }, [setSession]);
 
   /**
    * On mount: if we have a token + tenant context, call /auth/me to refresh
@@ -149,6 +147,10 @@ export function AuthProvider({ children }) {
    *   - the user logged in via Google OAuth (restoreFromOAuth saves role:'')
    *   - the role was changed by an admin and the JWT is still alive
    */
+  // On mount: if there is already a token in localStorage (page reload, returning user)
+  // call /auth/me to refresh the user profile and role.
+  // Runs ONCE on mount only — the [token] dependency was removed intentionally so that
+  // restoreFromOAuth (OAuth callback) does NOT accidentally re-trigger this effect.
   useEffect(() => {
     if (!token) return;
 
@@ -171,9 +173,8 @@ export function AuthProvider({ children }) {
         localStorage.setItem('tenantId', '1');
       })
       .catch((err) => {
-        console.error('getMe() failed:', err);
-        // Only clear session if it's an auth error. Network errors shouldn't log you out.
-        if (err.response && err.response.status === 401) {
+        console.error('getMe() failed on mount:', err);
+        if (err.response?.status === 401) {
           clearSession();
           setToken(null);
           setUser(null);
@@ -183,9 +184,7 @@ export function AuthProvider({ children }) {
           setRequiresTenantSelection(false);
         }
       });
-  }, [token]);
-  // ^ intentionally runs once on mount only; token + currentTenantId are read
-  //   from the closure because they're set synchronously from localStorage above.
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const doLogout = useCallback(() => {
     clearSession();
