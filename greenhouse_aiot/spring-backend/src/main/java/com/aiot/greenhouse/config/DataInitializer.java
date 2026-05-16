@@ -156,6 +156,16 @@ public class DataInitializer implements CommandLineRunner {
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private void clearAll() {
+        // Drop legacy columns from previous iterations that violate NOT NULL constraints
+        try {
+            jdbc.execute("ALTER TABLE zones DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE devices DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE crops DROP COLUMN IF EXISTS tenant_id CASCADE");
+            jdbc.execute("ALTER TABLE users DROP COLUMN IF EXISTS tenant_id CASCADE");
+        } catch (Exception e) {
+            log.warn("Warning while dropping legacy columns: {}", e.getMessage());
+        }
+
         // Order matters due to FK constraints
         jdbc.update("DELETE FROM alerts");
         jdbc.update("DELETE FROM predictions");
