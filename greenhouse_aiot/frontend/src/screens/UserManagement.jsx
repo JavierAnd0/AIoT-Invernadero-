@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useApi }  from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getUsers, deleteUser, updateUser } from '../api';
-import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Badge, Btn, LoadingSpinner, ErrorBanner } from '../ui';
 
 /*
  * User Management — tenant-scoped
@@ -18,22 +18,13 @@ import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '..
 
 const ROLE_COLOR = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
 
-const EMPTY_FORM = {
-  username: '', full_name: '', email: '', password: '', role: 'viewer',
-};
-
 export default function UserManagement() {
   const { t } = useTranslation();
-  const { currentTenantId, user: currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const { data: usersData, loading, error, refetch } = useApi(getUsers);
-  const [showForm,   setShowForm]   = useState(false);
-  const [form,       setForm]       = useState(EMPTY_FORM);
-  const [saving,     setSaving]     = useState(false);
   const [saveError,  setSaveError]  = useState('');
 
   const users = usersData?.users || (Array.isArray(usersData) ? usersData : []);
-
-  function upd(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
 
 
@@ -84,7 +75,7 @@ export default function UserManagement() {
 
 
       <Card>
-        {saveError && !showForm && <ErrorBanner message={saveError} />}
+        {saveError && <ErrorBanner message={saveError} />}
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>

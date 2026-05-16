@@ -77,6 +77,7 @@ export default function DashboardScreen({ zone }) {
     { label: t('sensors.colTemp'), data: sr.map(r => r.temperature), color: '#f59e0b' },
     { label: t('sensors.colHumidity'), data: sr.map(r => r.humidity), color: '#3b82f6' },
   ];
+  const now = Date.now();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -167,7 +168,7 @@ export default function DashboardScreen({ zone }) {
           : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
               {cropList.map(c => {
-                const daysElapsed = Math.floor((Date.now() - new Date(c.planted_at)) / 86400000);
+                const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
                 const growthDays = c.crop_type?.growth_days || 60;
                 const daysLeft = Math.max(0, growthDays - daysElapsed);
                 const pct = Math.min(100, Math.round((daysElapsed / growthDays) * 100));

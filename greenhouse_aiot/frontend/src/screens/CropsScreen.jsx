@@ -48,6 +48,7 @@ export default function CropsScreen({ zone }) {
 
   if (loading) return <LoadingSpinner />;
 
+  const now = Date.now();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -101,7 +102,7 @@ export default function CropsScreen({ zone }) {
           </thead>
           <tbody>
             {crops.map(c => {
-              const daysElapsed = Math.floor((Date.now() - new Date(c.planted_at)) / 86400000);
+              const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
               const growthDays  = c.crop_type?.growth_days || 60;
               const daysLeft    = Math.max(0, growthDays - daysElapsed);
               const pct         = Math.min(100, Math.round((daysElapsed / growthDays) * 100));

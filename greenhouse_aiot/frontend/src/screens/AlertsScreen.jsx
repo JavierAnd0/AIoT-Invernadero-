@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getAlerts, acknowledgeAlert, resolveAlert } from '../api';
@@ -23,12 +23,11 @@ export default function AlertsScreen() {
     () => getAlerts(filter !== 'all' ? { status: filter } : undefined),
     [filter]
   );
-  const [alerts, setAlerts] = useState([]);
-
-  useEffect(() => {
+  const alerts = useMemo(() => {
     const list = alertsData?.alerts || alertsData;
-    if (Array.isArray(list)) setAlerts(list);
-    else if (list) setAlerts([list]);
+    if (Array.isArray(list)) return list;
+    if (list) return [list];
+    return [];
   }, [alertsData]);
 
   async function ack(id) {

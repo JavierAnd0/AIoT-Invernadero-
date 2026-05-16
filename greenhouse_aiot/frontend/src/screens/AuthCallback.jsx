@@ -15,22 +15,18 @@ import { getMeWithToken } from '../api';
  */
 export default function AuthCallback({ onLogin }) {
   const { restoreFromOAuth } = useAuth();
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error  = params.get('error');
+    if (error) return `Google devolvió un error: ${decodeURIComponent(error)}`;
+    if (!params.get('token')) return 'No se recibió ningún token del servidor. Verifica la configuración de FRONTEND_URL en el backend.';
+    return '';
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token  = params.get('token');
-    const error  = params.get('error');
-
-    if (error) {
-      setErrorMsg(`Google devolvió un error: ${decodeURIComponent(error)}`);
-      return;
-    }
-
-    if (!token) {
-      setErrorMsg('No se recibió ningún token del servidor. Verifica la configuración de FRONTEND_URL en el backend.');
-      return;
-    }
+    if (!token) return;
 
     getMeWithToken(token)
       .then(userData => {

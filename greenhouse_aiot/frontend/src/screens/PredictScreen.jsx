@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
@@ -14,11 +14,13 @@ export default function PredictScreen() {
   const { currentRole: role } = useAuth();
   const canPredict = role === 'admin' || role === 'operator';
   const { data: devices } = useApi(getDevices, []);
-  const [deviceId,    setDeviceId]    = useState(null);
-  const [form,        setForm]        = useState({ temp:'', hum:'', ph:'', light:'', co2:'' });
-  const [result,      setResult]      = useState(null);
-  const [predLoading, setPredLoading] = useState(false);
-  const [predError,   setPredError]   = useState('');
+  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [form,           setForm]           = useState({ temp:'', hum:'', ph:'', light:'', co2:'' });
+  const [result,         setResult]         = useState(null);
+  const [predLoading,    setPredLoading]    = useState(false);
+  const [predError,      setPredError]      = useState('');
+
+  const deviceId = selectedDevice ?? (devices?.length ? devices[0].device_id : null);
 
   const FIELDS = [
     { key: 'temp',  label: t('predict.fieldTemp'), min: 0,   max: 50    },
@@ -27,10 +29,6 @@ export default function PredictScreen() {
     { key: 'light', label: t('predict.fieldLight'),min: 0,   max: 10000 },
     { key: 'co2',   label: t('predict.fieldCo2'),  min: 300, max: 5000  },
   ];
-
-  useEffect(() => {
-    if (devices?.length && !deviceId) setDeviceId(devices[0].device_id);
-  }, [devices]);
 
   async function autofill() {
     if (!deviceId) return;
@@ -100,7 +98,7 @@ export default function PredictScreen() {
             <Select
               label={t('predict.device')}
               value={deviceId || ''}
-              onChange={e => setDeviceId(Number(e.target.value))}
+              onChange={e => setSelectedDevice(Number(e.target.value))}
               options={(devices || []).map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
               disabled={!canPredict}
             />

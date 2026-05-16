@@ -8,6 +8,7 @@ import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const STATUS_COLOR = {
   Growing:   '#22c55e',
   Harvested: '#3b82f6',
@@ -19,6 +20,7 @@ export const STATUS_COLOR = {
   planned:   '#8b5cf6',
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SEV_COLOR = {
   critical: '#ef4444',
   warning:  '#f59e0b',

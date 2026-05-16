@@ -23,7 +23,7 @@ export function useApi(fetchFn, deps = [], options = {}) {
     } finally {
       setLoading(false);
     }
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps, react-hooks/use-memo
 
   useEffect(() => { if (autoFetch) execute(); }, [autoFetch, execute]);
 

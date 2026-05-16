@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePolling } from '../hooks/useApi';
 import { getSimulatorStatus, startSimulator, stopSimulator } from '../api';
-import { Card, Btn, Input, Badge, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Btn, Badge, LoadingSpinner, ErrorBanner } from '../ui';
 
 function timeAgo(isoStr) {
   if (!isoStr) return '—';
@@ -17,7 +17,6 @@ function timeAgo(isoStr) {
 export default function SimulatorScreen() {
   const { t } = useTranslation();
   const { data: status, loading, error, refetch: refetchStatus } = usePolling(getSimulatorStatus, 5000);
-  const [interval, setInterval_] = useState(30);
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState('');
 

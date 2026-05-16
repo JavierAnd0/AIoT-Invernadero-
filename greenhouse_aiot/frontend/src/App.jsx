@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth }    from './hooks/useAuth';
 import { Shell } from './layout';
 
@@ -43,12 +43,6 @@ export default function App() {
     setScreen('dashboard');
   }
 
-  useEffect(() => {
-    if (!SCREEN_ROLES[screen]?.includes(currentRole)) {
-      setScreen('dashboard');
-    }
-  }, [currentRole, screen]);
-
   // OAuth2 callback — Google redirects here with ?token=
   if (window.location.pathname === '/auth/callback') {
     return <AuthCallback onLogin={() => {
@@ -67,7 +61,8 @@ export default function App() {
   }
 
   function renderScreen() {
-    switch (screen) {
+    const active = SCREEN_ROLES[screen]?.includes(currentRole) ? screen : 'dashboard';
+    switch (active) {
       case 'dashboard':   return <DashboardScreen zone={zone} />;
       case 'sensors':     return <SensorsScreen zone={zone} />;
       case 'crops':       return <CropsScreen zone={zone} />;

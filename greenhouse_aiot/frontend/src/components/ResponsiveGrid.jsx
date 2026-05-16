@@ -12,7 +12,6 @@ export function ResponsiveGrid({ min = 240, gap = 14, children, className = '' }
     ['--min']:_toPx(min),
     ['--gap']: `${gap}px`,
   };
-  // eslint-disable-next-line no-useless-concat
   return (
     <div className={[styles.grid, className].join(' ')} style={style}>
       {children}

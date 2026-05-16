@@ -47,8 +47,6 @@ function InfoRow({ label, value }) {
 function PreferencesSection({ user }) {
   const { t, i18n } = useTranslation();
   const { setTheme } = useTheme();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
   const [form, setForm] = useState({
     language: user.language || 'en',
     theme: user.theme || 'system',
