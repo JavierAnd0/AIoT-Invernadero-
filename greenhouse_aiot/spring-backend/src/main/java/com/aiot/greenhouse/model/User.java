@@ -1,5 +1,7 @@
 package com.aiot.greenhouse.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,6 +19,8 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "authorities",
+                       "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
 public class User implements UserDetails {
 
     @Id
@@ -73,11 +77,13 @@ public class User implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + getRole().name()));
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() {
         return passwordHash;
     }
