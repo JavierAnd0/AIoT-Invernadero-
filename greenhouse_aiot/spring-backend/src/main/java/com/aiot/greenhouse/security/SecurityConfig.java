@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+
 
 /**
  * Configuración principal de Spring Security.
@@ -107,14 +107,14 @@ public class SecurityConfig {
     }
 
     /**
-     * Repositorio de sesión para OAuth2 — mantiene el 'state' entre el redirect
-     * a Google y el callback de vuelta al backend. Sin esto se produce
-     * authorization_request_not_found cuando el navegador hace peticiones
-     * concurrentes (favicon, etc.) entre ambos pasos.
+     * Repositorio de autorización OAuth2 basado en cookie SameSite=None.
+     * Necesario cuando frontend y backend están en dominios distintos (cross-site).
+     * La cookie de sesión HTTP nativa del servidor es bloqueada por el navegador
+     * en el flujo de callback porque se considera una petición cross-site.
      */
     @Bean
-    public HttpSessionOAuth2AuthorizationRequestRepository authorizationRequestRepository() {
-        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    public CookieOAuth2AuthorizationRequestRepository authorizationRequestRepository() {
+        return new CookieOAuth2AuthorizationRequestRepository();
     }
 
     /** Encoder de contraseñas BCrypt. */
