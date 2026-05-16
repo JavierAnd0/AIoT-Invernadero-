@@ -63,7 +63,9 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/api-docs/**",
-                    "/actuator/health"
+                    "/actuator/health",
+                    "/favicon.ico",
+                    "/error"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/crop-types/**").permitAll()
                 .anyRequest().authenticated()
@@ -86,7 +88,8 @@ public class SecurityConfig {
                         response.setContentType("application/json");
                         response.getWriter().write("{\"error\": \"Unauthorized\"}");
                     },
-                    request -> request.getRequestURI().startsWith("/api/")
+                    // Return 401 for everything EXCEPT the OAuth2 authorization endpoint itself
+                    request -> !request.getRequestURI().startsWith("/oauth2/authorization")
                 )
             );
 
