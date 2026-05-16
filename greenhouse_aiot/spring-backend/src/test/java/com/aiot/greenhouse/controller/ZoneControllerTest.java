@@ -4,6 +4,7 @@ import com.aiot.greenhouse.dto.request.ZoneRequest;
 import com.aiot.greenhouse.model.Zone;
 import com.aiot.greenhouse.security.JwtTokenProvider;
 import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
+import com.aiot.greenhouse.security.SecurityConfig;
 import com.aiot.greenhouse.service.ZoneService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests del ZoneController: CRUD de zonas con verificación de roles.
  */
 @WebMvcTest(ZoneController.class)
-@Import(JwtTokenProvider.class)
+@Import({JwtTokenProvider.class, SecurityConfig.class})
 @DisplayName("ZoneController Tests")
 class ZoneControllerTest {
 

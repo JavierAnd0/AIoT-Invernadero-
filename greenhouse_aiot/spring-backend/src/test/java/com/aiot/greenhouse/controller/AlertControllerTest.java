@@ -3,6 +3,7 @@ package com.aiot.greenhouse.controller;
 import com.aiot.greenhouse.model.Alert;
 import com.aiot.greenhouse.security.JwtTokenProvider;
 import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
+import com.aiot.greenhouse.security.SecurityConfig;
 import com.aiot.greenhouse.service.AlertService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests del AlertController: listado, reconocimiento y resolución de alertas.
  */
 @WebMvcTest(AlertController.class)
-@Import(JwtTokenProvider.class)
+@Import({JwtTokenProvider.class, SecurityConfig.class})
 @DisplayName("AlertController Tests")
 class AlertControllerTest {
 

@@ -5,6 +5,7 @@ import com.aiot.greenhouse.dto.request.RegisterRequest;
 import com.aiot.greenhouse.dto.response.AuthResponse;
 import com.aiot.greenhouse.security.JwtTokenProvider;
 import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
+import com.aiot.greenhouse.security.SecurityConfig;
 import com.aiot.greenhouse.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifica login exitoso, credenciales inválidas y registro de usuario.
  */
 @WebMvcTest(AuthController.class)
-@Import(JwtTokenProvider.class)
+@Import({JwtTokenProvider.class, SecurityConfig.class})
 @DisplayName("AuthController Tests")
 class AuthControllerTest {
 
