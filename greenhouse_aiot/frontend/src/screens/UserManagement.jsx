@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi }  from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
-import { getUsers, inviteMember, deleteUser, updateUser } from '../api';
+import { getUsers, deleteUser, updateUser } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
 
 /*
@@ -35,25 +35,7 @@ export default function UserManagement() {
 
   function upd(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
-  async function handleCreate(e) {
-    e.preventDefault();
-    if (!currentTenantId) {
-      setSaveError(t('users.noActiveTenant'));
-      return;
-    }
-    setSaveError('');
-    setSaving(true);
-    try {
-      await inviteMember(currentTenantId, { ...form, create_user: true });
-      refetch();
-      setShowForm(false);
-      setForm(EMPTY_FORM);
-    } catch (err) {
-      setSaveError(err.response?.data?.error || t('users.couldNotCreate'));
-    } finally {
-      setSaving(false);
-    }
-  }
+
 
   async function handleRoleChange(userId, role) {
     setSaveError('');
