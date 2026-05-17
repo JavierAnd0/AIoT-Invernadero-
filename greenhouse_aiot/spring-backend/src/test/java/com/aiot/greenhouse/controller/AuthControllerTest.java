@@ -126,6 +126,6 @@ class AuthControllerTest extends AbstractControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.email").exists());
+                .andExpect(jsonPath("$.field_errors.email").exists());
     }
 }
