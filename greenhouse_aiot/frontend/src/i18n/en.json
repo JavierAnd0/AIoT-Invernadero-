@@ -207,7 +207,10 @@
     "colActions": "Actions",
     "noDevices": "No devices found",
     "selectZone": "Select zone...",
-    "adminOnlyMsg": "Only admin users can register new devices. Operators can update device status."
+    "adminOnlyMsg": "Only admin users can register new devices. Operators can update device status.",
+    "nameRequired": "Device name is required",
+    "zoneRequired": "Please select a zone",
+    "couldNotCreate": "Could not create device"
   },
   "crops": {
     "title": "Crops",
@@ -255,7 +258,8 @@
     "cardHumidity": "Humidity",
     "cardPh": "pH",
     "cardLight": "Light",
-    "couldNotCreate": "Could not create crop type"
+    "couldNotCreate": "Could not create crop type",
+    "nameRequired": "Crop type name is required"
   },
   "predict": {
     "title": "AI Condition Prediction",

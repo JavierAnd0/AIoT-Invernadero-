@@ -61,6 +61,8 @@ export default function DeviceManagement() {
   async function handleCreate(e) {
     e.preventDefault();
     setSaveError('');
+    if (!form.name.trim()) { setSaveError(t('devices.nameRequired')); return; }
+    if (!form.zone_id)     { setSaveError(t('devices.zoneRequired'));  return; }
     setSaving(true);
     try {
       await createDevice({ ...form, zone_id: Number(form.zone_id) });
@@ -68,7 +70,7 @@ export default function DeviceManagement() {
       setShowForm(false);
       setForm({ name:'', serial_number:'', device_type:'sensor_node', zone_id:'', firmware_version:'' });
     } catch (err) {
-      setSaveError(err.response?.data?.error || 'Could not create device');
+      setSaveError(err.response?.data?.error || t('devices.couldNotCreate'));
     } finally {
       setSaving(false);
     }
@@ -87,7 +89,6 @@ export default function DeviceManagement() {
       </div>
 
       <ErrorBanner message={error} />
-      <ErrorBanner message={saveError} />
       {!canCreate && <ErrorBanner message={t('devices.adminOnlyMsg')} />}
 
       {showForm && (

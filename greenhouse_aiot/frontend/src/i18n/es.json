@@ -207,7 +207,10 @@
     "colActions": "Acciones",
     "noDevices": "No se encontraron dispositivos",
     "selectZone": "Seleccionar zona...",
-    "adminOnlyMsg": "Solo los administradores pueden registrar nuevos dispositivos. Los operadores pueden actualizar el estado."
+    "adminOnlyMsg": "Solo los administradores pueden registrar nuevos dispositivos. Los operadores pueden actualizar el estado.",
+    "nameRequired": "El nombre del dispositivo es obligatorio",
+    "zoneRequired": "Por favor selecciona una zona",
+    "couldNotCreate": "No se pudo crear el dispositivo"
   },
   "crops": {
     "title": "Cultivos",
@@ -255,7 +258,8 @@
     "cardHumidity": "Humedad",
     "cardPh": "pH",
     "cardLight": "Luz",
-    "couldNotCreate": "No se pudo crear el tipo de cultivo"
+    "couldNotCreate": "No se pudo crear el tipo de cultivo",
+    "nameRequired": "El nombre del tipo de cultivo es obligatorio"
   },
   "predict": {
     "title": "Predicción de Condición IA",

@@ -22,6 +22,7 @@ export default function CropTypeCatalog() {
   async function handleCreate(e) {
     e.preventDefault();
     setSaveError('');
+    if (!form.name.trim()) { setSaveError(t('cropTypes.nameRequired')); return; }
     setSaving(true);
     try {
       await createCropType({
