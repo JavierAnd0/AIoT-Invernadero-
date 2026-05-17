@@ -5,12 +5,12 @@ export function useApi(fetchFn, deps = [], options = {}) {
   const [data,    setData]    = useState(initialData);
   const [loading, setLoading] = useState(autoFetch);
   const [error,   setError]   = useState(null);
+
+  // Always keep a ref to the latest fetchFn so execute never needs it as a dep
   const fetchRef = useRef(fetchFn);
+  useEffect(() => { fetchRef.current = fetchFn; });
 
-  useEffect(() => {
-    fetchRef.current = fetchFn;
-  }, [fetchFn]);
-
+  // execute is intentionally stable (empty deps); it reads fetchRef at call time
   const execute = useCallback(async (...args) => {
     setLoading(true); setError(null);
     try {
@@ -23,10 +23,11 @@ export function useApi(fetchFn, deps = [], options = {}) {
     } finally {
       setLoading(false);
     }
-  }, [deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { if (autoFetch) execute(); }, [autoFetch, execute]);
+  // Spread deps directly so React compares individual values, not the array object
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (autoFetch) execute(); }, [autoFetch, ...deps]);
 
   return { data, loading, error, refetch: execute };
 }
