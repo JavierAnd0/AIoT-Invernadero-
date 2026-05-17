@@ -23,10 +23,10 @@ export function useApi(fetchFn, deps = [], options = {}) {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Spread deps directly so React compares individual values, not the array object
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   useEffect(() => { if (autoFetch) execute(); }, [autoFetch, ...deps]);
 
   return { data, loading, error, refetch: execute };
