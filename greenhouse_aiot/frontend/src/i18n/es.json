@@ -232,7 +232,8 @@
     "left": "restantes",
     "noCrops": "No se encontraron cultivos",
     "viewOnlyMsg": "Tu cuenta puede ver cultivos, pero solo admin u operador pueden crear nuevos lotes.",
-    "couldNotCreate": "No se pudo crear el lote de cultivo"
+    "couldNotCreate": "No se pudo crear el lote de cultivo",
+    "errorRequiredFields": "Selecciona zona, tipo de cultivo e ingresa una cantidad de al menos 1"
   },
   "cropTypes": {
     "title": "Catálogo de Tipos de Cultivo",

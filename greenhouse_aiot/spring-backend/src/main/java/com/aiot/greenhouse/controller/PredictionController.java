@@ -67,7 +67,7 @@ public class PredictionController {
 
         String modelName = body.containsKey("model_name")
                 ? body.get("model_name").toString()
-                : "random_forest";
+                : "logistic_regression";
 
         try {
             return ResponseEntity.ok(predictionService.predict(deviceId, null, features, modelName));

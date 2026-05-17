@@ -85,7 +85,7 @@ def _get_keras_model(model_name: str):
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def predict(features: dict, model_name: str = "random_forest") -> dict:
+def predict(features: dict, model_name: str = "logistic_regression") -> dict:
     """
     Classify greenhouse sensor readings into optimal / warning / critical.
 
@@ -97,7 +97,7 @@ def predict(features: dict, model_name: str = "random_forest") -> dict:
         Missing keys default to 0.0.
     model_name : str
         One of: "logistic_regression", "random_forest", "svc",
-        "neural_network".  Defaults to "random_forest".
+        "neural_network".  Defaults to "logistic_regression".
 
     Returns
     -------

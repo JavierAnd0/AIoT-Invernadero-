@@ -20,7 +20,7 @@ def main():
         raw = sys.stdin.read()
         payload = json.loads(raw)
         features = payload.get("features", {})
-        model_name = payload.get("model_name", "random_forest")
+        model_name = payload.get("model_name", "logistic_regression")
         result = predict(features, model_name=model_name)
         print(json.dumps(result))
         sys.exit(0)

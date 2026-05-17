@@ -232,7 +232,8 @@
     "left": "left",
     "noCrops": "No crops found",
     "viewOnlyMsg": "Your account can view crops, but only admin or operator can create new batches.",
-    "couldNotCreate": "Could not create crop batch"
+    "couldNotCreate": "Could not create crop batch",
+    "errorRequiredFields": "Select a zone, crop type, and enter a quantity of at least 1"
   },
   "cropTypes": {
     "title": "Crop Type Catalog",

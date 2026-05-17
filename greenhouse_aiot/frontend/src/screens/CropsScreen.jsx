@@ -27,6 +27,15 @@ export default function CropsScreen({ zone }) {
   async function handleCreate(e) {
     e.preventDefault();
     setSaveError('');
+
+    const qty   = Number(form.quantity);
+    const ctId  = Number(form.crop_type_id);
+    const zId   = Number(form.zone_id);
+    if (!ctId || !zId || qty < 1) {
+      setSaveError(t('crops.errorRequiredFields'));
+      return;
+    }
+
     setSaving(true);
     try {
       await createCrop({
