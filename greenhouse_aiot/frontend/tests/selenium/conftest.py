@@ -6,13 +6,11 @@ import os
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 BASE_URL = os.getenv("SELENIUM_BASE_URL", "http://localhost:5173")
 ADMIN_USERNAME = os.getenv("TEST_ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("TEST_ADMIN_PASSWORD", "admin123")
+ADMIN_PASSWORD = os.getenv("TEST_ADMIN_PASSWORD", "GreenCore2025!")
 
 
 @pytest.fixture(scope="session")
@@ -25,13 +23,15 @@ def base_url():
 def driver():
     """WebDriver con Chrome en modo headless. Se cierra después de cada test."""
     options = Options()
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1280,720")
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    # selenium-manager (built into Selenium 4.6+) downloads the correct
+    # ChromeDriver automatically — no need for webdriver-manager.
+    driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
     yield driver
