@@ -1,12 +1,5 @@
-# ── Stage 1: Build Spring Boot JAR ──────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine AS builder
-WORKDIR /build
-RUN apk add --no-cache maven
-COPY pom.xml .
-COPY src ./src
-RUN mvn package -DskipTests -q
-
-# ── Stage 2: Runtime con Java + Python para predicciones IA ─────────────────
+# Build context must be greenhouse_aiot/ (parent of spring-backend/ and ai/)
+# The CI step runs: mvn package -DskipTests in spring-backend/ before docker build.
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
@@ -16,7 +9,18 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir numpy joblib scikit-learn==1.5.1
 
-COPY --from=builder /build/target/*.jar app.jar
+# JAR pre-compilado por el step de Maven en CI
+COPY spring-backend/target/*.jar app.jar
+
+# Scripts e modelos de IA empaquetados dentro de la imagen
+COPY ai/predict.py ai/predict_cli.py /app/ai/
+COPY ai/models/logistic_regression_model.pkl \
+     ai/models/label_encoder.pkl \
+     ai/models/scaler.pkl \
+     /app/ai/models/
+
+ENV AI_SCRIPT_PATH=/app/ai/predict_cli.py
+ENV PYTHON_CMD=python3
 
 EXPOSE 8080
 
