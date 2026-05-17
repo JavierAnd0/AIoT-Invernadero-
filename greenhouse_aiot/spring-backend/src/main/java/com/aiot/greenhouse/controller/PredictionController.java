@@ -55,7 +55,7 @@ public class PredictionController {
      */
     @PostMapping("/predict")
     @Operation(summary = "Solicitar predicción de IA")
-    public ResponseEntity<Prediction> predict(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> predict(@RequestBody Map<String, Object> body) {
         Long deviceId = Long.valueOf(body.get("device_id").toString());
 
         Map<String, Object> features = new HashMap<>();
@@ -69,6 +69,11 @@ public class PredictionController {
                 ? body.get("model_name").toString()
                 : "random_forest";
 
-        return ResponseEntity.ok(predictionService.predict(deviceId, null, features, modelName));
+        try {
+            return ResponseEntity.ok(predictionService.predict(deviceId, null, features, modelName));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "Servicio de predicción no disponible: " + e.getMessage()));
+        }
     }
 }

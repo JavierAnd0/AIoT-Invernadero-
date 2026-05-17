@@ -1,6 +1,8 @@
 package com.aiot.greenhouse.dto.request;
 
 import com.aiot.greenhouse.model.Role;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -20,12 +22,16 @@ public class UserUpdateRequest {
     private String email;
 
     @Size(max = 150)
+    @JsonProperty("full_name")
+    @JsonAlias("fullName")
     @Schema(description = "Nombre completo", example = "Javier Andrade")
     private String fullName;
 
     @Schema(description = "Rol del usuario")
     private Role role;
 
+    @JsonProperty("is_active")
+    @JsonAlias({"isActive", "active"})
     @Schema(description = "Estado activo/inactivo")
     private Boolean isActive;
 }

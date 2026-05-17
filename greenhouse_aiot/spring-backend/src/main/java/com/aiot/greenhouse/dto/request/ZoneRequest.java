@@ -1,5 +1,7 @@
 package com.aiot.greenhouse.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -18,9 +20,13 @@ public class ZoneRequest {
     @Schema(description = "Descripción de la zona")
     private String description;
 
+    @JsonProperty("area_m2")
+    @JsonAlias("areaM2")
     @Schema(description = "Área en metros cuadrados", example = "25.50")
     private BigDecimal areaM2;
 
+    @JsonProperty("is_active")
+    @JsonAlias({"isActive", "active"})
     @Schema(description = "Si la zona está activa", example = "true")
     private Boolean isActive = true;
 }

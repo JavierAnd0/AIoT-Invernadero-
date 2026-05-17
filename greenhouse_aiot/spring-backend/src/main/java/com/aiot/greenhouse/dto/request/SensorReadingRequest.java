@@ -1,5 +1,7 @@
 package com.aiot.greenhouse.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -12,6 +14,8 @@ import java.math.BigDecimal;
 public class SensorReadingRequest {
 
     @NotNull(message = "{validation.deviceId.required}")
+    @JsonProperty("device_id")
+    @JsonAlias("deviceId")
     @Schema(description = "ID del dispositivo que envía la lectura", example = "1")
     private Long deviceId;
 
@@ -24,15 +28,23 @@ public class SensorReadingRequest {
     @Schema(description = "Nivel de pH", example = "6.50")
     private BigDecimal ph;
 
+    @JsonProperty("light_lux")
+    @JsonAlias("lightLux")
     @Schema(description = "Intensidad lumínica en lux", example = "3500.00")
     private BigDecimal lightLux;
 
+    @JsonProperty("co2_ppm")
+    @JsonAlias("co2Ppm")
     @Schema(description = "CO2 en ppm", example = "450.00")
     private BigDecimal co2Ppm;
 
+    @JsonProperty("soil_moisture")
+    @JsonAlias("soilMoisture")
     @Schema(description = "Humedad del suelo en %", example = "72.10")
     private BigDecimal soilMoisture;
 
+    @JsonProperty("is_simulated")
+    @JsonAlias({"isSimulated", "simulated"})
     @Schema(description = "Si la lectura es simulada", example = "false")
     private boolean isSimulated = false;
 }
