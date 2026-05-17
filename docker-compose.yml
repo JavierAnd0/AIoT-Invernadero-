@@ -35,7 +35,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
-      CORS_ORIGINS: ${CORS_ORIGINS:-${FRONTEND_URL}}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       AI_SCRIPT_PATH: /app/ai/predict_cli.py
       PYTHON_CMD: python3
       SIMULATOR_ENABLED: ${SIMULATOR_ENABLED:-true}
