@@ -34,6 +34,9 @@ ENV/
 # ── AI / ML artifacts ────────────────────────────────────────────────────────
 greenhouse_aiot/ai/data/*.png
 
+# ── AI models too large for git (>100 MB) — provide via volume mount ──────────
+greenhouse_aiot/ai/models/random_forest_model.pkl
+
 # ── Java / Maven ──────────────────────────────────────────────────────────────
 target/
 *.class
