@@ -47,6 +47,17 @@ public class DeviceService {
     }
 
     /**
+     * Lista los dispositivos registrados en una zona específica.
+     *
+     * @param zoneId ID de la zona
+     * @return dispositivos en esa zona
+     */
+    @Transactional(readOnly = true)
+    public List<Device> findByZone(Long zoneId) {
+        return deviceRepository.findByZoneId(zoneId);
+    }
+
+    /**
      * Registra un nuevo dispositivo IoT en el sistema.
      *
      * @param request    datos del nuevo dispositivo

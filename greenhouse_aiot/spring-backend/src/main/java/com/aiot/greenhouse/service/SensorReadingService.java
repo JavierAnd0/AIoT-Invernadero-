@@ -25,6 +25,17 @@ public class SensorReadingService {
     private final MessageSource messageSource;
 
     /**
+     * Lista las lecturas recientes del sistema con paginación simple.
+     *
+     * @param limit número máximo de lecturas a devolver
+     * @return lista de lecturas ordenadas por fecha descendente
+     */
+    @Transactional(readOnly = true)
+    public List<SensorReading> findAll(int limit) {
+        return readingRepository.findAllByOrderByRecordedAtDesc(PageRequest.of(0, limit));
+    }
+
+    /**
      * Lista las lecturas de un dispositivo con paginación.
      *
      * @param deviceId ID del dispositivo

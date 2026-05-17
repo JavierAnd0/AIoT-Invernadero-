@@ -33,14 +33,33 @@ const SCREEN_ROLES = {
   settings:    ['admin', 'operator', 'viewer'],
 };
 
+const PATH_SCREENS = new Set(Object.keys(SCREEN_ROLES));
+
+function screenFromPath() {
+  const key = window.location.pathname.replace(/^\/+/, '').split('/')[0];
+  return PATH_SCREENS.has(key) ? key : 'dashboard';
+}
+
+function updatePath(screen) {
+  const path = screen === 'dashboard' ? '/dashboard' : `/${screen}`;
+  if (window.location.pathname !== path) {
+    window.history.pushState({}, '', path);
+  }
+}
 
 export default function App() {
   const { isAuthenticated, requiresTenantSelection, currentRole, doLogout } = useAuth();
-  const [screen, setScreen] = useState('dashboard');
+  const [screen, setScreen] = useState(screenFromPath);
   const [zone,   setZone]   = useState(null);
 
   function handleLogin() {
     setScreen('dashboard');
+    updatePath('dashboard');
+  }
+
+  function handleScreenChange(nextScreen) {
+    setScreen(nextScreen);
+    updatePath(nextScreen);
   }
 
   // OAuth2 callback — Google redirects here with ?token=
@@ -81,7 +100,7 @@ export default function App() {
 
   return (
     <Shell
-      screen={screen} setScreen={setScreen}
+      screen={screen} setScreen={handleScreenChange}
       zone={zone}     setZone={setZone}
       role={currentRole}
       onLogout={doLogout}

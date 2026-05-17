@@ -80,4 +80,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> me(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(authService.getMe(user));
     }
+
+    /**
+     * Compatibilidad con el frontend anterior a la simplificación multi-tenant.
+     * La instalación actual es single-tenant, así que devuelve el token/rol vigente.
+     */
+    @PostMapping("/select-tenant")
+    @Operation(summary = "Seleccionar tenant activo")
+    public ResponseEntity<AuthResponse> selectTenant(@AuthenticationPrincipal User user,
+                                                     @RequestBody(required = false) Map<String, Object> body) {
+        return ResponseEntity.ok(authService.refreshSession(user));
+    }
 }

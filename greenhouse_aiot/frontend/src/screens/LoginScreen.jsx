@@ -92,6 +92,7 @@ export default function LoginScreen({ onLogin }) {
               USERNAME
             </label>
             <input
+              id="username"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="username"
@@ -108,6 +109,7 @@ export default function LoginScreen({ onLogin }) {
               PASSWORD
             </label>
             <input
+              id="password"
               type="password"
               value={pass}
               onChange={e => setPass(e.target.value)}
@@ -122,7 +124,7 @@ export default function LoginScreen({ onLogin }) {
           </div>
 
           {displayError && (
-            <div style={{
+            <div role="alert" data-testid="error-message" style={{
               background: '#3b0a0a', border: '1px solid #7f1d1d',
               color: '#f87171', padding: '10px 14px',
               borderRadius: 8, fontSize: 13, fontWeight: 500,

@@ -30,10 +30,16 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    /** Lista todos los dispositivos registrados. */
+    /** Lista todos los dispositivos registrados, opcionalmente filtrados por zona. */
     @GetMapping
     @Operation(summary = "Listar dispositivos")
-    public ResponseEntity<List<Device>> getAll() {
+    public ResponseEntity<List<Device>> getAll(
+            @RequestParam(name = "zone_id", required = false) Long zoneIdSnake,
+            @RequestParam(name = "zoneId", required = false) Long zoneIdCamel) {
+        Long zoneId = zoneIdSnake != null ? zoneIdSnake : zoneIdCamel;
+        if (zoneId != null) {
+            return ResponseEntity.ok(deviceService.findByZone(zoneId));
+        }
         return ResponseEntity.ok(deviceService.findAll());
     }
 

@@ -10,10 +10,13 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const STATUS_COLOR = {
+  germinating: '#8b5cf6',
   Growing:   '#22c55e',
   Harvested: '#3b82f6',
   Alert:     '#f59e0b',
   Planned:   '#8b5cf6',
+  flowering: '#f59e0b',
+  failed:    '#ef4444',
   growing:   '#22c55e',
   harvested: '#3b82f6',
   alert:     '#f59e0b',
@@ -23,6 +26,9 @@ export const STATUS_COLOR = {
 // eslint-disable-next-line react-refresh/only-export-components
 export const SEV_COLOR = {
   critical: '#ef4444',
+  high:     '#ef4444',
+  medium:   '#f59e0b',
+  low:      '#3b82f6',
   warning:  '#f59e0b',
   info:     '#3b82f6',
 };
@@ -56,12 +62,12 @@ export function PulseDot({ color = '#22c55e', size = 8 }) {
   );
 }
 
-export function Card({ children, style = {} }) {
+export function Card({ children, style = {}, ...props }) {
   return (
     <div style={{
       background: 'var(--bg-card)', borderRadius: 12,
       border: '1px solid var(--border)', padding: 20, ...style,
-    }}>
+    }} {...props}>
       {children}
     </div>
   );

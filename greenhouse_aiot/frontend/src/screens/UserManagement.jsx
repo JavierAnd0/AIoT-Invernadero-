@@ -24,9 +24,12 @@ export default function UserManagement() {
   const { data: usersData, loading, error, refetch } = useApi(getUsers);
   const [saveError,  setSaveError]  = useState('');
 
-  const users = usersData?.users || (Array.isArray(usersData) ? usersData : []);
-
-
+  const users = (usersData?.users || (Array.isArray(usersData) ? usersData : [])).map(u => ({
+    ...u,
+    id: u.id ?? u.user_id,
+    fullName: u.fullName ?? u.full_name,
+    active: u.active ?? u.is_active,
+  }));
 
   async function handleRoleChange(userId, role) {
     setSaveError('');
@@ -52,7 +55,7 @@ export default function UserManagement() {
   async function handleReactivate(user) {
     setSaveError('');
     try {
-      await updateUser(user.id, { isActive: true });
+      await updateUser(user.id, { is_active: true });
       refetch();
     } catch (err) {
       setSaveError(err.response?.data?.error || t('users.couldNotReactivate'));

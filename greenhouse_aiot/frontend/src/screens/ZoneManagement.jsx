@@ -83,7 +83,11 @@ export default function ZoneManagement() {
         </Card>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+      <div
+        data-testid="zone-list"
+        className="zone-list"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}
+      >
         {zoneList.map(z => (
           <Card key={z.zone_id}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>

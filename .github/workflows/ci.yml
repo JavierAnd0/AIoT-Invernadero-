@@ -141,6 +141,8 @@ jobs:
           echo "Esperando que el frontend esté listo en :5173..."
           timeout 30 bash -c 'until curl -sf http://localhost:5173 > /dev/null; do sleep 1; done'
           echo "Frontend listo"
+        env:
+          VITE_API_URL: http://localhost:8080/api/v1
 
       - name: Instalar dependencias Selenium
         working-directory: greenhouse_aiot/frontend/tests/selenium

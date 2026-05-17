@@ -114,7 +114,7 @@ export default function DashboardScreen({ zone }) {
       {/* Metric cards */}
       <ResponsiveGrid min={240} gap={14}>
         {METRIC.map(m => (
-          <Card key={m.key} style={{ padding: '14px 18px' }}>
+          <Card key={m.key} data-testid="sensor-card" className="sensor-card" style={{ padding: '14px 18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: 0.5 }}>

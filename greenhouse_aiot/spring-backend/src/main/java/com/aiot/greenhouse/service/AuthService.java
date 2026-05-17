@@ -97,6 +97,16 @@ public class AuthService {
         return buildAuthResponse(user, null);
     }
 
+    /**
+     * Genera una nueva respuesta de sesión para flujos compatibles que esperan JWT.
+     *
+     * @param user usuario autenticado
+     * @return datos del usuario con token JWT fresco
+     */
+    public AuthResponse refreshSession(User user) {
+        return buildAuthResponse(user, jwtTokenProvider.generateToken(user));
+    }
+
     private AuthResponse buildAuthResponse(User user, String token) {
         return AuthResponse.builder()
                 .token(token)

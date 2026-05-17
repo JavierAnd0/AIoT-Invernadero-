@@ -28,6 +28,25 @@ public class SensorReadingController {
 
     private final SensorReadingService readingService;
 
+    /** Lista lecturas recientes, opcionalmente filtradas por dispositivo. */
+    @GetMapping
+    @Operation(summary = "Listar lecturas recientes")
+    public ResponseEntity<List<SensorReading>> getAll(
+            @RequestParam(name = "device_id", required = false) Long deviceIdSnake,
+            @RequestParam(name = "deviceId", required = false) Long deviceIdCamel,
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
+        Long deviceId = deviceIdSnake != null ? deviceIdSnake : deviceIdCamel;
+        if (deviceId != null) {
+            if (from != null && to != null) {
+                return ResponseEntity.ok(readingService.findByDeviceAndDateRange(deviceId, from, to));
+            }
+            return ResponseEntity.ok(readingService.findByDevice(deviceId, limit));
+        }
+        return ResponseEntity.ok(readingService.findAll(limit));
+    }
+
     /** Lista lecturas de un dispositivo con límite opcional. */
     @GetMapping("/device/{deviceId}")
     @Operation(summary = "Lecturas de un dispositivo")

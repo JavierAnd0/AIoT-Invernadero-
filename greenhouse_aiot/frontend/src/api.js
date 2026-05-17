@@ -4,6 +4,35 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 const api = axios.create({ baseURL: BASE_URL });
 
+const LOWERCASE_VALUE_KEYS = new Set([
+  'status',
+  'severity',
+  'alert_type',
+  'alertType',
+  'device_type',
+  'deviceType',
+  'predicted_class',
+  'predictedClass',
+]);
+
+function normalizeApiPayload(value, key = '') {
+  if (Array.isArray(value)) {
+    return value.map(item => normalizeApiPayload(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([childKey, childValue]) => [
+        childKey,
+        normalizeApiPayload(childValue, childKey),
+      ])
+    );
+  }
+  if (typeof value === 'string' && LOWERCASE_VALUE_KEYS.has(key)) {
+    return value.toLowerCase();
+  }
+  return value;
+}
+
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -11,8 +40,15 @@ api.interceptors.request.use(config => {
 });
 
 api.interceptors.response.use(
-  res => res,
+  res => {
+    res.data = normalizeApiPayload(res.data);
+    return res;
+  },
   err => {
+    if (err.response?.data?.message && !err.response.data.error) {
+      err.response.data.error = err.response.data.message;
+    }
+
     const status = err.response?.status;
     const url    = err.config?.url || '';
 
@@ -90,7 +126,7 @@ export const createCropType = (data) => api.post('/crop-types', data).then(r => 
 // CROPS
 export const getCrops       = (params) => api.get('/crops', { params }).then(r => r.data);
 export const createCrop     = (data)   => api.post('/crops', data).then(r => r.data);
-export const updateCrop     = (id, d)  => api.put(`/crops/${id}`, d).then(r => r.data);
+export const updateCrop     = (id, d)  => api.put(`/crops/${id}/status`, d).then(r => r.data);
 export const getCropsByZone = (zoneId) => api.get(`/crops/zone/${zoneId}`).then(r => r.data);
 
 // ALERTS

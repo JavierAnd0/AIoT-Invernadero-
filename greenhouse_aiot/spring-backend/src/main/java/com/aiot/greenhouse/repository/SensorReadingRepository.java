@@ -15,6 +15,9 @@ import java.util.Optional;
 public interface SensorReadingRepository extends JpaRepository<SensorReading, Long> {
 
     @EntityGraph(attributePaths = {"device", "device.zone", "device.registeredBy"})
+    List<SensorReading> findAllByOrderByRecordedAtDesc(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"device", "device.zone", "device.registeredBy"})
     List<SensorReading> findByDeviceIdOrderByRecordedAtDesc(Long deviceId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"device", "device.zone", "device.registeredBy"})

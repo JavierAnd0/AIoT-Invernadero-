@@ -26,10 +26,16 @@ public class PredictionController {
 
     private final PredictionService predictionService;
 
-    /** Lista todas las predicciones almacenadas. */
+    /** Lista todas las predicciones almacenadas, opcionalmente filtradas por dispositivo. */
     @GetMapping
     @Operation(summary = "Listar historial de predicciones")
-    public ResponseEntity<List<Prediction>> getAll() {
+    public ResponseEntity<List<Prediction>> getAll(
+            @RequestParam(name = "device_id", required = false) Long deviceIdSnake,
+            @RequestParam(name = "deviceId", required = false) Long deviceIdCamel) {
+        Long deviceId = deviceIdSnake != null ? deviceIdSnake : deviceIdCamel;
+        if (deviceId != null) {
+            return ResponseEntity.ok(predictionService.findByDevice(deviceId));
+        }
         return ResponseEntity.ok(predictionService.findAll());
     }
 

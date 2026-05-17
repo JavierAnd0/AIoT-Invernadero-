@@ -26,8 +26,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            client-id: ${GOOGLE_CLIENT_ID:disabled-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:disabled-google-client-secret}
             scope: openid,email,profile
             redirect-uri: "${BACKEND_URL:http://localhost:8080}/api/v1/auth/oauth2/callback/{registrationId}"
 
@@ -63,4 +63,3 @@ logging:
   level:
     com.aiot.greenhouse: INFO
     org.springframework.security: WARN
-

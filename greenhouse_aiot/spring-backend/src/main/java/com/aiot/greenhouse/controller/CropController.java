@@ -30,10 +30,16 @@ public class CropController {
 
     private final CropService cropService;
 
-    /** Lista todos los cultivos. */
+    /** Lista todos los cultivos, opcionalmente filtrados por zona. */
     @GetMapping
     @Operation(summary = "Listar cultivos")
-    public ResponseEntity<List<Crop>> getAll() {
+    public ResponseEntity<List<Crop>> getAll(
+            @RequestParam(name = "zone_id", required = false) Long zoneIdSnake,
+            @RequestParam(name = "zoneId", required = false) Long zoneIdCamel) {
+        Long zoneId = zoneIdSnake != null ? zoneIdSnake : zoneIdCamel;
+        if (zoneId != null) {
+            return ResponseEntity.ok(cropService.findByZone(zoneId));
+        }
         return ResponseEntity.ok(cropService.findAll());
     }
 

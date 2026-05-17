@@ -23,10 +23,13 @@ public class AlertController {
 
     private final AlertService alertService;
 
-    /** Lista todas las alertas del sistema. */
+    /** Lista todas las alertas del sistema, opcionalmente filtradas por estado. */
     @GetMapping
     @Operation(summary = "Listar todas las alertas")
-    public ResponseEntity<List<Alert>> getAll() {
+    public ResponseEntity<List<Alert>> getAll(@RequestParam(required = false) String status) {
+        if (status != null && !status.isBlank()) {
+            return ResponseEntity.ok(alertService.findByStatus(status));
+        }
         return ResponseEntity.ok(alertService.findAll());
     }
 

@@ -42,6 +42,18 @@ public class AlertService {
     }
 
     /**
+     * Lista alertas por estado aceptando valores frontend en minúscula.
+     *
+     * @param status estado de alerta
+     * @return alertas con el estado solicitado
+     */
+    @Transactional(readOnly = true)
+    public List<Alert> findByStatus(String status) {
+        Alert.AlertStatus parsed = Alert.AlertStatus.valueOf(status.toUpperCase());
+        return alertRepository.findByStatus(parsed);
+    }
+
+    /**
      * Obtiene una alerta por su ID.
      *
      * @param id identificador de la alerta
