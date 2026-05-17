@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth }    from './hooks/useAuth';
 import { Shell } from './layout';
+import { prefetchCommon } from './api';
 
 import LoginScreen         from './screens/LoginScreen';
 import AuthCallback        from './screens/AuthCallback';
@@ -51,6 +52,12 @@ export default function App() {
   const { isAuthenticated, requiresTenantSelection, currentRole, doLogout } = useAuth();
   const [screen, setScreen] = useState(screenFromPath);
   const [zone,   setZone]   = useState(null);
+
+  // Warm the cache as soon as the user is authenticated so that
+  // the first screen (Dashboard) renders with data already in-flight or cached.
+  useEffect(() => {
+    if (isAuthenticated) prefetchCommon();
+  }, [isAuthenticated]);
 
   function handleLogin() {
     setScreen('dashboard');

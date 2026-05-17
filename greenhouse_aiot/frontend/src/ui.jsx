@@ -139,7 +139,7 @@ export function Select({ label, value, onChange, options = [], disabled = false,
   );
 }
 
-export function LineChart({ labels = [], datasets = [], height = 180 }) {
+export function LineChart({ labels = [], datasets = [], height = 180, pointRadius = 2, fill = true, tension = 0.4, extraOptions = {} }) {
   const { resolvedTheme } = useTheme();
   const gridColor  = resolvedTheme === 'dark' ? '#263348' : '#e5f0e8';
   const tickColor  = resolvedTheme === 'dark' ? '#8da4bf' : '#6b7280';
@@ -149,14 +149,15 @@ export function LineChart({ labels = [], datasets = [], height = 180 }) {
       label: ds.label,
       data: ds.data,
       borderColor: ds.color || '#22c55e',
-      backgroundColor: (ds.color || '#22c55e') + '18',
-      borderWidth: 2,
-      pointRadius: 2,
-      fill: true,
-      tension: 0.4,
+      backgroundColor: fill ? (ds.color || '#22c55e') + '18' : 'transparent',
+      borderWidth: 1.8,
+      pointRadius: ds.pointRadius ?? pointRadius,
+      pointHoverRadius: 4,
+      fill,
+      tension,
     })),
   };
-  const options = {
+  const baseOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
@@ -165,6 +166,7 @@ export function LineChart({ labels = [], datasets = [], height = 180 }) {
       y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
     },
   };
+  const options = { ...baseOptions, ...extraOptions };
   return (
     <div style={{ height }}>
       <Line data={data} options={options} />
