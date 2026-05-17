@@ -67,7 +67,7 @@ export default function DashboardScreen({ zone }) {
   };
 
   const alertList = Array.isArray(openAlerts) ? openAlerts : [];
-  const cropList  = Array.isArray(crops) ? crops : [];
+  const cropList  = useMemo(() => Array.isArray(crops) ? crops : [], [crops]);
   const zoneLabel = currentZone?.description
     || currentZone?.name
     || (currentZoneId != null ? `Zone ${currentZoneId}` : 'Selected zone');

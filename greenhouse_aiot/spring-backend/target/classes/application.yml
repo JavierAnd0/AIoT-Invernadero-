@@ -1,0 +1,66 @@
+spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    mapper:
+      accept-case-insensitive-enums: true
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/greenhouse_dev}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:postgres}}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    use-code-as-default-message: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: openid,email,profile
+            redirect-uri: "${BACKEND_URL:http://localhost:8080}/api/v1/auth/oauth2/callback/{registrationId}"
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    context-path: /
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:aiot-greenhouse-super-secret-key-change-in-production-min-256-bits}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,https://*.vercel.app}
+  ai:
+    script-path: ${AI_SCRIPT_PATH:../ai/predict_cli.py}
+    python-cmd: ${PYTHON_CMD:python3}
+  simulator:
+    enabled: ${SIMULATOR_ENABLED:true}
+    interval-ms: ${SIMULATOR_INTERVAL_MS:15000}
+
+logging:
+  level:
+    com.aiot.greenhouse: INFO
+    org.springframework.security: WARN
+

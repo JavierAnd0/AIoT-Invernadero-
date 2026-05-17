@@ -74,7 +74,7 @@ public class SecurityConfig {
                     AntPathRequestMatcher.antMatcher("/favicon.ico"),
                     AntPathRequestMatcher.antMatcher("/error")
                 ).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET.name(), "/api/v1/crop-types/**")).permitAll()
+                .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/v1/crop-types/**")).permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

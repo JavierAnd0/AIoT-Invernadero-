@@ -20,7 +20,7 @@ export default function CropsScreen({ zone }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  const crops = Array.isArray(cropsData) ? cropsData : [];
+  const crops = useMemo(() => Array.isArray(cropsData) ? cropsData : [], [cropsData]);
 
   function upd(k, v) { setForm(p => ({ ...p, [k]: v })); }
 
