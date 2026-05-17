@@ -3,22 +3,15 @@ package com.aiot.greenhouse.controller;
 import com.aiot.greenhouse.dto.request.LoginRequest;
 import com.aiot.greenhouse.dto.request.RegisterRequest;
 import com.aiot.greenhouse.dto.response.AuthResponse;
-import com.aiot.greenhouse.security.JwtTokenProvider;
-import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
-import com.aiot.greenhouse.security.SecurityConfig;
+
 import com.aiot.greenhouse.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -31,24 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifica login exitoso, credenciales inválidas y registro de usuario.
  */
 @WebMvcTest(AuthController.class)
-@Import({JwtTokenProvider.class, SecurityConfig.class})
-@DisplayName("AuthController Tests")
-class AuthControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+class AuthControllerTest extends AbstractControllerTest {
 
     @MockBean
     private AuthService authService;
-
-    @MockBean
-    private UserDetailsService userDetailsService;
-
-    @MockBean
-    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
     @Test
     @DisplayName("Login exitoso devuelve 200 con token JWT")

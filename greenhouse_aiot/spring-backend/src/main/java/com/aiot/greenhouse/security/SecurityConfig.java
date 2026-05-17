@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -60,20 +61,20 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/v1/auth/login",
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/google",
-                    "/api/v1/auth/oauth2/**",
-                    "/login/oauth2/**",
-                    "/oauth2/authorization/**",
-                    "/swagger-ui.html",
-                    "/swagger-ui/**",
-                    "/api-docs/**",
-                    "/actuator/health",
-                    "/favicon.ico",
-                    "/error"
+                    AntPathRequestMatcher.antMatcher("/api/v1/auth/login"),
+                    AntPathRequestMatcher.antMatcher("/api/v1/auth/register"),
+                    AntPathRequestMatcher.antMatcher("/api/v1/auth/google"),
+                    AntPathRequestMatcher.antMatcher("/api/v1/auth/oauth2/**"),
+                    AntPathRequestMatcher.antMatcher("/login/oauth2/**"),
+                    AntPathRequestMatcher.antMatcher("/oauth2/authorization/**"),
+                    AntPathRequestMatcher.antMatcher("/swagger-ui.html"),
+                    AntPathRequestMatcher.antMatcher("/swagger-ui/**"),
+                    AntPathRequestMatcher.antMatcher("/api-docs/**"),
+                    AntPathRequestMatcher.antMatcher("/actuator/health"),
+                    AntPathRequestMatcher.antMatcher("/favicon.ico"),
+                    AntPathRequestMatcher.antMatcher("/error")
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/crop-types/**").permitAll()
+                .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET.name(), "/api/v1/crop-types/**")).permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

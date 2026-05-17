@@ -25,6 +25,7 @@ export function useApi(fetchFn, deps = [], options = {}) {
     }
   }, [deps]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (autoFetch) execute(); }, [autoFetch, execute]);
 
   return { data, loading, error, refetch: execute };

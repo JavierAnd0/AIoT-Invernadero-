@@ -235,20 +235,9 @@ function AvatarCard({ user, currentRole }) {
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { user: authUser, tenants, currentTenantId, currentRole, setSession, token } = useAuth();
+  const { user: authUser, tenants, currentTenantId, currentRole } = useAuth();
 
-  const [user, setUser] = useState(authUser);
-
-  function handleProfileSaved(updatedUser) {
-    setUser(updatedUser);
-    setSession({
-      token,
-      user:     updatedUser,
-      tenants,
-      tenantId: currentTenantId,
-      role:     currentRole,
-    });
-  }
+  const [user] = useState(authUser);
 
   if (!user) return null;
 

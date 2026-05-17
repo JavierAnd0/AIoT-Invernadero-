@@ -77,7 +77,17 @@ export default function DashboardScreen({ zone }) {
     { label: t('sensors.colTemp'), data: sr.map(r => r.temperature), color: '#f59e0b' },
     { label: t('sensors.colHumidity'), data: sr.map(r => r.humidity), color: '#3b82f6' },
   ];
-  const now = useMemo(() => Date.now(), [cropList]);
+  const [now] = useState(() => Date.now());
+
+  const cropListWithProgress = useMemo(() => {
+    return cropList.map(c => {
+      const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
+      const growthDays = c.crop_type?.growth_days || 60;
+      const daysLeft = Math.max(0, growthDays - daysElapsed);
+      const pct = Math.min(100, Math.round((daysElapsed / growthDays) * 100));
+      return { ...c, daysElapsed, daysLeft, pct };
+    });
+  }, [cropList, now]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -167,37 +177,31 @@ export default function DashboardScreen({ zone }) {
           ? <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('dashboard.noCropsZone')}</div>
           : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
-              {cropList.map(c => {
-                const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
-                const growthDays = c.crop_type?.growth_days || 60;
-                const daysLeft = Math.max(0, growthDays - daysElapsed);
-                const pct = Math.min(100, Math.round((daysElapsed / growthDays) * 100));
-                return (
-                  <div key={c.crop_id} style={{
-                    background: 'var(--bg-card-alt)', borderRadius: 10, padding: '12px 14px',
-                    border: '1px solid var(--border)',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {c.crop_type?.name || 'Unknown'}
-                      </div>
-                      <Badge
-                        label={c.status}
-                        color={STATUS_COLOR[c.status] || '#6b7280'}
-                      />
+              {cropListWithProgress.map(c => (
+                <div key={c.crop_id} style={{
+                  background: 'var(--bg-card-alt)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid var(--border)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {c.crop_type?.name || 'Unknown'}
                     </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                      {t('dashboard.batch')}: {c.batch_code} · {c.quantity} {t('dashboard.units')}
-                    </div>
-                    <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: '#22c55e', borderRadius: 2 }} />
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                      {daysElapsed}d {t('dashboard.elapsed')} · {daysLeft}d {t('dashboard.left')}
-                    </div>
+                    <Badge
+                      label={c.status}
+                      color={STATUS_COLOR[c.status] || '#6b7280'}
+                    />
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                    {t('dashboard.batch')}: {c.batch_code} · {c.quantity} {t('dashboard.units')}
+                  </div>
+                  <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                    <div style={{ height: '100%', width: `${c.pct}%`, background: '#22c55e', borderRadius: 2 }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                    {c.daysElapsed}d {t('dashboard.elapsed')} · {c.daysLeft}d {t('dashboard.left')}
+                  </div>
+                </div>
+              ))}
             </div>
           )
         }

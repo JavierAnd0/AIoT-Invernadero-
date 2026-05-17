@@ -2,22 +2,16 @@ package com.aiot.greenhouse.controller;
 
 import com.aiot.greenhouse.dto.request.ZoneRequest;
 import com.aiot.greenhouse.model.Zone;
-import com.aiot.greenhouse.security.JwtTokenProvider;
-import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
-import com.aiot.greenhouse.security.SecurityConfig;
+
 import com.aiot.greenhouse.service.ZoneService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
@@ -26,28 +20,17 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Tests del ZoneController: CRUD de zonas con verificación de roles.
  */
 @WebMvcTest(ZoneController.class)
-@Import({JwtTokenProvider.class, SecurityConfig.class})
-@DisplayName("ZoneController Tests")
-class ZoneControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+class ZoneControllerTest extends AbstractControllerTest {
 
     @MockBean
     private ZoneService zoneService;
-    @MockBean
-    private UserDetailsService userDetailsService;
-    @MockBean
-    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
     @Test
     @WithMockUser(roles = "VIEWER")
@@ -75,6 +58,7 @@ class ZoneControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Zona B"));
     }

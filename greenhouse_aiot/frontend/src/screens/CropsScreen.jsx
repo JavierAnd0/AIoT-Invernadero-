@@ -46,7 +46,17 @@ export default function CropsScreen({ zone }) {
     }
   }
 
-  const now = useMemo(() => Date.now(), [crops]);
+  const [now] = useState(() => Date.now());
+
+  const cropsWithProgress = useMemo(() => {
+    return crops.map(c => {
+      const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
+      const growthDays  = c.crop_type?.growth_days || 60;
+      const daysLeft    = Math.max(0, growthDays - daysElapsed);
+      const pct         = Math.min(100, Math.round((daysElapsed / growthDays) * 100));
+      return { ...c, daysElapsed, daysLeft, pct };
+    });
+  }, [crops, now]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -102,30 +112,24 @@ export default function CropsScreen({ zone }) {
             </tr>
           </thead>
           <tbody>
-            {crops.map(c => {
-              const daysElapsed = Math.floor((now - new Date(c.planted_at)) / 86400000);
-              const growthDays  = c.crop_type?.growth_days || 60;
-              const daysLeft    = Math.max(0, growthDays - daysElapsed);
-              const pct         = Math.min(100, Math.round((daysElapsed / growthDays) * 100));
-              return (
-                <tr key={c.crop_id} style={{ borderTop: '1px solid var(--border)' }}>
-                  <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{c.batch_code}</td>
-                  <td style={{ padding: '10px 12px' }}>{c.crop_type?.name || '—'}</td>
-                  <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', fontSize: 12 }}>{c.zone?.description || c.zone_id}</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <Badge label={c.status} color={STATUS_COLOR[c.status] || '#6b7280'} />
-                  </td>
-                  <td style={{ padding: '10px 12px' }}>{c.quantity}</td>
-                  <td style={{ padding: '10px 12px', minWidth: 100 }}>
-                    <div style={{ height: 6, background: 'var(--border)', borderRadius: 3 }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: '#22c55e', borderRadius: 3 }} />
-                    </div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{pct}%</div>
-                  </td>
-                  <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{daysLeft}d</td>
-                </tr>
-              );
-            })}
+            {cropsWithProgress.map(c => (
+              <tr key={c.crop_id} style={{ borderTop: '1px solid var(--border)' }}>
+                <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{c.batch_code}</td>
+                <td style={{ padding: '10px 12px' }}>{c.crop_type?.name || '—'}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)', fontSize: 12 }}>{c.zone?.description || c.zone_id}</td>
+                <td style={{ padding: '10px 12px' }}>
+                  <Badge label={c.status} color={STATUS_COLOR[c.status] || '#6b7280'} />
+                </td>
+                <td style={{ padding: '10px 12px' }}>{c.quantity}</td>
+                <td style={{ padding: '10px 12px', minWidth: 100 }}>
+                  <div style={{ height: 6, background: 'var(--border)', borderRadius: 3 }}>
+                    <div style={{ height: '100%', width: `${c.pct}%`, background: '#22c55e', borderRadius: 3 }} />
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{c.pct}%</div>
+                </td>
+                <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{c.daysLeft}d</td>
+              </tr>
+            ))}
             {crops.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('crops.noCrops')}</td>
