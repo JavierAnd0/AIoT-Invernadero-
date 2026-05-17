@@ -5,10 +5,6 @@ on:
     branches: [ main ]
 
 jobs:
-  # NOTA: El microservicio Flask (greenhouse_aiot/ai/) se despliega manualmente
-  # en el servidor de producción via Docker o proceso systemd, separado de este pipeline.
-  # Spring Boot lo invoca como subprocess a través del volumen montado AI_SCRIPT_PATH.
-
   # ─────────────────────────────────────────────
   # 1. Deploy Frontend a Vercel
   # ─────────────────────────────────────────────
@@ -59,6 +55,17 @@ jobs:
         working-directory: greenhouse_aiot/spring-backend
         run: mvn package -DskipTests
 
+      - name: Incluir scripts AI en contexto de build Docker
+        run: |
+          mkdir -p greenhouse_aiot/spring-backend/ai/models
+          cp greenhouse_aiot/ai/predict.py \
+             greenhouse_aiot/ai/predict_cli.py \
+             greenhouse_aiot/spring-backend/ai/
+          cp greenhouse_aiot/ai/models/logistic_regression_model.pkl \
+             greenhouse_aiot/ai/models/label_encoder.pkl \
+             greenhouse_aiot/ai/models/scaler.pkl \
+             greenhouse_aiot/spring-backend/ai/models/
+
       - name: Build imagen Docker Spring Boot
         run: |
           docker build -f greenhouse_aiot/spring-backend/Dockerfile \
@@ -78,16 +85,6 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
           docker push ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
 
-      - name: Copiar scripts AI al servidor de producción
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "greenhouse_aiot/ai/"
-          target: "/opt/greenhouse/ai"
-          strip_components: 2
-
       - name: Deploy al servidor de producción
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -102,12 +99,9 @@ jobs:
               --name greenhouse-spring \
               --restart always \
               -p 8080:8080 \
-              -v /opt/greenhouse/ai:/app/ai:ro \
               -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
               -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
               -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
-              -e AI_SCRIPT_PATH=/app/ai/predict_cli.py \
-              -e PYTHON_CMD=python3 \
               ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest

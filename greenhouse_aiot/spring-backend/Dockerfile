@@ -18,6 +18,12 @@ RUN apt-get update && \
 
 COPY --from=builder /build/target/*.jar app.jar
 
+# Scripts e modelos de IA copiados al contexto de build por el step de CI
+COPY ai/ /app/ai/
+
+ENV AI_SCRIPT_PATH=/app/ai/predict_cli.py
+ENV PYTHON_CMD=python3
+
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
