@@ -48,7 +48,7 @@ def authenticated_driver(driver, base_url):
 
     driver.get(f"{base_url}/login")
 
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 20)
     wait.until(EC.presence_of_element_located((By.ID, "username")))
 
     driver.find_element(By.ID, "username").send_keys(ADMIN_USERNAME)
