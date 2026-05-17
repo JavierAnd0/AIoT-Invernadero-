@@ -28,7 +28,7 @@ class TestLogin:
         wait.until(EC.presence_of_element_located((By.ID, "username")))
 
         driver.find_element(By.ID, "username").send_keys("admin")
-        driver.find_element(By.ID, "password").send_keys("admin123")
+        driver.find_element(By.ID, "password").send_keys("GreenCore2025!")
         driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
         wait.until(EC.url_contains("/dashboard"))

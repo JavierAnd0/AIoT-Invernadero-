@@ -27,14 +27,14 @@ services:
     environment:
       DATABASE_URL: jdbc:postgresql://greenhouse-db:5432/${POSTGRES_DB:-greenhouse_dev}
       DB_USERNAME: ${POSTGRES_USER:-greenhouse}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-greenhouse_ci}
       JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
       PORT: 8080
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_SECRET: ${JWT_SECRET:-aiot-greenhouse-default-secret-key-change-in-production-min-256-bits}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       CORS_ORIGINS: ${CORS_ORIGINS:-${FRONTEND_URL}}
       AI_SCRIPT_PATH: /app/ai/predict_cli.py
       PYTHON_CMD: python3
