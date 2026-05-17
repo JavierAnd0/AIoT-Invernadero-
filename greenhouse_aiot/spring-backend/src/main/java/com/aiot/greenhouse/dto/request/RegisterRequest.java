@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -29,6 +30,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "{validation.fullName.required}")
     @JsonProperty("full_name")
+    @JsonAlias("fullName")
     @Schema(description = "Nombre completo", example = "John Doe")
     private String fullName;
 }
