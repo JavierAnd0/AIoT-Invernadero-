@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useApi }  from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getUsers, deleteUser, updateUser } from '../api';
-import { Card, Badge, Btn, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Badge, Btn, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 
 /*
  * User Management — tenant-scoped
@@ -66,12 +66,7 @@ export default function UserManagement() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('users.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('users.count', { count: users.length })}</div>
-        </div>
-      </div>
+      <PageHeader title={t('users.title')} subtitle={t('users.count', { count: users.length })} />
 
       <ErrorBanner message={error} />
 
@@ -79,6 +74,7 @@ export default function UserManagement() {
 
       <Card>
         {saveError && <ErrorBanner message={saveError} />}
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
@@ -157,6 +153,7 @@ export default function UserManagement() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );

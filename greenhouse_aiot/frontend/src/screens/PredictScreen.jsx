@@ -89,7 +89,7 @@ export default function PredictScreen() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div className="two-panel">
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 16 }}>
             {t('predict.inputValues')}

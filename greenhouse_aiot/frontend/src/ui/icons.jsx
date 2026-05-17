@@ -28,6 +28,8 @@ import {
   AlertCircle,
   Leaf,
   Menu,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -65,6 +67,8 @@ export const ICONS = {
   xCircle: XCircle,
   alertCircle: AlertCircle,
   menu: Menu,
+  chevronLeft: ChevronLeft,
+  chevronRight: ChevronRight,
 };
 
 export function Icon({ name, size = 18, color, ...props }) {

@@ -55,6 +55,17 @@ jobs:
         working-directory: greenhouse_aiot/spring-backend
         run: mvn package -DskipTests
 
+      - name: Incluir scripts AI en contexto de build Docker
+        run: |
+          mkdir -p greenhouse_aiot/spring-backend/ai/models
+          cp greenhouse_aiot/ai/predict.py \
+             greenhouse_aiot/ai/predict_cli.py \
+             greenhouse_aiot/spring-backend/ai/
+          cp greenhouse_aiot/ai/models/logistic_regression_model.pkl \
+             greenhouse_aiot/ai/models/label_encoder.pkl \
+             greenhouse_aiot/ai/models/scaler.pkl \
+             greenhouse_aiot/spring-backend/ai/models/
+
       - name: Build imagen Docker Spring Boot
         run: |
           docker build -f greenhouse_aiot/spring-backend/Dockerfile \

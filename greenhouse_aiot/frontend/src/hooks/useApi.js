@@ -6,37 +6,71 @@ export function useApi(fetchFn, deps = [], options = {}) {
   const [loading, setLoading] = useState(autoFetch);
   const [error,   setError]   = useState(null);
 
-  // Always keep a ref to the latest fetchFn so execute never needs it as a dep
+  // Track mount state to avoid setState after unmount
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  // Always hold latest fetchFn in a ref so execute is never stale
   const fetchRef = useRef(fetchFn);
   useEffect(() => { fetchRef.current = fetchFn; });
 
-  // execute is intentionally stable (empty deps); it reads fetchRef at call time
   const execute = useCallback(async (...args) => {
-    setLoading(true); setError(null);
+    if (mounted.current) { setLoading(true); setError(null); }
     try {
       const result = await fetchRef.current(...args);
-      setData(result);
+      if (mounted.current) setData(result);
       return result;
     } catch (err) {
-      setError(err.response?.data?.error || 'Request failed');
+      if (mounted.current)
+        setError(err.response?.data?.error || 'Request failed');
       return null;
     } finally {
-      setLoading(false);
+      if (mounted.current) setLoading(false);
     }
   }, []);
 
-  // Spread deps directly so React compares individual values, not the array object
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (autoFetch) execute(); }, [autoFetch, ...deps]);
 
   return { data, loading, error, refetch: execute };
 }
 
-export function usePolling(fetchFn, intervalMs = 30000, deps = []) {
+export function usePolling(fetchFn, intervalMs = 30_000, deps = []) {
   const result = useApi(fetchFn, deps);
+
   useEffect(() => {
-    const id = setInterval(result.refetch, intervalMs);
-    return () => clearInterval(id);
+    let id;
+
+    const tick = () => {
+      if (!document.hidden) result.refetch();
+    };
+
+    const schedule = () => {
+      clearInterval(id);
+      id = setInterval(tick, intervalMs);
+    };
+
+    // When the tab becomes visible again, fetch immediately then restart interval
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        result.refetch();
+        schedule();
+      } else {
+        clearInterval(id);
+      }
+    };
+
+    schedule();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [result.refetch, intervalMs]);
+
   return result;
 }
