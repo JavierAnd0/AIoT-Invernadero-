@@ -48,10 +48,12 @@ export default function LoginScreen({ onLogin }) {
       minHeight: '100vh', background: '#08160d',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: "'Plus Jakarta Sans', sans-serif",
+      padding: '20px 16px',
     }}>
       <div style={{
         background: '#0f2318', border: '1px solid #1e3a26',
-        borderRadius: 16, padding: '40px 36px', width: 380,
+        borderRadius: 16, padding: 'clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px)',
+        width: '100%', maxWidth: 380,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Icon name="leaf" size={48} color="#22c55e" style={{ marginBottom: 8 }} />

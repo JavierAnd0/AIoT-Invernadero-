@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi, usePolling } from '../hooks/useApi';
 
@@ -16,7 +16,7 @@ import {
   getOpenAlerts, getDevices, getZones,
   getCrops, getDeviceReadings,
 } from '../api';
-import { Card, Badge, LineChart, STATUS_COLOR, SEV_COLOR } from '../ui';
+import { Card, Badge, LineChart, PageHeader, STATUS_COLOR, SEV_COLOR } from '../ui';
 import { ResponsiveGrid } from '../components/ResponsiveGrid.jsx';
 
 const METRIC = [
@@ -28,14 +28,7 @@ const METRIC = [
 
 export default function DashboardScreen({ zone }) {
   const { t } = useTranslation();
-  // Simple responsive behavior based on window width
-  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  useEffect(() => {
-    const onResize = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-  const { data: zones }          = useApi(getZones, []);
+    const { data: zones }          = useApi(getZones, []);
   const { data: openAlerts }     = usePolling(getOpenAlerts, 30000);
   const { data: devices }        = useApi(getDevices, []);
 
@@ -91,25 +84,17 @@ export default function DashboardScreen({ zone }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('dashboard.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>
-            {zoneLabel} · {t('dashboard.liveData')}
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {alertList.length > 0 && (
-            <span style={{
-              background: 'var(--danger-bg)', color: 'var(--danger-text)',
-              border: '1px solid var(--danger-border)',
-              borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600,
-            }}>
-              {alertList.length} {alertList.length > 1 ? t('dashboard.openAlerts') : t('dashboard.openAlerts')}
-            </span>
-          )}
-        </div>
-      </div>
+      <PageHeader title={t('dashboard.title')} subtitle={`${zoneLabel} · ${t('dashboard.liveData')}`}>
+        {alertList.length > 0 && (
+          <span style={{
+            background: 'var(--danger-bg)', color: 'var(--danger-text)',
+            border: '1px solid var(--danger-border)',
+            borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+          }}>
+            {alertList.length} {t('dashboard.openAlerts')}
+          </span>
+        )}
+      </PageHeader>
 
       {/* Metric cards */}
       <ResponsiveGrid min={240} gap={14}>
@@ -131,7 +116,7 @@ export default function DashboardScreen({ zone }) {
         ))}
       </ResponsiveGrid>
 
-      <div style={{ display: 'grid', gridTemplateColumns: width < 900 ? '1fr' : '2fr 1fr', gap: 16 }}>
+      <div className="two-panel" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)' }}>
         {/* Chart */}
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', marginBottom: 14 }}>

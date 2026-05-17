@@ -1,3 +1,20 @@
+/* ── Sidebar nav animations ── */
+@keyframes navItemIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(-4px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+/* Nav item staggered entrance */
+.nav-item {
+  animation: navItemIn 0.25s ease backwards;
+  animation-delay: var(--nav-delay, 0s);
+}
+
 /* Responsive helpers and grid system */
 :root {
   --grid-dashboard-columns: 4;
@@ -27,4 +44,38 @@
   display: grid;
   grid-template-columns: repeat(var(--grid-dashboard-columns, 4), 1fr);
   gap: var(--grid-gap);
+}
+
+/* Table wrapper: allows horizontal scroll on narrow screens */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Form grid: two columns that collapse to one on narrow containers */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* Filter pill row: wraps to multiple lines instead of overflowing */
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Two-panel layout: side by side on desktop, stacked on mobile */
+.two-panel {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 700px) {
+  .two-panel {
+    grid-template-columns: 1fr;
+  }
 }

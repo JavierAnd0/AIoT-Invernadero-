@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getDevices, getDeviceReadings } from '../api';
-import { Card, Select, LineChart, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Select, LineChart, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 import { ResponsiveGrid } from '../components/ResponsiveGrid.jsx';
 
 export default function SensorsScreen({ zone }) {
@@ -29,18 +29,14 @@ export default function SensorsScreen({ zone }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('sensors.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('sensors.historicalReadings')}</div>
-        </div>
+      <PageHeader title={t('sensors.title')} subtitle={t('sensors.historicalReadings')}>
         <Select
           label=""
           value={deviceId || ''}
           options={deviceList.map(d => ({ value: d.device_id, label: d.name || d.serial_number }))}
           onChange={e => setSelectedDevice(Number(e.target.value))}
         />
-      </div>
+      </PageHeader>
 
       <ErrorBanner message={rError} />
       {rLoading && <LoadingSpinner text={t('sensors.loadingReadings')} />}

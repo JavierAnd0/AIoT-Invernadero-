@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getAlerts, acknowledgeAlert, resolveAlert } from '../api';
-import { Card, Badge, Btn, LoadingSpinner, ErrorBanner, SEV_COLOR } from '../ui';
+import { Card, Badge, Btn, LoadingSpinner, ErrorBanner, PageHeader, SEV_COLOR } from '../ui';
 
 function timeAgo(isoStr) {
   if (!isoStr) return '—';
@@ -43,12 +43,8 @@ export default function AlertsScreen() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('alerts.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{alerts.length} {t('alerts.title').toLowerCase()}</div>
-        </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+      <PageHeader title={t('alerts.title')} subtitle={`${alerts.length} ${t('alerts.title').toLowerCase()}`}>
+        <div className="filter-tabs">
           {STATUS_FILTER.map(s => (
             <button
               key={s}
@@ -58,13 +54,14 @@ export default function AlertsScreen() {
                 background: filter === s ? '#22c55e' : 'var(--bg-card-alt)',
                 color: filter === s ? '#fff' : 'var(--text-primary)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
               }}
             >
               {filterLabel[s]}
             </button>
           ))}
         </div>
-      </div>
+      </PageHeader>
 
       <ErrorBanner message={error} />
       {loading && <LoadingSpinner />}
@@ -76,7 +73,7 @@ export default function AlertsScreen() {
             : alerts.map(a => (
                 <div key={a.alert_id} style={{
                   padding: '14px 0', borderBottom: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', gap: 14,
+                  display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap',
                 }}>
                   <div style={{
                     width: 8, height: 8, borderRadius: '50%', flexShrink: 0,

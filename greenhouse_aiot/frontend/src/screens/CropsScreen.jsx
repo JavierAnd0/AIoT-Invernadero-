@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getCrops, createCrop, getCropTypes, getZones } from '../api';
-import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, STATUS_COLOR } from '../ui';
+import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, PageHeader, STATUS_COLOR } from '../ui';
 
 export default function CropsScreen({ zone }) {
   const { t } = useTranslation();
@@ -71,15 +71,11 @@ export default function CropsScreen({ zone }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('crops.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('crops.count', { count: crops.length })}</div>
-        </div>
+      <PageHeader title={t('crops.title')} subtitle={t('crops.count', { count: crops.length })}>
         {canManage && (
           <Btn onClick={() => setShowForm(f => !f)}>{t('crops.newBatchBtn')}</Btn>
         )}
-      </div>
+      </PageHeader>
 
       <ErrorBanner message={error} />
       {!canManage && <ErrorBanner message={t('crops.viewOnlyMsg')} />}
@@ -112,6 +108,7 @@ export default function CropsScreen({ zone }) {
       )}
 
       <Card>
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
@@ -146,6 +143,7 @@ export default function CropsScreen({ zone }) {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );

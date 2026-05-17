@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getCropTypes, createCropType } from '../api';
-import { Card, Btn, Input, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Btn, Input, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 
 export default function CropTypeCatalog() {
   const { t } = useTranslation();
@@ -58,13 +58,9 @@ export default function CropTypeCatalog() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('cropTypes.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('cropTypes.count', { count: types.length })}</div>
-        </div>
+      <PageHeader title={t('cropTypes.title')} subtitle={t('cropTypes.count', { count: types.length })}>
         <Btn onClick={() => setShowForm(f => !f)}>{t('cropTypes.addBtn')}</Btn>
-      </div>
+      </PageHeader>
 
       <ErrorBanner message={error} />
 
@@ -72,7 +68,7 @@ export default function CropTypeCatalog() {
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14, color: 'var(--text-primary)' }}>{t('cropTypes.newTitle')}</div>
           <ErrorBanner message={saveError} />
-          <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <form onSubmit={handleCreate} className="form-grid">
             <Input label={t('cropTypes.commonName')} value={form.name} onChange={e => upd('name', e.target.value)} />
             <Input label={t('cropTypes.scientificName')} value={form.scientific_name} onChange={e => upd('scientific_name', e.target.value)} />
             <Input label={t('cropTypes.description')} value={form.description} onChange={e => upd('description', e.target.value)} style={{ gridColumn: '1/-1' }} />

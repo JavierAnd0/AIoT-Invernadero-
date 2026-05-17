@@ -188,6 +188,25 @@ export function LoadingSpinner({ text = 'Loading...' }) {
   );
 }
 
+export function PageHeader({ title, subtitle, children }) {
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+      flexWrap: 'wrap', gap: 12,
+    }}>
+      <div style={{ minWidth: 0 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{title}</h1>
+        {subtitle && <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{subtitle}</div>}
+      </div>
+      {children && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ErrorBanner({ message }) {
   if (!message) return null;
   return (

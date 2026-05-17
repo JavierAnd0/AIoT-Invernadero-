@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getPredictions } from '../api';
-import { Card, Badge, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Badge, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 
 const CLS_COLOR = { optimal: '#22c55e', warning: '#f59e0b', critical: '#ef4444' };
 
@@ -24,14 +24,12 @@ export default function PredictionHistory() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('predictions.title')}</h1>
-        <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('predictions.count', { count: predictions.length })}</div>
-      </div>
+      <PageHeader title={t('predictions.title')} subtitle={t('predictions.count', { count: predictions.length })} />
 
       <ErrorBanner message={error} />
 
       <Card>
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
@@ -77,6 +75,7 @@ export default function PredictionHistory() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   );

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { getDevices, createDevice, updateDeviceStatus, getZones } from '../api';
-import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner } from '../ui';
+import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 
 const STATUS_COLOR = { online: '#22c55e', offline: '#6b7280', error: '#ef4444', maintenance: '#f59e0b' };
 
@@ -80,13 +80,9 @@ export default function DeviceManagement() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('devices.title')}</h1>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>{t('devices.count', { count: deviceList.length })}</div>
-        </div>
+      <PageHeader title={t('devices.title')} subtitle={t('devices.count', { count: deviceList.length })}>
         {canCreate && <Btn onClick={() => setShowForm(f => !f)}>{t('devices.addDevice')}</Btn>}
-      </div>
+      </PageHeader>
 
       <ErrorBanner message={error} />
       {!canCreate && <ErrorBanner message={t('devices.adminOnlyMsg')} />}
@@ -95,7 +91,7 @@ export default function DeviceManagement() {
         <Card>
           <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 14, color: 'var(--text-primary)' }}>{t('devices.newDevice')}</div>
           <ErrorBanner message={saveError} />
-          <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <form onSubmit={handleCreate} className="form-grid">
             <Input label={t('devices.name')} value={form.name} onChange={e => upd('name', e.target.value)} />
             <Input label={t('devices.serialNumber')} value={form.serial_number} onChange={e => upd('serial_number', e.target.value)} />
             <Select
