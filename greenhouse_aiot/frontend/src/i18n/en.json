@@ -175,7 +175,8 @@
     "noZones": "No zones configured",
     "active": "Active",
     "inactive": "Inactive",
-    "viewOnlyMsg": "Only admin or operator can create zones. Only admin can edit existing zones."
+    "viewOnlyMsg": "Only admin or operator can create zones. Only admin can edit existing zones.",
+    "nameRequired": "Zone name is required"
   },
   "devices": {
     "title": "Device Management",

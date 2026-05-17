@@ -175,7 +175,8 @@
     "noZones": "No hay zonas configuradas",
     "active": "Activa",
     "inactive": "Inactiva",
-    "viewOnlyMsg": "Solo admin u operador pueden crear zonas. Solo admin puede editar zonas existentes."
+    "viewOnlyMsg": "Solo admin u operador pueden crear zonas. Solo admin puede editar zonas existentes.",
+    "nameRequired": "El nombre de la zona es obligatorio"
   },
   "devices": {
     "title": "Gestión de Dispositivos",

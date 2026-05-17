@@ -24,6 +24,10 @@ export default function ZoneManagement() {
   async function handleCreate(e) {
     e.preventDefault();
     setSaveError('');
+    if (!form.name.trim()) {
+      setSaveError(t('zones.nameRequired'));
+      return;
+    }
     setSaving(true);
     try {
       if (editing) {
