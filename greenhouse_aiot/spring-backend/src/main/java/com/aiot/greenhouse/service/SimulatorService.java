@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Simulador IoT integrado en Spring Boot.
@@ -33,8 +35,13 @@ public class SimulatorService {
     @Value("${app.simulator.enabled:true}")
     private boolean simulatorEnabled;
 
-    private final AtomicBoolean running = new AtomicBoolean(false);
-    private final Random random = new Random();
+    @Value("${app.simulator.interval-ms:15000}")
+    private long intervalMs;
+
+    private final AtomicBoolean running      = new AtomicBoolean(false);
+    private final AtomicLong    readingsCount = new AtomicLong(0);
+    private volatile Instant    lastReadingAt = null;
+    private final Random        random        = new Random();
 
     /**
      * Genera lecturas automáticas cada N ms para todos los dispositivos SIMULATED activos.
@@ -71,6 +78,9 @@ public class SimulatorService {
             readingRepository.save(reading);
         }
 
+        readingsCount.addAndGet(simulatedDevices.size());
+        lastReadingAt = Instant.now();
+
         log.debug("Simulador: {} lecturas generadas para {} dispositivos",
                 simulatedDevices.size(), simulatedDevices.size());
     }
@@ -103,12 +113,18 @@ public class SimulatorService {
      * @return estado con flag de running y número de dispositivos simulados
      */
     public SimulatorStatus getStatus() {
-        long simulatedCount = deviceRepository.findByStatus(Device.DeviceStatus.ONLINE)
+        long activeDevices = deviceRepository.findByStatus(Device.DeviceStatus.ONLINE)
                 .stream()
                 .filter(d -> d.getDeviceType() == Device.DeviceType.SIMULATED)
                 .count();
 
-        return new SimulatorStatus(running.get(), simulatedCount);
+        return new SimulatorStatus(
+            running.get(),
+            activeDevices,
+            readingsCount.get(),
+            intervalMs / 1000,
+            lastReadingAt != null ? lastReadingAt.toString() : null
+        );
     }
 
     private BigDecimal randomDecimal(double min, double max) {
@@ -117,5 +133,11 @@ public class SimulatorService {
     }
 
     /** Estado del simulador IoT. */
-    public record SimulatorStatus(boolean running, long simulatedDevices) {}
+    public record SimulatorStatus(
+        boolean running,
+        long activeDevices,
+        long readingsGenerated,
+        long intervalSeconds,
+        String lastReadingAt
+    ) {}
 }

@@ -74,7 +74,7 @@ public class PredictionService {
      */
     @Transactional
     public Prediction predict(Long deviceId, Long readingId, Map<String, Object> features, String modelName) {
-        Map<String, Object> result = runPythonPredictor(features, modelName != null ? modelName : "random_forest");
+        Map<String, Object> result = runPythonPredictor(features, modelName != null ? modelName : "logistic_regression");
 
         @SuppressWarnings("unchecked")
         Map<String, Double> rawProbs = (Map<String, Double>) result.get("raw_probabilities");
