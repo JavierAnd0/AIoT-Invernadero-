@@ -104,4 +104,7 @@ jobs:
               -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
               -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
               -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+              -e CORS_ORIGINS=${{ secrets.FRONTEND_URL }} \
+              -e AI_SCRIPT_PATH=/app/ai/predict_cli.py \
+              -e PYTHON_CMD=python3 \
               ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest

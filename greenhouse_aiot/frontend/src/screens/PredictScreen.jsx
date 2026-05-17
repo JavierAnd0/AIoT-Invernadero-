@@ -65,13 +65,8 @@ export default function PredictScreen() {
         ],
       });
     } catch (err) {
-      const status = err.response?.status;
-      const msg = err.response?.data?.error || err.message || '';
-      if (status === 503) {
-        setPredError(t('predict.aiUnavailable'));
-      } else {
-        setPredError(msg || t('predict.aiUnavailable'));
-      }
+      const msg = err.response?.data?.error || err.message || t('predict.aiUnavailable');
+      setPredError(msg);
     } finally {
       setPredLoading(false);
     }
