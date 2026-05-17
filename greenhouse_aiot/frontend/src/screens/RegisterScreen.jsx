@@ -32,10 +32,10 @@ export default function RegisterScreen({ onSuccess, onBack }) {
     setLoading(true);
     try {
       const data = await bootstrap({
-        username:    form.username,
-        email:       form.email,
-        password:    form.password,
-        fullName:    form.full_name,
+        username:  form.username,
+        email:     form.email,
+        password:  form.password,
+        full_name: form.full_name,
       });
       const userObj = {
         user_id: data.userId,

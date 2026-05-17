@@ -40,21 +40,20 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder         passwordEncoder;
     private final JdbcTemplate            jdbc;
 
-    /** Cambia a true para forzar un re-seed completo en el próximo reinicio. */
-    private static final boolean FORCE_RESEED = true;
-
     private final Random rnd = new Random(42);
 
     @Override
     @Transactional
     public void run(String... args) {
-        boolean needsSeed = FORCE_RESEED || zoneRepository.count() == 0;
+        // RESEED=true forces a full wipe + re-seed (dev only). In production leave unset.
+        boolean forceReseed = "true".equalsIgnoreCase(System.getenv("RESEED"));
+        boolean needsSeed = forceReseed || zoneRepository.count() == 0;
 
         // Always ensure roles are correct, regardless of seed
         ensureRoles();
 
         if (!needsSeed) {
-            log.info("DataInitializer: data present and FORCE_RESEED=false — skipping.");
+            log.info("DataInitializer: data present and RESEED env var not set — skipping.");
             return;
         }
 
