@@ -6,21 +6,21 @@ import { Card, Badge } from '../ui';
 import { Icon } from '../ui/icons';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const ROLE_COLOR    = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
+const ROLE_COLOR = { admin: '#8b5cf6', operator: '#3b82f6', viewer: '#6b7280' };
 const PROVIDER_META = {
-  local:  { label: 'Contraseña', bg: '#ede9fe', color: '#5b21b6' },
-  google: { label: 'Google',     bg: '#fef3c7', color: '#92400e' },
+  local: { label: 'Contraseña', bg: '#ede9fe', color: '#5b21b6' },
+  google: { label: 'Google', bg: '#fef3c7', color: '#92400e' },
 };
 
 const LANG_OPTIONS = [
-  { value: 'en', flag: '🇺🇸', label: 'Inglés'   },
-  { value: 'es', flag: '🇪🇸', label: 'Español'  },
+  { value: 'en', label: 'Inglés' },
+  { value: 'es', label: 'Español' },
 ];
 
 const THEME_OPTIONS = [
   { value: 'system', icon: 'system', label: 'Sistema' },
-  { value: 'light',  icon: 'sun',    label: 'Claro'   },
-  { value: 'dark',   icon: 'moon',   label: 'Oscuro'  },
+  { value: 'light', icon: 'sun', label: 'Claro' },
+  { value: 'dark', icon: 'moon', label: 'Oscuro' },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ function SegmentedControl({ options, value, onChange, renderOption }) {
 function PreferencesSection({ user }) {
   const { t, i18n } = useTranslation();
   const { setTheme } = useTheme();
-  const [lang,  setLang]  = useState(user.language || i18n.language || 'en');
+  const [lang, setLang] = useState(user.language || i18n.language || 'en');
   const [theme, setThemeVal] = useState(user.theme || 'system');
 
   function changeLanguage(val) {
@@ -194,7 +194,7 @@ function AccountSection({ user, tenants, currentTenantId, currentRole }) {
       <SectionTitle>{t('settings.accountDetails')}</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <InfoRow label={t('settings.member_since')} value={formatDate(user.created_at)} />
-        <InfoRow label={t('settings.last_updated')}  value={formatDate(user.updated_at)} />
+        <InfoRow label={t('settings.last_updated')} value={formatDate(user.updated_at)} />
         <InfoRow
           label={t('settings.authentication')}
           value={

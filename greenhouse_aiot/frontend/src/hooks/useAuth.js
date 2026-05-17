@@ -80,10 +80,17 @@ export function AuthProvider({ children }) {
       const data = await apiLogin(username, password);
 
       const userObj = {
-        user_id: data.user_id ?? data.userId,
-        username: data.username,
-        email: data.email,
-        full_name: data.full_name ?? data.fullName,
+        user_id:       data.user_id ?? data.userId,
+        username:      data.username,
+        email:         data.email,
+        full_name:     data.full_name ?? data.fullName,
+        created_at:    data.created_at,
+        updated_at:    data.updated_at,
+        auth_provider: data.auth_provider ?? data.authProvider ?? 'local',
+        google_id:     data.google_id ?? data.googleId,
+        avatar_url:    data.avatar_url ?? data.avatarUrl,
+        language:      data.language,
+        theme:         data.theme,
       };
       const role = data.role?.toLowerCase() || 'viewer';
 
@@ -130,10 +137,17 @@ export function AuthProvider({ children }) {
   const restoreFromOAuth = useCallback((token, meData) => {
     const role = meData?.role?.toLowerCase() || 'viewer';
     const userObj = {
-      user_id:   meData?.user_id ?? meData?.userId,
-      username:  meData?.username,
-      email:     meData?.email,
-      full_name: meData?.full_name ?? meData?.fullName,
+      user_id:       meData?.user_id ?? meData?.userId,
+      username:      meData?.username,
+      email:         meData?.email,
+      full_name:     meData?.full_name ?? meData?.fullName,
+      created_at:    meData?.created_at,
+      updated_at:    meData?.updated_at,
+      auth_provider: meData?.auth_provider ?? meData?.authProvider ?? 'local',
+      google_id:     meData?.google_id ?? meData?.googleId,
+      avatar_url:    meData?.avatar_url ?? meData?.avatarUrl,
+      language:      meData?.language,
+      theme:         meData?.theme,
     };
     setSession({ token, user: userObj, role });
   }, [setSession]);
@@ -161,10 +175,17 @@ export function AuthProvider({ children }) {
       .then(data => {
         const freshRole = data.role?.toLowerCase() || 'viewer';
         const userObj = {
-          user_id: data.user_id ?? data.userId,
-          username: data.username,
-          email: data.email,
-          full_name: data.full_name ?? data.fullName,
+          user_id:       data.user_id ?? data.userId,
+          username:      data.username,
+          email:         data.email,
+          full_name:     data.full_name ?? data.fullName,
+          created_at:    data.created_at,
+          updated_at:    data.updated_at,
+          auth_provider: data.auth_provider ?? data.authProvider ?? 'local',
+          google_id:     data.google_id ?? data.googleId,
+          avatar_url:    data.avatar_url ?? data.avatarUrl,
+          language:      data.language,
+          theme:         data.theme,
         };
         setUser(userObj);
         setTenants([]);
