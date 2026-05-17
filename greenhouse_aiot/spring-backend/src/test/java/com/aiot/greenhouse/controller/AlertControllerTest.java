@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,8 +36,10 @@ class AlertControllerTest {
 
     @MockBean
     private AlertService alertService;
+
     @MockBean
     private UserDetailsService userDetailsService;
+
     @MockBean
     private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
 
@@ -78,7 +81,7 @@ class AlertControllerTest {
         Alert acked = Alert.builder().id(1L).status(Alert.AlertStatus.ACKNOWLEDGED).message("acked").build();
         when(alertService.acknowledge(1L)).thenReturn(acked);
 
-        mockMvc.perform(put("/api/v1/alerts/1/acknowledge"))
+        mockMvc.perform(put("/api/v1/alerts/1/acknowledge").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ACKNOWLEDGED"));
     }
@@ -90,7 +93,7 @@ class AlertControllerTest {
         Alert resolved = Alert.builder().id(1L).status(Alert.AlertStatus.RESOLVED).message("resolved").build();
         when(alertService.resolve(1L)).thenReturn(resolved);
 
-        mockMvc.perform(put("/api/v1/alerts/1/resolve"))
+        mockMvc.perform(put("/api/v1/alerts/1/resolve").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("RESOLVED"));
     }

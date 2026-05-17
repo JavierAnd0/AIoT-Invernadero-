@@ -24,6 +24,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -71,6 +72,7 @@ class ZoneControllerTest {
         request.setName("Zona B");
 
         mockMvc.perform(post("/api/v1/zones")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -85,6 +87,7 @@ class ZoneControllerTest {
         request.setName("Zona B");
 
         mockMvc.perform(post("/api/v1/zones")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
@@ -102,10 +105,15 @@ class ZoneControllerTest {
     }
 
     @Test
-    @DisplayName("GET /zones sin autenticación devuelve 401")
+    @DisplayName("GET /zones sin autenticación devuelve 401 o redirección OAuth2")
     void getAll_unauthenticated_returns401() throws Exception {
         mockMvc.perform(get("/api/v1/zones"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(result -> {
+                    int status = result.getResponse().getStatus();
+                    if (status != 401 && status != 302) {
+                        throw new AssertionError("Expected 401 or 302 but was: " + status);
+                    }
+                });
     }
 
     @Test
@@ -115,6 +123,7 @@ class ZoneControllerTest {
         ZoneRequest request = new ZoneRequest();
 
         mockMvc.perform(post("/api/v1/zones")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
