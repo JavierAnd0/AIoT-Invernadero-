@@ -60,8 +60,8 @@ cd greenhouse_aiot/spring-backend
 mvn spring-boot:run
 
 # 4. Iniciar Flask (IoT/AI)
-cd greenhouse_aiot/backend
-python app.py
+cd greenhouse_aiot/ai
+python api.py
 
 # 5. Iniciar Frontend
 cd greenhouse_aiot/frontend
@@ -88,10 +88,10 @@ cd greenhouse_aiot/spring-backend
 mvn test
 ```
 
-### pytest (Flask)
+### pytest (Flask AI)
 
 ```bash
-cd greenhouse_aiot/backend
+cd greenhouse_aiot/ai
 pytest tests/ -v
 ```
 
@@ -186,6 +186,8 @@ El frontend usa `react-i18next` con archivos `src/i18n/en.json` y `src/i18n/es.j
 
 El proyecto utiliza **Taiga** para la gestión de historias de usuario y validación de criterios de aceptación.
 
+**Tablero del proyecto:** https://tree.taiga.io/project/javierand0-aiot-invernadero/kanban
+
 ### Integración GitHub → Taiga
 
 Los commits que referencian una historia de usuario deben incluir el ID de Taiga en el mensaje:
@@ -197,11 +199,12 @@ git commit -m "fix: JWT token expiry validation TG-8"
 
 Esto actualiza automáticamente las tarjetas en Taiga via webhook.
 
-### Configurar Webhook
+### Configurar Webhook (pasos exactos)
 
 1. En Taiga: **Settings → Integrations → GitHub**
-2. Pegar la URL del repositorio
+2. Pegar la URL del repositorio: `https://github.com/JavierAnd0/AIoT-Invernadero-`
 3. Activar eventos: `push`, `pull_request`
+4. Copiar el webhook secret generado y añadirlo como secret en GitHub: **Settings → Secrets → TAIGA_WEBHOOK_SECRET**
 
 ### Historias de Usuario Mapeadas
 

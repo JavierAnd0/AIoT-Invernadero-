@@ -5,6 +5,10 @@ on:
     branches: [ main ]
 
 jobs:
+  # NOTA: El microservicio Flask (greenhouse_aiot/ai/) se despliega manualmente
+  # en el servidor de producción via Docker o proceso systemd, separado de este pipeline.
+  # Spring Boot lo invoca como subprocess a través del volumen montado AI_SCRIPT_PATH.
+
   # ─────────────────────────────────────────────
   # 1. Deploy Frontend a Vercel
   # ─────────────────────────────────────────────

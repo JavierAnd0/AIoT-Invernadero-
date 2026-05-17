@@ -79,7 +79,6 @@ jobs:
     name: Selenium — Tests E2E
     runs-on: ubuntu-latest
     needs: [spring-boot-test, frontend-build]
-    continue-on-error: true
 
     steps:
       - name: Checkout código
@@ -121,7 +120,7 @@ jobs:
       - name: Levantar Spring Boot
         working-directory: greenhouse_aiot/spring-backend
         run: |
-          java -jar target/greenhouse-1.0.0.jar &
+          java -jar target/greenhouse-*.jar &
           echo "Esperando que Spring Boot esté listo en /actuator/health..."
           timeout 120 bash -c 'until curl -sf http://localhost:8080/actuator/health | grep -q "UP"; do sleep 3; done'
           echo "Spring Boot listo"
