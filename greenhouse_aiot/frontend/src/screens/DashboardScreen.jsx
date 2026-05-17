@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi, usePolling } from '../hooks/useApi';
 
@@ -77,8 +77,7 @@ export default function DashboardScreen({ zone }) {
     { label: t('sensors.colTemp'), data: sr.map(r => r.temperature), color: '#f59e0b' },
     { label: t('sensors.colHumidity'), data: sr.map(r => r.humidity), color: '#3b82f6' },
   ];
-  // eslint-disable-next-line react-hooks/purity
-  const now = Date.now();
+  const now = useMemo(() => Date.now(), [cropList]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

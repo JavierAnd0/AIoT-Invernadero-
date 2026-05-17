@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
@@ -46,8 +46,7 @@ export default function CropsScreen({ zone }) {
     }
   }
 
-  // eslint-disable-next-line react-hooks/purity
-  const now = Date.now();
+  const now = useMemo(() => Date.now(), [crops]);
 
   if (loading) return <LoadingSpinner />;
 

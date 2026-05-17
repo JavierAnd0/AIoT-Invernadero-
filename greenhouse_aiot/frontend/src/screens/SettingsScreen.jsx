@@ -262,7 +262,7 @@ export default function SettingsScreen() {
       </div>
 
       <AvatarCard user={user} currentRole={currentRole} />
-      <PreferencesSection user={user} onSaved={handleProfileSaved} />
+      <PreferencesSection user={user} />
       {/* <ProfileSection user={user} onSaved={handleProfileSaved} />
       <PasswordSection user={user} /> */}
       <AccountSection
