@@ -2,6 +2,7 @@ com/aiot/greenhouse/repository/SensorReadingRepository.class
 com/aiot/greenhouse/security/OAuth2AuthenticationSuccessHandler.class
 com/aiot/greenhouse/controller/PredictionController.class
 com/aiot/greenhouse/model/Prediction$PredictionBuilder.class
+com/aiot/greenhouse/repository/ActuatorCommandRepository.class
 com/aiot/greenhouse/model/CropType$CropTypeBuilder.class
 com/aiot/greenhouse/repository/CropTypeRepository.class
 com/aiot/greenhouse/model/Alert$Severity.class
@@ -9,8 +10,10 @@ com/aiot/greenhouse/service/ZoneService.class
 com/aiot/greenhouse/dto/request/UserUpdateRequest.class
 com/aiot/greenhouse/security/SecurityConfig.class
 com/aiot/greenhouse/service/PredictionService$1.class
+com/aiot/greenhouse/model/ActuatorCommand$ActuatorCommandBuilder.class
 com/aiot/greenhouse/repository/UserRepository.class
 com/aiot/greenhouse/dto/request/LoginRequest.class
+com/aiot/greenhouse/model/SensorReadingSummaryProjection.class
 com/aiot/greenhouse/service/SimulatorService$SimulatorStatus.class
 com/aiot/greenhouse/model/Device$DeviceType.class
 com/aiot/greenhouse/model/SensorReading$SensorReadingBuilder.class
@@ -20,11 +23,15 @@ com/aiot/greenhouse/security/CookieOAuth2AuthorizationRequestRepository.class
 com/aiot/greenhouse/model/Device$DeviceBuilder.class
 com/aiot/greenhouse/model/Alert.class
 com/aiot/greenhouse/security/JwtTokenProvider.class
+com/aiot/greenhouse/model/ActuatorCommand$CommandStatus.class
 com/aiot/greenhouse/repository/DeviceRepository.class
 com/aiot/greenhouse/repository/ZoneRepository.class
 com/aiot/greenhouse/service/AlertEngineService$1.class
+com/aiot/greenhouse/model/ActuatorCommand.class
 com/aiot/greenhouse/service/AuthService.class
+com/aiot/greenhouse/model/ActuatorCommand$CommandType.class
 com/aiot/greenhouse/model/SensorReading.class
+com/aiot/greenhouse/dto/request/ActuatorCommandRequest.class
 com/aiot/greenhouse/controller/ZoneController.class
 com/aiot/greenhouse/model/Crop.class
 com/aiot/greenhouse/dto/response/ApiError.class
@@ -60,6 +67,7 @@ com/aiot/greenhouse/service/PredictionService.class
 com/aiot/greenhouse/service/DeviceService.class
 com/aiot/greenhouse/dto/request/ZoneRequest.class
 com/aiot/greenhouse/model/Device.class
+com/aiot/greenhouse/controller/ActuatorController.class
 com/aiot/greenhouse/controller/AlertController.class
 com/aiot/greenhouse/repository/CropRepository.class
 com/aiot/greenhouse/model/Device$DeviceStatus.class
@@ -71,6 +79,7 @@ com/aiot/greenhouse/controller/SensorReadingController.class
 com/aiot/greenhouse/exception/GlobalExceptionHandler.class
 com/aiot/greenhouse/service/SensorReadingService.class
 com/aiot/greenhouse/model/CropType.class
+com/aiot/greenhouse/service/ActuatorService.class
 com/aiot/greenhouse/dto/request/CropRequest.class
 com/aiot/greenhouse/service/CropTypeService.class
 com/aiot/greenhouse/dto/response/AuthResponse.class

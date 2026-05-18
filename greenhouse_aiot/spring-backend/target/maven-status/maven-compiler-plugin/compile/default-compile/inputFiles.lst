@@ -2,6 +2,7 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/config/AppConfig.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/config/DataInitializer.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/config/LegacyDataMigration.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/ActuatorController.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/AlertController.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/AuthController.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/CropController.java
@@ -12,6 +13,7 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/SimulatorController.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/UserController.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/controller/ZoneController.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/request/ActuatorCommandRequest.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/request/CropRequest.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/request/CropTypeRequest.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/request/DeviceRequest.java
@@ -23,6 +25,7 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/response/ApiError.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/dto/response/AuthResponse.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/exception/GlobalExceptionHandler.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/ActuatorCommand.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/Alert.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/Crop.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/CropType.java
@@ -30,8 +33,10 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/Prediction.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/Role.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/SensorReading.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/SensorReadingSummaryProjection.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/User.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/model/Zone.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/repository/ActuatorCommandRepository.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/repository/AlertRepository.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/repository/CropRepository.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/repository/CropTypeRepository.java
@@ -45,6 +50,7 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/JwtTokenProvider.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/OAuth2AuthenticationSuccessHandler.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/SecurityConfig.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/ActuatorService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AlertEngineService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AlertService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AuthService.java
