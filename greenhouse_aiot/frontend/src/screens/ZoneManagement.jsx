@@ -16,6 +16,7 @@ export default function ZoneManagement() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saveError, setSaveError] = useState('');
+  const [togglingId, setTogglingId] = useState(null);
 
   const zoneList = Array.isArray(zones) ? zones : [];
 
@@ -50,6 +51,18 @@ export default function ZoneManagement() {
     setEditing(z);
     setForm({ name: z.name || '', description: z.description || '', area_m2: String(z.area_m2 || '') });
     setShowForm(true);
+  }
+
+  async function handleToggleActive(z) {
+    setTogglingId(z.zone_id);
+    try {
+      await updateZone(z.zone_id, { name: z.name, description: z.description, area_m2: z.area_m2, is_active: !z.is_active });
+      refetch();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || t('zones.couldNotUpdate'));
+    } finally {
+      setTogglingId(null);
+    }
   }
 
   return (
@@ -101,9 +114,21 @@ export default function ZoneManagement() {
               {z.name && <span style={{ marginLeft: 8 }}>· {z.name}</span>}
             </div>
             {canEdit && (
-              <Btn variant="ghost" onClick={() => startEdit(z)} style={{ width: '100%', fontSize: 11 }}>
-                {t('zones.edit')}
-              </Btn>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Btn variant="ghost" onClick={() => startEdit(z)} style={{ flex: 1, fontSize: 11 }}>
+                  {t('zones.edit')}
+                </Btn>
+                <Btn
+                  variant={z.is_active ? 'danger' : 'secondary'}
+                  onClick={() => handleToggleActive(z)}
+                  disabled={togglingId === z.zone_id}
+                  style={{ flex: 1, fontSize: 11 }}
+                >
+                  {togglingId === z.zone_id
+                    ? t('common.saving')
+                    : z.is_active ? t('zones.deactivate') : t('zones.activate')}
+                </Btn>
+              </div>
             )}
           </Card>
         ))}

@@ -176,7 +176,10 @@
     "active": "Activa",
     "inactive": "Inactiva",
     "viewOnlyMsg": "Solo admin u operador pueden crear zonas. Solo admin puede editar zonas existentes.",
-    "nameRequired": "El nombre de la zona es obligatorio"
+    "nameRequired": "El nombre de la zona es obligatorio",
+    "deactivate": "Desactivar",
+    "activate": "Activar",
+    "couldNotUpdate": "No se pudo actualizar la zona"
   },
   "devices": {
     "title": "Gestión de Dispositivos",
@@ -234,6 +237,8 @@
     "noCrops": "No se encontraron cultivos",
     "viewOnlyMsg": "Tu cuenta puede ver cultivos, pero solo admin u operador pueden crear nuevos lotes.",
     "couldNotCreate": "No se pudo crear el lote de cultivo",
+    "couldNotUpdate": "No se pudo actualizar el estado del cultivo",
+    "colActions": "Acciones",
     "errorRequiredFields": "Selecciona zona, tipo de cultivo e ingresa una cantidad de al menos 1"
   },
   "cropTypes": {

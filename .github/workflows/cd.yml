@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main, Javier ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────
   # 1. Deploy Frontend a Vercel
@@ -33,67 +37,18 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   # ─────────────────────────────────────────────
-  # 2. Build y deploy Spring Boot con Docker
+  # 2. Trigger redeploy en Dokploy (backend)
   # ─────────────────────────────────────────────
   deploy-backend:
-    name: Deploy Spring Boot Backend
+    name: Deploy Backend (Dokploy webhook)
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Configurar Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build Spring Boot JAR
-        working-directory: greenhouse_aiot/spring-backend
-        run: mvn package -DskipTests
-
-      - name: Build imagen Docker Spring Boot
+      - name: Trigger Dokploy redeploy
         run: |
-          docker build -f greenhouse_aiot/spring-backend/Dockerfile \
-            -t aiot-greenhouse-spring:${{ github.sha }} \
-            greenhouse_aiot/spring-backend
-
-      - name: Login a GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push imagen Docker
-        run: |
-          docker tag aiot-greenhouse-spring:${{ github.sha }} \
-            ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
-          docker push ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
-
-      - name: Deploy al servidor de producción
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            docker pull ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
-            docker stop greenhouse-spring || true
-            docker rm greenhouse-spring || true
-            docker run -d \
-              --name greenhouse-spring \
-              --restart always \
-              -p 8080:8080 \
-              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-              -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
-              -e CORS_ORIGINS=${{ secrets.FRONTEND_URL }} \
-              -e AI_SCRIPT_PATH=/app/ai/predict_cli.py \
-              -e PYTHON_CMD=python3 \
-              ghcr.io/${{ github.repository_owner }}/aiot-greenhouse-spring:latest
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" | grep -qE "^2" \
+            && echo "Dokploy deploy triggered" \
+            || (echo "Dokploy webhook failed" && exit 1)

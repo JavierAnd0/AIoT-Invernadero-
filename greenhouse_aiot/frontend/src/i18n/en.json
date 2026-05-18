@@ -176,7 +176,10 @@
     "active": "Active",
     "inactive": "Inactive",
     "viewOnlyMsg": "Only admin or operator can create zones. Only admin can edit existing zones.",
-    "nameRequired": "Zone name is required"
+    "nameRequired": "Zone name is required",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "couldNotUpdate": "Could not update zone"
   },
   "devices": {
     "title": "Device Management",
@@ -234,6 +237,8 @@
     "noCrops": "No crops found",
     "viewOnlyMsg": "Your account can view crops, but only admin or operator can create new batches.",
     "couldNotCreate": "Could not create crop batch",
+    "couldNotUpdate": "Could not update crop status",
+    "colActions": "Actions",
     "errorRequiredFields": "Select a zone, crop type, and enter a quantity of at least 1"
   },
   "cropTypes": {

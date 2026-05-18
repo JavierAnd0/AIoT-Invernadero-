@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# Selenium E2E only runs on PRs (expensive + fragile on direct branch pushes)
+# spring-boot-test and frontend-build run on every push
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -79,6 +82,7 @@ jobs:
     name: Selenium — Tests E2E
     runs-on: ubuntu-latest
     needs: [spring-boot-test, frontend-build]
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout código

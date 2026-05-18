@@ -74,8 +74,14 @@
   grid-template-columns: 1fr 1fr;
 }
 
+/* Asymmetric 2:1 variant (e.g. chart + alerts) */
+.two-panel--asymmetric {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
 @media (max-width: 700px) {
-  .two-panel {
+  .two-panel,
+  .two-panel--asymmetric {
     grid-template-columns: 1fr;
   }
 }

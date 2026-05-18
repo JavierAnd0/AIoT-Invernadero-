@@ -131,7 +131,7 @@ function StatCard({ icon, value, label, color }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       background: 'var(--bg-card)', border: '1px solid var(--border)',
-      borderRadius: 10, padding: '10px 14px', flex: 1, minWidth: 120,
+      borderRadius: 10, padding: '10px 14px',
     }}>
       <div style={{
         width: 32, height: 32, borderRadius: 8,
@@ -321,7 +321,7 @@ export default function DashboardScreen({ zone }) {
       </PageHeader>
 
       {/* ── KPI summary row ── */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
         <StatCard
           icon="devices"
           value={devices ? `${onlineDevices.length}/${devices.length}` : '—'}
@@ -368,7 +368,7 @@ export default function DashboardScreen({ zone }) {
       </ResponsiveGrid>
 
       {/* ── Chart + Alerts ── */}
-      <div className="two-panel" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)' }}>
+      <div className="two-panel two-panel--asymmetric">
 
         {/* Chart with metric tabs */}
         <Card style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -380,7 +380,7 @@ export default function DashboardScreen({ zone }) {
               {t('dashboard.sensorHistory')}
             </span>
             {/* Metric tabs */}
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', flexShrink: 1, paddingBottom: 2 }}>
               {METRICS.map(m => {
                 const active = chartMetric === m.key;
                 return (

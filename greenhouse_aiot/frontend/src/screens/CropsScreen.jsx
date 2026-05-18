@@ -2,8 +2,17 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
-import { getCrops, createCrop, getCropTypes, getZones } from '../api';
+import { getCrops, createCrop, updateCrop, getCropTypes, getZones } from '../api';
 import { Card, Badge, Btn, Input, Select, LoadingSpinner, ErrorBanner, PageHeader, STATUS_COLOR } from '../ui';
+
+const CROP_STATUS_OPTS = [
+  { value: 'planned',     label: 'Planned'     },
+  { value: 'germinating', label: 'Germinating' },
+  { value: 'growing',     label: 'Growing'     },
+  { value: 'flowering',   label: 'Flowering'   },
+  { value: 'harvested',   label: 'Harvested'   },
+  { value: 'failed',      label: 'Failed'      },
+];
 
 export default function CropsScreen({ zone }) {
   const { t } = useTranslation();
@@ -19,6 +28,7 @@ export default function CropsScreen({ zone }) {
   const [form, setForm] = useState({ batch_code:'', crop_type_id:'', zone_id:'', quantity:'' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [updatingId, setUpdatingId] = useState(null);
 
   const crops = useMemo(() => Array.isArray(cropsData) ? cropsData : [], [cropsData]);
 
@@ -52,6 +62,18 @@ export default function CropsScreen({ zone }) {
       setSaveError(err.response?.data?.error || t('crops.couldNotCreate'));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleStatusChange(cropId, status) {
+    setUpdatingId(cropId);
+    try {
+      await updateCrop(cropId, { status });
+      refetch();
+    } catch (err) {
+      setSaveError(err.response?.data?.error || t('crops.couldNotUpdate'));
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -112,7 +134,7 @@ export default function CropsScreen({ zone }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: 'var(--bg-card-alt)' }}>
-              {[t('crops.colBatch'), t('crops.colCropType'), t('crops.colZone'), t('crops.colStatus'), t('crops.colQuantity'), t('crops.colProgress'), t('crops.colDaysLeft')].map(h => (
+              {[t('crops.colBatch'), t('crops.colCropType'), t('crops.colZone'), t('crops.colStatus'), t('crops.colQuantity'), t('crops.colProgress'), t('crops.colDaysLeft'), ...(canManage ? [t('crops.colActions')] : [])].map(h => (
                 <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-secondary)', fontWeight: 600, fontSize: 11 }}>{h}</th>
               ))}
             </tr>
@@ -134,11 +156,22 @@ export default function CropsScreen({ zone }) {
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{c.pct}%</div>
                 </td>
                 <td style={{ padding: '10px 12px', fontFamily: "'DM Mono', monospace", fontSize: 12 }}>{c.daysLeft}d</td>
+                {canManage && (
+                  <td style={{ padding: '10px 12px' }}>
+                    <Select
+                      value={c.status}
+                      onChange={e => handleStatusChange(c.crop_id, e.target.value)}
+                      options={CROP_STATUS_OPTS}
+                      disabled={updatingId === c.crop_id}
+                      style={{ minWidth: 120 }}
+                    />
+                  </td>
+                )}
               </tr>
             ))}
             {crops.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('crops.noCrops')}</td>
+                <td colSpan={canManage ? 8 : 7} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('crops.noCrops')}</td>
               </tr>
             )}
           </tbody>
