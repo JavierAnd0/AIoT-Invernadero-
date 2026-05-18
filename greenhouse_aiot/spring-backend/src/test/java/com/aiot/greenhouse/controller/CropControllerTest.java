@@ -37,7 +37,7 @@ class CropControllerTest extends AbstractControllerTest {
         mockMvc.perform(get("/api/v1/crops").param("zone_id", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].crop_id").value(1))
-                .andExpect(jsonPath("$[0].batchCode").value("TC-2026-001"));
+                .andExpect(jsonPath("$[0].batch_code").value("TC-2026-001"));
     }
 
     @Test
@@ -50,7 +50,7 @@ class CropControllerTest extends AbstractControllerTest {
         mockMvc.perform(get("/api/v1/crops").param("zoneId", "4"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].crop_id").value(2))
-                .andExpect(jsonPath("$[0].batchCode").value("LB-2026-001"));
+                .andExpect(jsonPath("$[0].batch_code").value("LB-2026-001"));
     }
 
     @Test
@@ -73,7 +73,7 @@ class CropControllerTest extends AbstractControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.crop_id").value(3))
-                .andExpect(jsonPath("$.batchCode").value("NW-2026-001"));
+                .andExpect(jsonPath("$.batch_code").value("NW-2026-001"));
     }
 
     @Test
