@@ -4,6 +4,7 @@ import com.aiot.greenhouse.dto.request.SensorReadingRequest;
 import com.aiot.greenhouse.model.SensorReading;
 import com.aiot.greenhouse.repository.SensorReadingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
@@ -18,11 +19,13 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SensorReadingService {
 
     private final SensorReadingRepository readingRepository;
-    private final DeviceService deviceService;
-    private final MessageSource messageSource;
+    private final DeviceService           deviceService;
+    private final AlertEngineService      alertEngine;
+    private final MessageSource           messageSource;
 
     /**
      * Lista las lecturas recientes del sistema con paginación simple.
@@ -90,6 +93,16 @@ public class SensorReadingService {
                 .isSimulated(request.isSimulated())
                 .build();
 
-        return readingRepository.save(reading);
+        SensorReading saved = readingRepository.save(reading);
+
+        // Evaluar umbrales y generar alertas automáticas.
+        // El try/catch aísla el motor de alertas: un fallo aquí no revierta la lectura guardada.
+        try {
+            alertEngine.evaluate(saved);
+        } catch (Exception e) {
+            log.warn("AlertEngine: error al evaluar lectura {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return saved;
     }
 }

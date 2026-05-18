@@ -34,4 +34,10 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
                                    "reading", "reading.device",
                                    "assignedTo"})
     List<Alert> findByAssignedToId(Long userId);
+
+    /** Deduplicación: evita crear una segunda alerta OPEN del mismo tipo para el mismo device. */
+    boolean existsByDevice_IdAndAlertTypeAndStatus(
+            Long deviceId,
+            Alert.AlertType alertType,
+            Alert.AlertStatus status);
 }

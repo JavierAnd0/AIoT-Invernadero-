@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.service;
 
+import com.aiot.greenhouse.model.Alert;
 import com.aiot.greenhouse.model.Prediction;
 import com.aiot.greenhouse.repository.PredictionRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,9 +31,10 @@ import java.util.concurrent.TimeUnit;
 public class PredictionService {
 
     private final PredictionRepository predictionRepository;
-    private final DeviceService deviceService;
+    private final DeviceService        deviceService;
     private final SensorReadingService readingService;
-    private final ObjectMapper objectMapper;
+    private final AlertEngineService   alertEngine;
+    private final ObjectMapper         objectMapper;
 
     @Value("${app.ai.script-path:../ai/predict_cli.py}")
     private String aiScriptPath;
@@ -92,7 +94,20 @@ public class PredictionService {
                 .inputFeatures(features)
                 .build();
 
-        return predictionRepository.save(prediction);
+        Prediction saved = predictionRepository.save(prediction);
+
+        // Generar alerta automática si la IA detecta condición crítica o de advertencia
+        try {
+            if (saved.getPredictedClass() == Prediction.PredictedClass.CRITICAL) {
+                alertEngine.createPredictionAlert(saved, Alert.Severity.CRITICAL);
+            } else if (saved.getPredictedClass() == Prediction.PredictedClass.WARNING) {
+                alertEngine.createPredictionAlert(saved, Alert.Severity.MEDIUM);
+            }
+        } catch (Exception e) {
+            log.warn("AlertEngine: error al procesar predicción {}: {}", saved.getId(), e.getMessage());
+        }
+
+        return saved;
     }
 
     /**

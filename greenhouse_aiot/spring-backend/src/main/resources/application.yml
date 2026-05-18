@@ -58,6 +58,11 @@ app:
   simulator:
     enabled: ${SIMULATOR_ENABLED:true}
     interval-ms: ${SIMULATOR_INTERVAL_MS:15000}
+  alerts:
+    enabled: ${ALERTS_ENABLED:true}
+    co2-max-ppm: ${ALERTS_CO2_MAX_PPM:1500}
+    soil-moisture-min-pct: ${ALERTS_SOIL_MIN_PCT:25}
+    soil-moisture-max-pct: ${ALERTS_SOIL_MAX_PCT:95}
 
 logging:
   level:
