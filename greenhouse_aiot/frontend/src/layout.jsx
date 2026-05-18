@@ -12,6 +12,7 @@ const NAV = [
   { key: 'predict',     labelKey: 'nav.predict',      icon: 'predict',     roles: ['admin','operator'] },
   { key: 'predictions', labelKey: 'nav.predictions',  icon: 'predictions', roles: ['admin','operator'] },
   { key: 'devices',     labelKey: 'nav.devices',      icon: 'devices',     roles: ['admin','operator'] },
+  { key: 'actuators',   labelKey: 'nav.actuators',    icon: 'actuators',   roles: ['admin','operator'] },
   { key: 'zones',       labelKey: 'nav.zones',        icon: 'zones',       roles: ['admin','operator'] },
   { key: 'users',       labelKey: 'nav.users',        icon: 'users',       roles: ['admin'] },
   { key: 'croptypes',   labelKey: 'nav.cropTypes',    icon: 'croptypes',   roles: ['admin'] },

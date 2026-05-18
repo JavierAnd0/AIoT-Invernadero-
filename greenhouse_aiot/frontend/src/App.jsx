@@ -18,6 +18,7 @@ import CropTypeCatalog   from './screens/CropTypeCatalog';
 import SimulatorScreen   from './screens/SimulatorScreen';
 import PredictionHistory from './screens/PredictionHistory';
 import SettingsScreen    from './screens/SettingsScreen';
+import ActuatorsScreen   from './screens/ActuatorsScreen';
 
 const SCREEN_ROLES = {
   dashboard:   ['admin', 'operator', 'viewer'],
@@ -30,6 +31,7 @@ const SCREEN_ROLES = {
   zones:       ['admin', 'operator'],
   users:       ['admin'],
   croptypes:   ['admin'],
+  actuators:   ['admin', 'operator'],
   simulator:   ['admin'],
   settings:    ['admin', 'operator', 'viewer'],
 };
@@ -99,6 +101,7 @@ export default function App() {
       case 'zones':       return <ZoneManagement />;
       case 'users':       return <UserManagement />;
       case 'croptypes':   return <CropTypeCatalog />;
+      case 'actuators':   return <ActuatorsScreen />;
       case 'simulator':   return <SimulatorScreen />;
       case 'settings':    return <SettingsScreen />;
       default:            return <DashboardScreen zone={zone} />;

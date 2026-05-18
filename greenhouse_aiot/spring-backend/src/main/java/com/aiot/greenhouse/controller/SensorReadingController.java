@@ -2,6 +2,7 @@ package com.aiot.greenhouse.controller;
 
 import com.aiot.greenhouse.dto.request.SensorReadingRequest;
 import com.aiot.greenhouse.model.SensorReading;
+import com.aiot.greenhouse.model.SensorReadingSummaryProjection;
 import com.aiot.greenhouse.service.SensorReadingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -67,6 +68,23 @@ public class SensorReadingController {
     @Operation(summary = "Última lectura disponible")
     public ResponseEntity<SensorReading> getLatest() {
         return ResponseEntity.ok(readingService.findLatest());
+    }
+
+    /**
+     * Devuelve promedios agregados para gráficas históricas.
+     *
+     * <ul>
+     *   <li>{@code period=24h} → promedios horarios de las últimas 24 horas</li>
+     *   <li>{@code period=7d}  → promedios horarios de los últimos 7 días</li>
+     *   <li>{@code period=30d} → promedios diarios de los últimos 30 días</li>
+     * </ul>
+     */
+    @GetMapping("/device/{deviceId}/summary")
+    @Operation(summary = "Resumen histórico agregado de un dispositivo")
+    public ResponseEntity<List<SensorReadingSummaryProjection>> getSummary(
+            @PathVariable Long deviceId,
+            @RequestParam(defaultValue = "24h") String period) {
+        return ResponseEntity.ok(readingService.getSummary(deviceId, period));
     }
 
     /** Registra una nueva lectura de sensor. */

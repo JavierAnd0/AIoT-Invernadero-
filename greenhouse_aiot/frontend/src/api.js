@@ -211,6 +211,26 @@ export const updateUser = (id, d) =>
 export const deleteUser = (id) =>
   api.delete(`/users/${id}`).then(r => { invalidate('users*'); return r.data; });
 
+// ── Actuators ─────────────────────────────────────────────────────────────────
+export const getActuators = () =>
+  cached('actuators', () => api.get('/actuators').then(r => r.data), TTL.lg);
+
+export const getActuatorState = (id) =>
+  api.get(`/actuators/${id}/state`).then(r => r.data).catch(() => null);
+
+export const getActuatorHistory = (id) =>
+  api.get(`/actuators/${id}/commands`).then(r => r.data);
+
+export const issueActuatorCommand = (id, commandType) =>
+  api.post(`/actuators/${id}/commands`, { command_type: commandType })
+    .then(r => { invalidate('actuators*'); return r.data; });
+
+// ── Sensor reading summary (histórico agregado) ───────────────────────────────
+export const getDeviceReadingSummary = (id, period = '24h') =>
+  cached(`readings:summary:${id}:${period}`,
+    () => api.get(`/readings/device/${id}/summary`, { params: { period } }).then(r => r.data),
+    TTL.sm);
+
 // ── Simulator ─────────────────────────────────────────────────────────────────
 export const startSimulator = (interval_seconds) =>
   api.post('/simulator/start', { interval_seconds }).then(r => r.data);

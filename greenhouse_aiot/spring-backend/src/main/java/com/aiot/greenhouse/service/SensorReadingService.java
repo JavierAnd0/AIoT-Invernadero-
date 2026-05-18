@@ -2,6 +2,7 @@ package com.aiot.greenhouse.service;
 
 import com.aiot.greenhouse.dto.request.SensorReadingRequest;
 import com.aiot.greenhouse.model.SensorReading;
+import com.aiot.greenhouse.model.SensorReadingSummaryProjection;
 import com.aiot.greenhouse.repository.SensorReadingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,36 @@ public class SensorReadingService {
     @Transactional(readOnly = true)
     public SensorReading findLatest() {
         return readingRepository.findLatest().orElse(null);
+    }
+
+    /**
+     * Devuelve promedios agregados por periodo para gráficas históricas.
+     *
+     * <ul>
+     *   <li>{@code "24h"} → promedios horarios de las últimas 24 horas (máx 24 puntos)</li>
+     *   <li>{@code "7d"}  → promedios horarios de los últimos 7 días (máx 168 puntos)</li>
+     *   <li>{@code "30d"} → promedios diarios de los últimos 30 días (máx 30 puntos)</li>
+     * </ul>
+     *
+     * @param deviceId ID del dispositivo
+     * @param period   periodo deseado: "24h", "7d" o "30d"
+     * @return lista de agregados ordenados por bucket ascendente
+     */
+    @Transactional(readOnly = true)
+    public List<SensorReadingSummaryProjection> getSummary(Long deviceId, String period) {
+        LocalDateTime now  = LocalDateTime.now();
+        LocalDateTime from;
+        boolean byDay;
+
+        switch (period) {
+            case "30d" -> { from = now.minusDays(30); byDay = true;  }
+            case "7d"  -> { from = now.minusDays(7);  byDay = false; }
+            default    -> { from = now.minusHours(24); byDay = false; } // "24h"
+        }
+
+        return byDay
+                ? readingRepository.findDailySummary(deviceId, from, now)
+                : readingRepository.findHourlySummary(deviceId, from, now);
     }
 
     /**

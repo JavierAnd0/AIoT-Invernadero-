@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
-import { getDevices, getDeviceReadings } from '../api';
+import { getDevices, getDeviceReadings, getDeviceReadingSummary } from '../api';
 import { Card, Select, LineChart, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 import { Icon } from '../ui/icons';
 
@@ -13,10 +13,10 @@ const METRICS = [
   { key: 'co2_ppm',    labelKey: 'sensors.co2',         unit: ' ppm', color: '#8b5cf6', icon: 'co2',      label: 'CO₂' },
 ];
 
-const LIMIT_OPTIONS = [
-  { label: '30', value: 30 },
-  { label: '60', value: 60 },
-  { label: '100', value: 100 },
+const PERIOD_OPTIONS = [
+  { labelKey: 'sensors.period24h', value: '24h' },
+  { labelKey: 'sensors.period7d',  value: '7d'  },
+  { labelKey: 'sensors.period30d', value: '30d' },
 ];
 
 const TABLE_COLS = [
@@ -155,10 +155,25 @@ function ChartCard({ metric, labels, readings }) {
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function formatBucketLabel(isoStr, period) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  if (period === '30d') {
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+  // 24h or 7d — show date + hour
+  const sameDay = period === '24h';
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString([], { month: 'numeric', day: 'numeric' }) + ' ' +
+      d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function SensorsScreen({ zone }) {
   const { t } = useTranslation();
-  const [limit, setLimit] = useState(60);
+  const [period, setPeriod] = useState('24h');
 
   const { data: devices, loading: dLoading } = useApi(
     () => getDevices(zone ? { zone_id: zone } : {}),
@@ -172,21 +187,30 @@ export default function SensorsScreen({ zone }) {
     return deviceList[0]?.device_id ?? null;
   }, [selectedDevice, deviceList]);
 
-  const { data: readings, loading: rLoading, error: rError } = useApi(
-    () => getDeviceReadings(deviceId, { limit }),
-    [deviceId, limit],
+  // Summary data (aggregated) — used for charts
+  const { data: summary, loading: sLoading, error: sError } = useApi(
+    () => getDeviceReadingSummary(deviceId, period),
+    [deviceId, period],
     { autoFetch: !!deviceId }
   );
-  const sr = useMemo(() => Array.isArray(readings) ? readings : [], [readings]);
+  const sr = useMemo(() => Array.isArray(summary) ? summary : [], [summary]);
+
+  // Raw readings — used for table (last 50)
+  const { data: rawReadings, loading: rawLoading } = useApi(
+    () => getDeviceReadings(deviceId, { limit: 50 }),
+    [deviceId],
+    { autoFetch: !!deviceId }
+  );
+  const raw = useMemo(() => Array.isArray(rawReadings) ? rawReadings : [], [rawReadings]);
 
   const labels = useMemo(
-    () => sr.map(r =>
-      new Date(r.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    ),
-    [sr]
+    () => sr.map(r => formatBucketLabel(r.bucket, period)),
+    [sr, period]
   );
 
   const currentDevice = deviceList.find(d => d.device_id === deviceId);
+  const rLoading = sLoading;
+  const rError   = sError;
 
   if (dLoading) return <LoadingSpinner text={t('sensors.loadingDevices')} />;
 
@@ -198,14 +222,14 @@ export default function SensorsScreen({ zone }) {
         title={t('sensors.title')}
         subtitle={t('sensors.historicalReadings')}
       >
-        {/* Limit filter */}
+        {/* Period selector */}
         <div style={{ display: 'flex', gap: 4 }}>
-          {LIMIT_OPTIONS.map(o => {
-            const active = limit === o.value;
+          {PERIOD_OPTIONS.map(o => {
+            const active = period === o.value;
             return (
               <button
                 key={o.value}
-                onClick={() => setLimit(o.value)}
+                onClick={() => setPeriod(o.value)}
                 style={{
                   padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
                   background: active ? '#22c55e20' : 'var(--bg-card)',
@@ -215,7 +239,7 @@ export default function SensorsScreen({ zone }) {
                   transition: 'all 0.15s ease',
                 }}
               >
-                {o.label} pts
+                {t(o.labelKey)}
               </button>
             );
           })}
@@ -256,7 +280,7 @@ export default function SensorsScreen({ zone }) {
                 {currentDevice.name || currentDevice.serial_number}
                 <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>·</span>
                 <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 10 }}>
-                  {sr.length} lecturas
+                  {sr.length} {t('sensors.avgLabel')}
                 </span>
               </div>
             </div>
@@ -297,7 +321,7 @@ export default function SensorsScreen({ zone }) {
           )}
 
           {/* ── Raw readings table (full-width) ── */}
-          {!rLoading && sr.length > 0 && (
+          {!rawLoading && raw.length > 0 && (
             <Card style={{ padding: '18px 20px' }}>
               <div style={{
                 fontWeight: 600, fontSize: 13, color: 'var(--text-primary)',
@@ -305,7 +329,7 @@ export default function SensorsScreen({ zone }) {
               }}>
                 <span>{t('sensors.rawReadings')}</span>
                 <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>
-                  {sr.length} registros
+                  {raw.length} registros
                 </span>
               </div>
 
@@ -327,7 +351,7 @@ export default function SensorsScreen({ zone }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {sr.map((r, i) => (
+                    {raw.map((r, i) => (
                       <tr
                         key={i}
                         style={{

@@ -30,6 +30,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Cpu,
 } from 'lucide-react';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -41,6 +42,7 @@ export const ICONS = {
   predict: BrainCircuit,
   predictions: History,
   devices: HardDrive,
+  actuators: Cpu,
   zones: Layers,
   users: Users,
   croptypes: Sprout,

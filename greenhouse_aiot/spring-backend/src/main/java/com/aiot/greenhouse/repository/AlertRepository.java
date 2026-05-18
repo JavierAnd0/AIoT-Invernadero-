@@ -40,4 +40,10 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
             Long deviceId,
             Alert.AlertType alertType,
             Alert.AlertStatus status);
+
+    /** Auto-resolución: busca la alerta OPEN más reciente del mismo tipo para un device. */
+    Optional<Alert> findTopByDevice_IdAndAlertTypeAndStatus(
+            Long deviceId,
+            Alert.AlertType alertType,
+            Alert.AlertStatus status);
 }

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -194,7 +195,11 @@ public class AlertEngineService {
         boolean belowMin = min != null && value.compareTo(min) < 0;
         boolean aboveMax = max != null && value.compareTo(max) > 0;
 
-        if (!belowMin && !aboveMax) return; // dentro del rango — sin alerta
+        if (!belowMin && !aboveMax) {
+            // Valor dentro del rango — auto-resolver alerta previa si existe
+            autoResolveIfOpen(device, type);
+            return;
+        }
 
         // Deduplicación
         if (alertRepository.existsByDevice_IdAndAlertTypeAndStatus(
@@ -223,6 +228,21 @@ public class AlertEngineService {
                 severity, type, device.getId(),
                 value.toPlainString(), belowMin ? "<" : ">",
                 threshold.toPlainString(), unit);
+    }
+
+    /**
+     * Auto-resuelve la alerta OPEN del tipo dado para el device si el valor volvió al rango normal.
+     */
+    private void autoResolveIfOpen(Device device, AlertType type) {
+        alertRepository.findTopByDevice_IdAndAlertTypeAndStatus(
+                device.getId(), type, AlertStatus.OPEN)
+            .ifPresent(alert -> {
+                alert.setStatus(AlertStatus.RESOLVED);
+                alert.setResolvedAt(LocalDateTime.now());
+                alertRepository.save(alert);
+                log.info("AlertEngine: alerta {} auto-resuelta para device {} (valor volvió al rango)",
+                        type, device.getId());
+            });
     }
 
     /**
