@@ -4,7 +4,7 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip wget && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install --no-cache-dir numpy joblib scikit-learn==1.8.0
+    pip3 install --no-cache-dir --break-system-packages numpy joblib scikit-learn==1.8.0
 
 COPY target/*.jar app.jar
 
