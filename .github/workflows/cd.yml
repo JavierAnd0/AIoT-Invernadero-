@@ -2,7 +2,7 @@ name: CD — Deploy a Producción
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, Javier ]
 
 jobs:
   # ─────────────────────────────────────────────
