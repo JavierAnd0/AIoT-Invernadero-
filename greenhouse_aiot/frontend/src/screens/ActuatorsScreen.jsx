@@ -2,23 +2,24 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getActuators, getActuatorState, getActuatorHistory, issueActuatorCommand } from '../api';
 import { Btn, Card, LoadingSpinner, ErrorBanner, PageHeader, Badge } from '../ui';
+import { Icon } from '../ui/icons';
 
 // ── Command metadata ──────────────────────────────────────────────────────────
 // Maps CommandType values to display info
 const COMMAND_META = {
-  VENTILATION_OPEN:  { category: 'ventilation', action: 'open',  icon: '💨', labelKey: 'actuators.open'  },
-  VENTILATION_CLOSE: { category: 'ventilation', action: 'close', icon: '💨', labelKey: 'actuators.close' },
-  IRRIGATION_START:  { category: 'irrigation',  action: 'start', icon: '💧', labelKey: 'actuators.start' },
-  IRRIGATION_STOP:   { category: 'irrigation',  action: 'stop',  icon: '💧', labelKey: 'actuators.stop'  },
-  LIGHTS_ON:         { category: 'lights',      action: 'on',    icon: '💡', labelKey: 'actuators.on'    },
-  LIGHTS_OFF:        { category: 'lights',      action: 'off',   icon: '💡', labelKey: 'actuators.off'   },
+  VENTILATION_OPEN:  { category: 'ventilation', action: 'open',  icon: 'ventilation', labelKey: 'actuators.open'  },
+  VENTILATION_CLOSE: { category: 'ventilation', action: 'close', icon: 'ventilation', labelKey: 'actuators.close' },
+  IRRIGATION_START:  { category: 'irrigation',  action: 'start', icon: 'irrigation',  labelKey: 'actuators.start' },
+  IRRIGATION_STOP:   { category: 'irrigation',  action: 'stop',  icon: 'irrigation',  labelKey: 'actuators.stop'  },
+  LIGHTS_ON:         { category: 'lights',      action: 'on',    icon: 'lights',      labelKey: 'actuators.on'    },
+  LIGHTS_OFF:        { category: 'lights',      action: 'off',   icon: 'lights',      labelKey: 'actuators.off'   },
 };
 
 const CATEGORIES = [
   {
     key:    'ventilation',
     titleKey: 'actuators.ventilation',
-    icon:   '💨',
+    icon:   'ventilation',
     on:     'VENTILATION_OPEN',
     off:    'VENTILATION_CLOSE',
     onLabelKey:  'actuators.open',
@@ -27,7 +28,7 @@ const CATEGORIES = [
   {
     key:    'irrigation',
     titleKey: 'actuators.irrigation',
-    icon:   '💧',
+    icon:   'irrigation',
     on:     'IRRIGATION_START',
     off:    'IRRIGATION_STOP',
     onLabelKey:  'actuators.start',
@@ -36,7 +37,7 @@ const CATEGORIES = [
   {
     key:    'lights',
     titleKey: 'actuators.lights',
-    icon:   '💡',
+    icon:   'lights',
     on:     'LIGHTS_ON',
     off:    'LIGHTS_OFF',
     onLabelKey:  'actuators.on',
@@ -136,8 +137,9 @@ function ActuatorCard({ device, t }) {
             {device.zone?.name ?? '—'} · ID {device.device_id ?? device.id}
           </div>
           {lastCmd && (
-            <div style={{ fontSize: 11, opacity: 0.5, marginTop: 4 }}>
-              {t('actuators.lastCommand')}: {COMMAND_META[lastCmd.command_type?.toUpperCase()]?.icon}{' '}
+            <div style={{ fontSize: 11, opacity: 0.5, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+              {t('actuators.lastCommand')}:
+              <Icon name={COMMAND_META[lastCmd.command_type?.toUpperCase()]?.icon} size={12} />
               {lastCmd.command_type?.toLowerCase().replace(/_/g, ' ')} — {formatDateTime(lastCmd.issued_at)}
             </div>
           )}
@@ -169,7 +171,9 @@ function ActuatorCard({ device, t }) {
               background: active && lastCmdIsThisCategory ? 'rgba(34,197,94,0.08)' : 'var(--surface, rgba(0,0,0,0.03))',
               border: '1px solid var(--border, rgba(0,0,0,0.08))',
             }}>
-              <span style={{ fontSize: 18, minWidth: 24 }}>{cat.icon}</span>
+              <span style={{ minWidth: 24, display: 'flex', alignItems: 'center' }}>
+                <Icon name={cat.icon} size={18} />
+              </span>
               <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>
                 {t(cat.titleKey)}
               </span>
@@ -212,9 +216,11 @@ function ActuatorCard({ device, t }) {
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontSize: 12, fontWeight: 600, opacity: 0.7, padding: 0,
+            display: 'flex', alignItems: 'center', gap: 4,
           }}
         >
-          {showHistory ? '▲' : '▼'} {t('actuators.commandHistory')} ({history.length})
+          <Icon name={showHistory ? 'chevronUp' : 'chevronDown'} size={14} />
+          {t('actuators.commandHistory')} ({history.length})
         </button>
         {showHistory && (
           <div style={{ marginTop: 8, overflowX: 'auto' }}>
@@ -236,8 +242,10 @@ function ActuatorCard({ device, t }) {
                           {formatDateTime(cmd.issued_at)}
                         </td>
                         <td style={{ padding: '4px 8px', fontFamily: 'monospace' }}>
-                          {COMMAND_META[cmd.command_type?.toUpperCase()]?.icon}{' '}
-                          {cmd.command_type?.toLowerCase().replace(/_/g, ' ')}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <Icon name={COMMAND_META[cmd.command_type?.toUpperCase()]?.icon} size={12} />
+                            {cmd.command_type?.toLowerCase().replace(/_/g, ' ')}
+                          </span>
                         </td>
                         <td style={{ padding: '4px 8px' }}>
                           <StatusBadge status={cmd.status} t={t} />
@@ -282,7 +290,9 @@ export default function ActuatorsScreen() {
 
       {!loading && !error && actuators.length === 0 && (
         <Card style={{ textAlign: 'center', padding: 40, opacity: 0.7 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🤖</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <Icon name="bot" size={40} />
+          </div>
           <div>{t('actuators.noActuators')}</div>
         </Card>
       )}

@@ -30,7 +30,11 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Cpu,
+  Lightbulb,
+  Bot,
 } from 'lucide-react';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -71,6 +75,13 @@ export const ICONS = {
   menu: Menu,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
+  chevronDown: ChevronDown,
+
+  ventilation: Wind,
+  irrigation: Droplets,
+  lights: Lightbulb,
+  bot: Bot,
 };
 
 export function Icon({ name, size = 18, color, ...props }) {
