@@ -30,8 +30,7 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Deploy a Vercel (producción)
-        working-directory: greenhouse_aiot/frontend
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy greenhouse_aiot/frontend --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
