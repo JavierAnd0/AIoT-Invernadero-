@@ -7,22 +7,12 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y python3 python3-pip wget && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install --no-cache-dir numpy joblib scikit-learn==1.5.1
+    pip3 install --no-cache-dir numpy joblib scikit-learn==1.8.0
 
 # JAR pre-compilado por el step de Maven en CI
 COPY spring-backend/target/*.jar app.jar
 
 # Scripts e modelos de IA empaquetados dentro de la imagen
-COPY ai/predict.py ai/predict_cli.py /app/ai/
-COPY ai/models/logistic_regression_model.pkl \
-     ai/models/label_encoder.pkl \
-     ai/models/scaler.pkl \
-     /app/ai/models/
-
-ENV AI_SCRIPT_PATH=/app/ai/predict_cli.py
-ENV PYTHON_CMD=python3
-
-# Scripts e modelos de IA copiados al contexto de build por el step de CI
 COPY ai/ /app/ai/
 
 ENV AI_SCRIPT_PATH=/app/ai/predict_cli.py
