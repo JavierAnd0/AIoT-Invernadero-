@@ -45,6 +45,7 @@
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/JwtTokenProvider.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/OAuth2AuthenticationSuccessHandler.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/security/SecurityConfig.java
+/Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AlertEngineService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AlertService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/AuthService.java
 /Users/javier/AIoT-Invernadero-/greenhouse_aiot/spring-backend/src/main/java/com/aiot/greenhouse/service/CropService.java

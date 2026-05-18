@@ -22,6 +22,7 @@ com/aiot/greenhouse/model/Alert.class
 com/aiot/greenhouse/security/JwtTokenProvider.class
 com/aiot/greenhouse/repository/DeviceRepository.class
 com/aiot/greenhouse/repository/ZoneRepository.class
+com/aiot/greenhouse/service/AlertEngineService$1.class
 com/aiot/greenhouse/service/AuthService.class
 com/aiot/greenhouse/model/SensorReading.class
 com/aiot/greenhouse/controller/ZoneController.class
@@ -30,6 +31,7 @@ com/aiot/greenhouse/dto/response/ApiError.class
 com/aiot/greenhouse/config/LegacyDataMigration.class
 com/aiot/greenhouse/model/Zone$ZoneBuilder.class
 com/aiot/greenhouse/model/Alert$AlertBuilder.class
+com/aiot/greenhouse/service/AlertEngineService.class
 com/aiot/greenhouse/repository/AlertRepository.class
 com/aiot/greenhouse/model/Alert$AlertStatus.class
 com/aiot/greenhouse/model/Crop$CropStatus.class
