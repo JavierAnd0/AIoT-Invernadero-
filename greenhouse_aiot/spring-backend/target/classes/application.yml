@@ -53,7 +53,7 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,https://*.vercel.app}
   ai:
-    script-path: ${AI_SCRIPT_PATH:../ai/predict_cli.py}
+    script-path: ${AI_SCRIPT_PATH:/app/ai/predict_cli.py}
     python-cmd: ${PYTHON_CMD:python3}
   simulator:
     enabled: ${SIMULATOR_ENABLED:true}

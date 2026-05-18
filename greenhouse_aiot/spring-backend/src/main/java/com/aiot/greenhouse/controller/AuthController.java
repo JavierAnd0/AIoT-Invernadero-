@@ -41,14 +41,15 @@ public class AuthController {
         try {
             return ResponseEntity.ok(authService.login(request));
         } catch (AuthenticationServiceException e) {
-            String msg = "USE_GOOGLE_AUTH".equals(e.getMessage())
-                    ? "Esta cuenta usa Google para autenticarse. Por favor, usa el botón 'Continuar con Google'."
-                    : "Credenciales inválidas";
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", msg));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Credenciales inválidas"));
+            // Google-only accounts: tell the user to use Google sign-in
+            if ("USE_GOOGLE_AUTH".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Esta cuenta usa Google para autenticarse. Por favor, usa el botón 'Continuar con Google'."));
+            }
+            // Other AuthenticationServiceException → let GlobalExceptionHandler produce i18n message
+            throw new org.springframework.security.authentication.BadCredentialsException(e.getMessage(), e);
         }
+        // BadCredentialsException propagates to GlobalExceptionHandler → $.message with i18n
     }
 
     /** Redirige al endpoint OAuth2 de Spring Security (compatibilidad con builds anteriores). */

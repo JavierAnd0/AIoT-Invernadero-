@@ -44,6 +44,7 @@ public class Prediction {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "predicted_class", nullable = false, length = 10)
+    @JsonProperty("predicted_class")
     private PredictedClass predictedClass;
 
     @Column(name = "confidence", precision = 5, scale = 4)

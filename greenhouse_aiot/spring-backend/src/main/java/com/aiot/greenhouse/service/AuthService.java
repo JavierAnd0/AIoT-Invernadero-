@@ -115,6 +115,10 @@ public class AuthService {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().name())
+                .authProvider(user.getAuthProvider())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }

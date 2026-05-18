@@ -41,6 +41,7 @@ public class User implements UserDetails {
     private String passwordHash;
 
     @Column(name = "full_name", nullable = false, length = 150)
+    @JsonProperty("full_name")
     private String fullName;
 
     @Enumerated(EnumType.STRING)
