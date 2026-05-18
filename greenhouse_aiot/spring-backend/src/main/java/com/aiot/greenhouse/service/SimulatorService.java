@@ -29,8 +29,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class SimulatorService {
 
-    private final DeviceRepository deviceRepository;
+    private final DeviceRepository        deviceRepository;
     private final SensorReadingRepository readingRepository;
+    private final AlertEngineService      alertEngine;
 
     @Value("${app.simulator.enabled:true}")
     private boolean simulatorEnabled;
@@ -75,7 +76,15 @@ public class SimulatorService {
                     .isSimulated(true)
                     .build();
 
-            readingRepository.save(reading);
+            SensorReading saved = readingRepository.save(reading);
+
+            // Disparar el motor de alertas para cada lectura simulada
+            try {
+                alertEngine.evaluate(saved);
+            } catch (Exception e) {
+                log.warn("AlertEngine: error en simulador para device {}: {}",
+                        device.getId(), e.getMessage());
+            }
         }
 
         readingsCount.addAndGet(simulatedDevices.size());
