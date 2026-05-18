@@ -52,8 +52,6 @@ export default function ZoneManagement() {
     setShowForm(true);
   }
 
-  if (loading) return <LoadingSpinner />;
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <PageHeader title={t('zones.title')} subtitle={t('zones.count', { count: zoneList.length })}>
@@ -90,7 +88,7 @@ export default function ZoneManagement() {
         className="zone-list"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}
       >
-        {zoneList.map(z => (
+        {loading ? <LoadingSpinner /> : zoneList.map(z => (
           <Card key={z.zone_id}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
               <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>
