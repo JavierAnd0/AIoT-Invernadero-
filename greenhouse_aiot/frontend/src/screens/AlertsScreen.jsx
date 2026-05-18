@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../hooks/useApi';
 import { getAlerts, acknowledgeAlert, resolveAlert } from '../api';
-import { Badge, Btn, LoadingSpinner, ErrorBanner, PageHeader, SEV_COLOR } from '../ui';
+import { Btn, LoadingSpinner, ErrorBanner, PageHeader } from '../ui';
 import { Icon } from '../ui/icons';
 
 // ── Maps ──────────────────────────────────────────────────────────────────────

@@ -223,11 +223,6 @@ function Sidebar({ screen, setScreen, zone, setZone, role, onLogout, onClose, co
     if (!zoneOptions.some(z => z.zone_id === zone)) setZone(zoneOptions[0].zone_id);
   }, [setZone, zone, zoneOptions]);
 
-  // Hide tooltip when collapsed state changes
-  useEffect(() => {
-    setTooltip(prev => ({ ...prev, visible: false }));
-  }, [collapsed]);
-
   const showTooltip = useCallback((e, label) => {
     if (!collapsed) return;
     const rect = e.currentTarget.getBoundingClientRect();

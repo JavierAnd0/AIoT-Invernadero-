@@ -224,7 +224,7 @@ export default function DashboardScreen({ zone }) {
     [deviceIdForZone],
     { autoFetch: !!deviceIdForZone }
   );
-  const sr = srData || [];
+  const sr = useMemo(() => srData || [], [srData]);
 
   const latest = sr[0] || {};
   const prev   = sr[1] || {};

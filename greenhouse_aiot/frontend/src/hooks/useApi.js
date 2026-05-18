@@ -40,12 +40,13 @@ export function useApi(fetchFn, deps = [], options = {}) {
 
 export function usePolling(fetchFn, intervalMs = 30_000, deps = []) {
   const result = useApi(fetchFn, deps);
+  const { refetch } = result;
 
   useEffect(() => {
     let id;
 
     const tick = () => {
-      if (!document.hidden) result.refetch();
+      if (!document.hidden) refetch();
     };
 
     const schedule = () => {
@@ -53,10 +54,9 @@ export function usePolling(fetchFn, intervalMs = 30_000, deps = []) {
       id = setInterval(tick, intervalMs);
     };
 
-    // When the tab becomes visible again, fetch immediately then restart interval
     const onVisibilityChange = () => {
       if (!document.hidden) {
-        result.refetch();
+        refetch();
         schedule();
       } else {
         clearInterval(id);
@@ -70,7 +70,7 @@ export function usePolling(fetchFn, intervalMs = 30_000, deps = []) {
       clearInterval(id);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [result.refetch, intervalMs]);
+  }, [refetch, intervalMs]);
 
   return result;
 }

@@ -1,5 +1,6 @@
 package com.aiot.greenhouse.controller;
 
+import com.aiot.greenhouse.exception.GlobalExceptionHandler;
 import com.aiot.greenhouse.security.JwtAuthenticationFilter;
 import com.aiot.greenhouse.security.JwtTokenProvider;
 import com.aiot.greenhouse.security.OAuth2AuthenticationSuccessHandler;
@@ -12,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
-@Import({JwtTokenProvider.class, JwtAuthenticationFilter.class, SecurityConfig.class})
+@Import({JwtTokenProvider.class, JwtAuthenticationFilter.class, SecurityConfig.class, GlobalExceptionHandler.class})
 public abstract class AbstractControllerTest {
 
     @Autowired
