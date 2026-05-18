@@ -1,6 +1,8 @@
 package com.aiot.greenhouse.config;
 
 import com.aiot.greenhouse.model.*;
+import com.aiot.greenhouse.model.ActuatorCommand.CommandType;
+import com.aiot.greenhouse.model.ActuatorCommand.CommandStatus;
 import com.aiot.greenhouse.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +32,16 @@ import java.util.Random;
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
 
-    private final UserRepository          userRepository;
-    private final ZoneRepository          zoneRepository;
-    private final CropTypeRepository      cropTypeRepository;
-    private final DeviceRepository        deviceRepository;
-    private final CropRepository          cropRepository;
-    private final SensorReadingRepository readingRepository;
-    private final AlertRepository         alertRepository;
-    private final PasswordEncoder         passwordEncoder;
-    private final JdbcTemplate            jdbc;
+    private final UserRepository             userRepository;
+    private final ZoneRepository             zoneRepository;
+    private final CropTypeRepository         cropTypeRepository;
+    private final DeviceRepository           deviceRepository;
+    private final CropRepository             cropRepository;
+    private final SensorReadingRepository    readingRepository;
+    private final AlertRepository            alertRepository;
+    private final ActuatorCommandRepository  actuatorCommandRepository;
+    private final PasswordEncoder            passwordEncoder;
+    private final JdbcTemplate               jdbc;
 
     private final Random rnd = new Random(42);
 
@@ -96,6 +99,12 @@ public class DataInitializer implements CommandLineRunner {
         Device d6 = saveDevice(zD, carlos, "Nodo-D1",   "SN-004-D1", Device.DeviceType.SIMULATED,   Device.DeviceStatus.ONLINE,  "2.1.4");
         Device d7 = saveDevice(zD, admin,  "Gateway-D", "SN-004-GW", Device.DeviceType.GATEWAY,     Device.DeviceStatus.ONLINE,  "1.8.0");
 
+        // Actuadores — uno por zona (ventilación, riego, iluminación, riego sur)
+        Device actA = saveDevice(zA, admin,  "Ventilador-A",  "ACT-001-A",  Device.DeviceType.ACTUATOR, Device.DeviceStatus.ONLINE, "1.2.0");
+        Device actB = saveDevice(zB, admin,  "Bomba-B",       "ACT-002-B",  Device.DeviceType.ACTUATOR, Device.DeviceStatus.ONLINE, "1.2.0");
+        Device actC = saveDevice(zC, carlos, "Luces-UV-C",    "ACT-003-C",  Device.DeviceType.ACTUATOR, Device.DeviceStatus.ONLINE, "1.1.5");
+        Device actD = saveDevice(zD, carlos, "Riego-D",       "ACT-004-D",  Device.DeviceType.ACTUATOR, Device.DeviceStatus.ONLINE, "1.2.0");
+
         // ── 5. Crops ─────────────────────────────────────────────────────────
         saveCrop(zA, tomato,   admin,  "TC-2026-001", 450, daysAgo(32), Crop.CropStatus.GROWING,     "Lote primavera, riego por goteo");
         saveCrop(zA, tomato,   carlos, "TC-2026-002", 200, daysAgo(10), Crop.CropStatus.GERMINATING, "Segunda siembra, bancales 4-6");
@@ -148,7 +157,26 @@ public class DataInitializer implements CommandLineRunner {
                 "Temperatura crítica: 33.8 °C (máx 30 °C)",
                 d("33.8"), d("30.0"), Alert.AlertStatus.RESOLVED, now.minusDays(1));
 
-        log.info("DataInitializer: seed done — zones:4 cropTypes:5 devices:7 crops:8 readings:{} alerts:8",
+        // ── 8. Actuator commands (historial demo) ────────────────────────────
+        // Ventilador-A: cerrado → abierto (estado actual: abierto)
+        saveCmd(actA, admin,  CommandType.VENTILATION_CLOSE, CommandStatus.EXECUTED, now.minusHours(5));
+        saveCmd(actA, admin,  CommandType.VENTILATION_OPEN,  CommandStatus.EXECUTED, now.minusHours(2));
+
+        // Bomba-B: varios ciclos de riego → actualmente regando
+        saveCmd(actB, carlos, CommandType.IRRIGATION_STOP,   CommandStatus.EXECUTED, now.minusHours(8));
+        saveCmd(actB, carlos, CommandType.IRRIGATION_START,  CommandStatus.EXECUTED, now.minusHours(4));
+        saveCmd(actB, carlos, CommandType.IRRIGATION_STOP,   CommandStatus.EXECUTED, now.minusHours(2));
+        saveCmd(actB, carlos, CommandType.IRRIGATION_START,  CommandStatus.EXECUTED, now.minusMinutes(30));
+
+        // Luces-UV-C: encendidas durante el día
+        saveCmd(actC, carlos, CommandType.LIGHTS_OFF,        CommandStatus.EXECUTED, now.minusHours(14));
+        saveCmd(actC, carlos, CommandType.LIGHTS_ON,         CommandStatus.EXECUTED, now.minusHours(6));
+
+        // Riego-D: detenido (último estado: parado)
+        saveCmd(actD, admin,  CommandType.IRRIGATION_START,  CommandStatus.EXECUTED, now.minusHours(3));
+        saveCmd(actD, admin,  CommandType.IRRIGATION_STOP,   CommandStatus.EXECUTED, now.minusHours(1));
+
+        log.info("DataInitializer: seed done — zones:4 cropTypes:5 devices:11 (7 sensores + 4 actuadores) crops:8 readings:{} alerts:8 commands:10",
                 online.size() * 24);
     }
 
@@ -172,6 +200,7 @@ public class DataInitializer implements CommandLineRunner {
         // Order matters due to FK constraints
         jdbc.update("DELETE FROM alerts");
         jdbc.update("DELETE FROM predictions");
+        jdbc.update("DELETE FROM actuator_commands");
         jdbc.update("DELETE FROM sensor_readings");
         jdbc.update("DELETE FROM crops");
         jdbc.update("DELETE FROM devices");
@@ -241,6 +270,15 @@ public class DataInitializer implements CommandLineRunner {
                 .message(msg).measuredValue(measured).thresholdValue(threshold)
                 .status(status).resolvedAt(resolvedAt)
                 .createdAt(LocalDateTime.now().minusMinutes(rnd.nextInt(180) + 5))
+                .build());
+    }
+
+    private void saveCmd(Device device, User issuedBy,
+                         CommandType type, CommandStatus status, LocalDateTime at) {
+        actuatorCommandRepository.save(ActuatorCommand.builder()
+                .device(device).issuedBy(issuedBy)
+                .commandType(type).status(status)
+                .issuedAt(at).executedAt(at)
                 .build());
     }
 
