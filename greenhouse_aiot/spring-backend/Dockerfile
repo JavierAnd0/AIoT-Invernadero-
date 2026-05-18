@@ -1,18 +1,13 @@
-# Build context must be greenhouse_aiot/ (parent of spring-backend/ and ai/)
-# The CI step runs: mvn package -DskipTests in spring-backend/ before docker build.
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Instalar Python 3, wget (para healthcheck) y dependencias del modelo AI
 RUN apt-get update && \
     apt-get install -y python3 python3-pip wget && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir numpy joblib scikit-learn==1.8.0
 
-# JAR pre-compilado por el step de Maven en CI
-COPY spring-backend/target/*.jar app.jar
+COPY target/*.jar app.jar
 
-# Scripts e modelos de IA empaquetados dentro de la imagen
 COPY ai/ /app/ai/
 
 ENV AI_SCRIPT_PATH=/app/ai/predict_cli.py
